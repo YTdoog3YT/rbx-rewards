@@ -3,171 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBX Rewards - Oglądaj i Zbieraj</title>
+    <title>RBX Rewards - Oglądaj i zbieraj Robuxy</title>
+    <!-- Monetag Vignette Script -->
+    <script>(function(s){s.dataset.zone='11460706',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 30px auto; padding: 20px; background: #f4f4f9; color: #333; line-height: 1.6; }
-        .box { border: 1px solid #e0e0e0; padding: 20px; border-radius: 10px; margin-bottom: 20px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        input, button { padding: 12px 15px; font-size: 16px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
-        input { width: 100%; }
-        button { cursor: pointer; background-color: #007bff; color: white; border: none; font-weight: bold; width: 100%; transition: 0.2s; }
-        button:hover { background-color: #0056b3; }
-        .logout-btn { background-color: #dc3545; width: auto; font-size: 14px; padding: 6px 12px; float: right; }
-        .logout-btn:hover { background-color: #a71d2a; }
-        .ad-btn { background-color: #28a745; font-size: 18px; margin-top: 15px; }
-        .ad-btn:hover { background-color: #1e7e34; }
-        .hidden { display: none; }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 8px; margin-top: 15px; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        .tax-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; border-radius: 4px; margin: 10px 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            margin-bottom: 20px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+        }
+        .stats {
+            font-size: 18px;
+            margin-bottom: 15px;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-
-    <h1 style="text-align: center;">🚀 RBX Rewards</h1>
-
-    <!-- Ekran Startowy -->
-    <div id="login-section" class="box" style="text-align: center;">
-        <h3>Wpisz swój nick z Robloxa, aby wejść:</h3>
-        <input type="text" id="username-input" placeholder="Twój nick z Robloxa">
-        <br><br>
-        <button onclick="login()">Wejdź do panelu</button>
-    </div>
-
-    <!-- Główny Panel -->
-    <div id="dashboard" class="box hidden">
-        <div>
-            <button class="logout-btn" onclick="logout()">Wyloguj</button>
-            <h2>Cześć, <span id="user-display"></span>!</h2>
+    <div class="container">
+        <h1>RBX Rewards 🎮</h1>
+        <div class="stats">
+            Twoje punkty: <span id="points">0</span> | Status: <span id="status">Oglądaj film, aby zbierać punkty!</span>
         </div>
-        
-        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin: 15px 0;">
-            <h3 style="margin: 0;">Twoje Saldo: <span id="points-display" style="color: #28a745; font-size: 26px;">0</span> Robux (Pkt)</h3>
-        </div>
-
-        <hr>
-
-        <!-- Sekcja YouTube -->
-        <h3>1. Oglądaj swój ulubiony film z YouTube:</h3>
-        <p>Wklej link do dowolnego filmu lub streamu z YouTube i oglądaj na stronie!</p>
-        
-        <input type="text" id="yt-link-input" placeholder="Wklej link z YouTube (np. https://www.youtube.com/watch?v=jfKfPfyJRdk)">
-        <button onclick="loadYouTubeVideo()">Załaduj Film</button>
-
         <div class="video-container">
-            <iframe id="yt-player" src="https://www.youtube-nocookie.com/embed/jfKfPfyJRdk" allowfullscreen></iframe>
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
-
-        <button class="ad-btn" onclick="watchAdAndEarn()">▶ Obejrzyj reklamę (+1 Robux)</button>
-
-        <hr>
-
-        <!-- Sekcja Wypłat -->
-        <h3>2. Wypłać Robuxy na swoje konto:</h3>
-        <input type="number" id="payout-amount" placeholder="Ile Robuxów chcesz wypłacić?" min="10" oninput="calculateRobloxTax()">
-        
-        <div id="tax-info" class="tax-box hidden">
-            <small>⚠️ <b>Pamiętaj:</b> Roblox pobiera 30% prowizji!</small><br>
-            Ustaw cenę swojego Gamepassa na: <b id="gamepass-price" style="color: #d9534f; font-size: 18px;">0</b> Robuxów.
-        </div>
-
-        <input type="text" id="gamepass-link" placeholder="Link do Twojego Gamepassa">
-        <br><br>
-        <button onclick="requestPayout()" style="background-color: #17a2b8;">Zleć Wypłatę</button>
+        <p>Zostań na stronie i oglądaj materiał, żeby nabić saldo!</p>
     </div>
 
     <script>
-        let currentUser = null;
-        // Twój link z Monetaga:
-        const monetagAdLink = "https://omg10.com/4/11451440";
+        let points = 0;
+        const pointsDisplay = document.getElementById('points');
+        const statusDisplay = document.getElementById('status');
 
-        async function login() {
-            const username = document.getElementById('username-input').value.trim();
-            if (!username) return alert('Wpisz swój nick!');
-
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
-            });
-
-            currentUser = await res.json();
-            document.getElementById('user-display').innerText = currentUser.username;
-            document.getElementById('points-display').innerText = currentUser.points;
-
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-        }
-
-        function loadYouTubeVideo() {
-            const rawUrl = document.getElementById('yt-link-input').value.trim();
-            if (!rawUrl) return alert('Wklej link z YouTube!');
-
-            let videoId = "";
-            
-            // Wyciąganie ID filmu z różnych typów linków YT
-            if (rawUrl.includes("v=")) {
-                videoId = rawUrl.split("v=")[1].split("&")[0];
-            } else if (rawUrl.includes("youtu.be/")) {
-                videoId = rawUrl.split("youtu.be/")[1].split("?")[0];
-            } else {
-                return alert('Nieprawidłowy link do YouTube!');
-            }
-
-            document.getElementById('yt-player').src = `https://www.youtube-nocookie.com/embed/${videoId}`;
-        }
-
-        function watchAdAndEarn() {
-            if (!currentUser) return;
-
-            // Otwarcie reklamy z Monetag w nowej karcie
-            window.open(monetagAdLink, '_blank');
-
-            // Przyznanie punktu po kliknięciu
-            setTimeout(async () => {
-                await fetch(`/api/postback?user_id=${encodeURIComponent(currentUser.username)}&points=1`);
-                alert('Przyznano +1 Robux do Twojego salda!');
-                refreshPoints();
-            }, 2000);
-        }
-
-        function calculateRobloxTax() {
-            const amount = parseInt(document.getElementById('payout-amount').value);
-            const taxInfo = document.getElementById('tax-info');
-            const gamepassPrice = document.getElementById('gamepass-price');
-
-            if (amount && amount >= 10) {
-                const requiredPrice = Math.ceil(amount / 0.7);
-                gamepassPrice.innerText = requiredPrice;
-                taxInfo.classList.remove('hidden');
-            } else {
-                taxInfo.classList.add('hidden');
-            }
-        }
-
-        async function requestPayout() {
-            const amount = parseInt(document.getElementById('payout-amount').value);
-            const gamepass = document.getElementById('gamepass-link').value.trim();
-
-            if (!amount || amount < 10) return alert('Minimalna wypłata to 10 Robuxów!');
-            if (!gamepass) return alert('Wklej link do swojego Gamepassa!');
-            if (amount > currentUser.points) return alert('Nie masz tylu punktów na koncie!');
-
-            alert(`Zgłoszenie wypłaty na ${amount} Robux przyjęte! Wkrótce kupię Twój Gamepass.`);
-        }
-
-        function logout() {
-            currentUser = null;
-            document.getElementById('username-input').value = '';
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-        }
-
-        async function refreshPoints() {
-            if (!currentUser) return;
-            const res = await fetch(`/api/user/${currentUser.username}`);
-            const data = await res.json();
-            document.getElementById('points-display').innerText = data.points;
-        }
+        // Stoper naliczający punkty co 10 sekund
+        setInterval(() => {
+            points += 10;
+            pointsDisplay.textContent = points;
+            statusDisplay.textContent = "Punkty rosną! Trzymaj się z nami.";
+        }, 10000);
     </script>
 </body>
 </html>
