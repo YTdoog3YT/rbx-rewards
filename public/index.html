@@ -18,7 +18,7 @@
             align-items: center;
         }
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             width: 100%;
             background: #1e1e1e;
             padding: 20px;
@@ -38,17 +38,48 @@
         button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; }
         button:hover { background: #00965e; }
         
+        .ads-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
         .banner-box {
-            margin: 15px 0;
+            background: #252525;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 8px;
             text-align: center;
-            min-height: 50px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        .side-banner {
+            width: 160px;
+            min-height: 300px;
+            background: #252525;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #777;
         }
         .video-container {
             position: relative;
             width: 100%;
-            padding-bottom: 56.25%;
+            max-width: 560px;
+            padding-bottom: 31.5%;
             height: 0;
-            margin-bottom: 20px;
+            flex-grow: 1;
         }
         .video-container iframe {
             position: absolute;
@@ -64,6 +95,9 @@
             background: #2a2a2a;
             padding: 10px;
             border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            .side-banner { display: none; }
         }
     </style>
 </head>
@@ -86,13 +120,31 @@
                 Punkty: <span id="points">0</span> RBX
             </div>
 
-            <!-- Górny baner reklamowy (Monetag) -->
-            <div class="banner-box">
-                <script>(function(s){s.dataset.zone='11460761',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-            </div>
-            
-            <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <div class="ads-layout">
+                <!-- Górny baner reklamowy z całym skryptem Monetag -->
+                <div class="banner-box">
+                    <script>(function(s){s.dataset.zone='11460761',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+                </div>
+
+                <!-- Środkowy rząd: Lewy bok, Wideo, Prawy bok -->
+                <div class="video-section">
+                    <div class="side-banner">
+                        <span>Lewy bok</span>
+                    </div>
+                    
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+
+                    <div class="side-banner">
+                        <span>Prawy bok</span>
+                    </div>
+                </div>
+
+                <!-- Dolny baner reklamowy -->
+                <div class="banner-box">
+                    <span>Dolny baner</span>
+                </div>
             </div>
 
             <h3>Zarabiaj punkty:</h3>
