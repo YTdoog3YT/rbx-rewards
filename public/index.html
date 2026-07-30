@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RBX Rewards - Darmowe Robuxy</title>
+    <!-- Monetag Vignette Script -->
+    <script>(function(s){s.dataset.zone='11460706',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +18,7 @@
             align-items: center;
         }
         .container {
-            max-width: 800px;
+            max-width: 950px;
             width: 100%;
             background: #1e1e1e;
             padding: 20px;
@@ -35,12 +37,48 @@
         input { width: 60%; background: #2a2a2a; color: white; }
         button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; }
         button:hover { background: #00965e; }
+        
+        /* Layout z banerami wokół wideo */
+        .ads-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .banner-box {
+            background: #252525;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 8px;
+            color: #777;
+            font-size: 13px;
+            text-align: center;
+        }
+        .video-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        .side-banner {
+            width: 160px;
+            height: 300px;
+            background: #252525;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+            font-size: 12px;
+            border-radius: 8px;
+        }
         .video-container {
             position: relative;
             width: 100%;
-            padding-bottom: 56.25%;
+            max-width: 560px;
+            padding-bottom: 31.5%;
             height: 0;
-            margin: 20px 0;
+            flex-grow: 1;
         }
         .video-container iframe {
             position: absolute;
@@ -56,6 +94,9 @@
             background: #2a2a2a;
             padding: 10px;
             border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            .side-banner { display: none; }
         }
     </style>
 </head>
@@ -77,15 +118,30 @@
                 Gracz: <span id="display-user" style="color: #00b06f; font-weight: bold;"></span> | 
                 Punkty: <span id="points">0</span> RBX
             </div>
-            
-            <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+            <div class="ads-layout">
+                <!-- Górny baner reklamowy -->
+                <div class="banner-box">Miejsce na reklamę (Góra)</div>
+
+                <!-- Środkowy rząd: Lewy baner, Wideo, Prawy baner -->
+                <div class="video-section">
+                    <div class="side-banner">Reklama<br>(Lewy bok)</div>
+                    
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+
+                    <div class="side-banner">Reklama<br>(Prawy bok)</div>
+                </div>
+
+                <!-- Dolny baner reklamowy -->
+                <div class="banner-box">Miejsce na reklamę (Dół)</div>
             </div>
 
             <h3>Zarabiaj punkty:</h3>
             <p>Kliknij poniższy przycisk, przejdź do strony sponsorowanej i odbierz punkty!</p>
             
-            <!-- Link prowadzący bezpośrednio do Twojego Direct Linka -->
+            <!-- Link do Direct Linka -->
             <a href="https://omg10.com/4/11460742" target="_blank" onclick="claimReward()">
                 <button style="background: #ff5555; font-size: 18px; padding: 12px 25px;">Obejrzyj reklamę i odbierz +50 punktów</button>
             </a>
@@ -106,7 +162,6 @@
 
         let points = 0;
         function claimReward() {
-            // Po kliknięciu w przycisk i przejście do reklamy naliczamy punkty
             setTimeout(() => {
                 points += 50;
                 document.getElementById('points').textContent = points;
