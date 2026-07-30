@@ -38,7 +38,6 @@
         button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; }
         button:hover { background: #00965e; }
         
-        /* Layout z banerami wokół wideo */
         .ads-layout {
             display: flex;
             flex-direction: column;
@@ -50,9 +49,11 @@
             border: 1px solid #333;
             padding: 10px;
             border-radius: 8px;
-            color: #777;
-            font-size: 13px;
             text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .video-section {
             display: flex;
@@ -62,14 +63,12 @@
         }
         .side-banner {
             width: 160px;
-            height: 300px;
+            min-height: 300px;
             background: #252525;
             border: 1px solid #333;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #777;
-            font-size: 12px;
             border-radius: 8px;
         }
         .video-container {
@@ -104,7 +103,6 @@
     <div class="container">
         <h1>RBX Rewards 🎮</h1>
 
-        <!-- Ekran logowania na nick -->
         <div id="login-section">
             <p>Wpisz swój nick z Roblox, aby zacząć zbierać punkty:</p>
             <input type="text" id="username-input" placeholder="Twój nick z Roblox...">
@@ -112,7 +110,6 @@
             <button onclick="login()">Zaloguj się</button>
         </div>
 
-        <!-- Panel główny (po zalogowaniu) -->
         <div id="main-section" class="hidden">
             <div class="stats">
                 Gracz: <span id="display-user" style="color: #00b06f; font-weight: bold;"></span> | 
@@ -120,28 +117,36 @@
             </div>
 
             <div class="ads-layout">
-                <!-- Górny baner reklamowy -->
-                <div class="banner-box">Miejsce na reklamę (Góra)</div>
+                <!-- GÓRNY BANER: Tutaj wklej skrypt z Monetaga -->
+                <div class="banner-box">
+                    <span>Tutaj wklej kod górnego banera</span>
+                </div>
 
-                <!-- Środkowy rząd: Lewy baner, Wideo, Prawy baner -->
                 <div class="video-section">
-                    <div class="side-banner">Reklama<br>(Lewy bok)</div>
+                    <!-- LEWY BOK: Tutaj wklej skrypt z Monetaga -->
+                    <div class="side-banner">
+                        <span style="font-size: 12px; color: #777;">Lewy baner</span>
+                    </div>
                     
                     <div class="video-container">
                         <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
 
-                    <div class="side-banner">Reklama<br>(Prawy bok)</div>
+                    <!-- PRAWY BOK: Tutaj wklej skrypt z Monetaga -->
+                    <div class="side-banner">
+                        <span style="font-size: 12px; color: #777;">Prawy baner</span>
+                    </div>
                 </div>
 
-                <!-- Dolny baner reklamowy -->
-                <div class="banner-box">Miejsce na reklamę (Dół)</div>
+                <!-- DOLNY BANER: Tutaj wklej skrypt z Monetaga -->
+                <div class="banner-box">
+                    <span>Tutaj wklej kod dolnego banera</span>
+                </div>
             </div>
 
             <h3>Zarabiaj punkty:</h3>
             <p>Kliknij poniższy przycisk, przejdź do strony sponsorowanej i odbierz punkty!</p>
             
-            <!-- Link do Direct Linka -->
             <a href="https://omg10.com/4/11460742" target="_blank" onclick="claimReward()">
                 <button style="background: #ff5555; font-size: 18px; padding: 12px 25px;">Obejrzyj reklamę i odbierz +50 punktów</button>
             </a>
