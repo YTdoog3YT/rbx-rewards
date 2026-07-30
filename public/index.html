@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBX Rewards - Oglądaj i zbieraj Robuxy</title>
-    <!-- Monetag Vignette Script -->
-    <script>(function(s){s.dataset.zone='11460706',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <title>RBX Rewards - Darmowe Robuxy</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,12 +24,23 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             text-align: center;
         }
+        .hidden { display: none; }
+        input, button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            margin: 5px;
+        }
+        input { width: 60%; background: #2a2a2a; color: white; }
+        button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; }
+        button:hover { background: #00965e; }
         .video-container {
             position: relative;
             width: 100%;
             padding-bottom: 56.25%;
             height: 0;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
         .video-container iframe {
             position: absolute;
@@ -53,26 +62,56 @@
 <body>
     <div class="container">
         <h1>RBX Rewards 🎮</h1>
-        <div class="stats">
-            Twoje punkty: <span id="points">0</span> | Status: <span id="status">Oglądaj film, aby zbierać punkty!</span>
+
+        <!-- Ekran logowania na nick -->
+        <div id="login-section">
+            <p>Wpisz swój nick z Roblox, aby zacząć zbierać punkty:</p>
+            <input type="text" id="username-input" placeholder="Twój nick z Roblox...">
+            <br>
+            <button onclick="login()">Zaloguj się</button>
         </div>
-        <div class="video-container">
-            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+        <!-- Panel główny (po zalogowaniu) -->
+        <div id="main-section" class="hidden">
+            <div class="stats">
+                Gracz: <span id="display-user" style="color: #00b06f; font-weight: bold;"></span> | 
+                Punkty: <span id="points">0</span> RBX
+            </div>
+            
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+
+            <h3>Zarabiaj punkty:</h3>
+            <p>Kliknij poniższy przycisk, przejdź do strony sponsorowanej i odbierz punkty!</p>
+            
+            <!-- Link prowadzący bezpośrednio do Twojego Direct Linka -->
+            <a href="https://omg10.com/4/11460742" target="_blank" onclick="claimReward()">
+                <button style="background: #ff5555; font-size: 18px; padding: 12px 25px;">Obejrzyj reklamę i odbierz +50 punktów</button>
+            </a>
         </div>
-        <p>Zostań na stronie i oglądaj materiał, żeby nabić saldo!</p>
     </div>
 
     <script>
-        let points = 0;
-        const pointsDisplay = document.getElementById('points');
-        const statusDisplay = document.getElementById('status');
+        function login() {
+            const username = document.getElementById('username-input').value.trim();
+            if (username) {
+                document.getElementById('display-user').textContent = username;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('main-section').classList.remove('hidden');
+            } else {
+                alert('Wpisz poprawny nick z Roblox!');
+            }
+        }
 
-        // Stoper naliczający punkty co 10 sekund
-        setInterval(() => {
-            points += 10;
-            pointsDisplay.textContent = points;
-            statusDisplay.textContent = "Punkty rosną! Trzymaj się z nami.";
-        }, 10000);
+        let points = 0;
+        function claimReward() {
+            // Po kliknięciu w przycisk i przejście do reklamy naliczamy punkty
+            setTimeout(() => {
+                points += 50;
+                document.getElementById('points').textContent = points;
+            }, 1500);
+        }
     </script>
 </body>
 </html>
