@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RBX Rewards - Darmowe Robuxy</title>
-    <!-- Monetag Vignette Script -->
-    <script>(function(s){s.dataset.zone='11460706',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <!-- Monetag Telegram Mini App SDK -->
+    <script src='//libtl.com/sdk.js' data-zone='11461260' data-sdk='show_11461260'></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,7 +18,7 @@
             align-items: center;
         }
         .container {
-            max-width: 1000px;
+            max-width: 800px;
             width: 100%;
             background: #1e1e1e;
             padding: 20px;
@@ -37,44 +37,12 @@
         input { width: 60%; background: #2a2a2a; color: white; }
         button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; }
         button:hover { background: #00965e; }
-        
-        .banner-box {
-            background: #252525;
-            border: 1px solid #333;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            margin: 15px 0;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .video-section {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-        }
-        .side-banner {
-            width: 160px;
-            min-height: 300px;
-            background: #252525;
-            border: 1px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #777;
-        }
         .video-container {
             position: relative;
             width: 100%;
-            max-width: 560px;
-            padding-bottom: 31.5%;
+            padding-bottom: 56.25%;
             height: 0;
-            flex-grow: 1;
+            margin: 20px 0;
         }
         .video-container iframe {
             position: absolute;
@@ -91,19 +59,11 @@
             padding: 10px;
             border-radius: 5px;
         }
-        @media (max-width: 768px) {
-            .side-banner { display: none; }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>RBX Rewards 🎮</h1>
-
-        <!-- GÓRNY BANER REKLAMOWY (Zawsze widoczny od startu) -->
-        <div class="banner-box">
-            <script>(function(s){s.dataset.zone='11460761',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-        </div>
 
         <!-- Ekran logowania na nick -->
         <div id="login-section">
@@ -119,28 +79,16 @@
                 Gracz: <span id="display-user" style="color: #00b06f; font-weight: bold;"></span> | 
                 Punkty: <span id="points">0</span> RBX
             </div>
-
-            <div class="video-section">
-                <div class="side-banner">
-                    <span>Lewy bok</span>
-                </div>
-                
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                </div>
-
-                <div class="side-banner">
-                    <span>Prawy bok</span>
-                </div>
+            
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
             <h3>Zarabiaj punkty:</h3>
-            <p>Kliknij poniższy przycisk, przejdź do strony sponsorowanej i odbierz punkty!</p>
+            <p>Obejrzyj reklamę, aby zdobyć punkty!</p>
             
-            <!-- Przycisk z Direct Linkiem -->
-            <a href="https://omg10.com/4/11460742" target="_blank" onclick="claimReward()">
-                <button style="background: #ff5555; font-size: 18px; padding: 12px 25px;">Obejrzyj reklamę i odbierz +50 punktów</button>
-            </a>
+            <!-- Przycisk wywołujący SDK Monetaga -->
+            <button onclick="triggerAd()" style="background: #ff5555; font-size: 18px; padding: 12px 25px;">Obejrzyj reklamę i odbierz +50 punktów</button>
         </div>
     </div>
 
@@ -157,11 +105,18 @@
         }
 
         let points = 0;
-        function claimReward() {
-            setTimeout(() => {
-                points += 50;
-                document.getElementById('points').textContent = points;
-            }, 1500);
+
+        function triggerAd() {
+            if (typeof show_11461260 === 'function') {
+                show_11461260().then(() => {
+                    points += 50;
+                    document.getElementById('points').textContent = points;
+                }).catch((e) => {
+                    console.log("Reklama pominięta lub błąd", e);
+                });
+            } else {
+                alert("Reklama się jeszcze ładuje, spróbuj za sekundę!");
+            }
         }
     </script>
 </body>
