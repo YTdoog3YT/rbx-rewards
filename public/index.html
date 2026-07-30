@@ -18,7 +18,7 @@
             align-items: center;
         }
         .container {
-            max-width: 950px;
+            max-width: 800px;
             width: 100%;
             background: #1e1e1e;
             padding: 20px;
@@ -38,46 +38,24 @@
         button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; }
         button:hover { background: #00965e; }
         
-        .ads-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 20px 0;
-        }
         .banner-box {
             background: #252525;
             border: 1px solid #333;
             padding: 10px;
             border-radius: 8px;
             text-align: center;
+            margin-bottom: 20px;
             min-height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .video-section {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-        }
-        .side-banner {
-            width: 160px;
-            min-height: 300px;
-            background: #252525;
-            border: 1px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-        }
         .video-container {
             position: relative;
             width: 100%;
-            max-width: 560px;
-            padding-bottom: 31.5%;
+            padding-bottom: 56.25%;
             height: 0;
-            flex-grow: 1;
+            margin-bottom: 20px;
         }
         .video-container iframe {
             position: absolute;
@@ -94,15 +72,13 @@
             padding: 10px;
             border-radius: 5px;
         }
-        @media (max-width: 768px) {
-            .side-banner { display: none; }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>RBX Rewards 🎮</h1>
 
+        <!-- Ekran logowania na nick -->
         <div id="login-section">
             <p>Wpisz swój nick z Roblox, aby zacząć zbierać punkty:</p>
             <input type="text" id="username-input" placeholder="Twój nick z Roblox...">
@@ -110,43 +86,26 @@
             <button onclick="login()">Zaloguj się</button>
         </div>
 
+        <!-- Panel główny (po zalogowaniu) -->
         <div id="main-section" class="hidden">
             <div class="stats">
                 Gracz: <span id="display-user" style="color: #00b06f; font-weight: bold;"></span> | 
                 Punkty: <span id="points">0</span> RBX
             </div>
 
-            <div class="ads-layout">
-                <!-- GÓRNY BANER (Zone: 11460761) -->
-                <div class="banner-box">
-                    <script>(function(s){s.dataset.zone='11460761',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-                </div>
-
-                <div class="video-section">
-                    <!-- LEWY BOK -->
-                    <div class="side-banner">
-                        <span style="font-size: 12px; color: #777;">Lewy baner</span>
-                    </div>
-                    
-                    <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-
-                    <!-- PRAWY BOK -->
-                    <div class="side-banner">
-                        <span style="font-size: 12px; color: #777;">Prawy baner</span>
-                    </div>
-                </div>
-
-                <!-- DOLNY BANER -->
-                <div class="banner-box">
-                    <span>Tutaj wklej kod dolnego banera</span>
-                </div>
+            <!-- Górny baner reklamowy -->
+            <div class="banner-box">
+                <script>(function(s){s.dataset.zone='11460761',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+            </div>
+            
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
 
             <h3>Zarabiaj punkty:</h3>
             <p>Kliknij poniższy przycisk, przejdź do strony sponsorowanej i odbierz punkty!</p>
             
+            <!-- Link do Direct Linka -->
             <a href="https://omg10.com/4/11460742" target="_blank" onclick="claimReward()">
                 <button style="background: #ff5555; font-size: 18px; padding: 12px 25px;">Obejrzyj reklamę i odbierz +50 punktów</button>
             </a>
