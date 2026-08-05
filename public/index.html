@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RBX Rewards 🎮</title>
 
+    <!-- 1. Skrypt Reklamy z Nagrodą (Guzik) -->
     <script src='//libtl.com/sdk.js' data-zone='11461260' data-sdk='show_11461260'></script>
+
+    <!-- 2. Twój Skrypt Popunder (OnClick) - Odpala reklamę w tle przy pierwszym kliknięciu -->
+    <script>(function(s){s.dataset.zone='11510087',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 
     <style>
         body { font-family: Arial, sans-serif; background: #121212; color: #fff; text-align: center; margin: 0; padding: 20px; }
@@ -38,7 +42,6 @@
 
     <div id="main-section" class="hidden">
         <div class="stats">
-            <!-- Tutaj wskoczy zdjęcie z Robloxa -->
             <img id="player-avatar" class="avatar" src="" alt="Avatar gracza"><br>
             Gracz: <span id="display-user" style="color: #00b06f;"></span><br>
             Punkty: <span id="points" style="font-weight: bold; font-size: 22px;">0</span> RBX
@@ -68,7 +71,7 @@
 </div>
 
 <script>
-    let currentRobloxId = null; // Trzymamy ID, a nie nick
+    let currentRobloxId = null;
 
     async function login() {
         const username = document.getElementById('username-input').value.trim();
@@ -87,13 +90,12 @@
             const data = await res.json();
 
             if (data.error) {
-                alert(data.error); // Wyrzuca błąd "Takie konto nie istnieje!"
+                alert(data.error);
                 btn.textContent = "Zaloguj się";
                 btn.disabled = false;
                 return;
             }
 
-            // Jeśli konto istnieje, ustawiamy dane
             currentRobloxId = data.roblox_id;
             
             document.getElementById('player-avatar').src = data.avatarUrl;
@@ -129,7 +131,6 @@
                     loadHistory();
                 }
             }).catch((err) => {
-                // Nie robimy denerwującego alertu, logujemy tylko w tle
                 console.log('Reklama przerwana za wcześnie.');
             });
         } else {
