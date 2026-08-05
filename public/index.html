@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RBX Rewards 🎮</title>
 
-    <!-- 1. Skrypt Reklamy z Nagrodą (Rewarded Interstitial) -->
     <script src='//libtl.com/sdk.js' data-zone='11461260' data-sdk='show_11461260'></script>
-
-    <!-- 2. Skrypt In-Page Push (Pasywne banery na stronie) -->
-    <!-- Wklej tutaj skrypt In-Page Push pobrany z panelu Monetag (Zone -> In-Page Push) -->
 
     <style>
         body { font-family: Arial, sans-serif; background: #121212; color: #fff; text-align: center; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 10px; }
         .hidden { display: none; }
         input, button { padding: 12px; margin: 8px; font-size: 16px; border-radius: 6px; border: none; }
-        input { background: #2a2a2a; color: white; width: 70%; text-align: center; }
+        input { background: #2a2a2a; color: white; width: 70%; text-align: center; outline: none; border: 1px solid #333; }
         button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; width: 80%; }
         button:hover { background: #008f5a; }
+        
         .stats { background: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 18px; }
+        .avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #00b06f; margin-bottom: 10px; box-shadow: 0 0 10px rgba(0, 176, 111, 0.5); }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
         th, td { padding: 10px; border-bottom: 1px solid #333; font-size: 14px; }
         th { background: #2a2a2a; color: #00b06f; }
@@ -31,24 +30,22 @@
 <div class="container">
     <h1>RBX Rewards 🎮</h1>
 
-    <!-- Ekran logowania -->
     <div id="login-section">
-        <p>Wpisz swój nick z Roblox, aby zbierać punkty:</p>
+        <p>Wpisz swój dokładny nick z Roblox:</p>
         <input type="text" id="username-input" placeholder="Twój nick z Roblox..."><br>
         <button onclick="login()">Zaloguj się</button>
     </div>
 
-    <!-- Główny panel po zalogowaniu -->
     <div id="main-section" class="hidden">
         <div class="stats">
+            <!-- Tutaj wskoczy zdjęcie z Robloxa -->
+            <img id="player-avatar" class="avatar" src="" alt="Avatar gracza"><br>
             Gracz: <span id="display-user" style="color: #00b06f;"></span><br>
             Punkty: <span id="points" style="font-weight: bold; font-size: 22px;">0</span> RBX
         </div>
 
         <div class="ad-box">
             <h3>Strefa Zarabiania</h3>
-            <p>Oglądaj reklamy, aby zdobywać punkty wymienialne na Robuxy!</p>
-            
             <button onclick="triggerAd()" style="background: #ff5555; font-size: 18px;">
                 🎬 Obejrzyj Pełną Reklamę (+50 RBX)
             </button>
@@ -71,11 +68,15 @@
 </div>
 
 <script>
-    let currentUser = "";
+    let currentRobloxId = null; // Trzymamy ID, a nie nick
 
     async function login() {
         const username = document.getElementById('username-input').value.trim();
         if (!username) return alert('Wpisz poprawny nick!');
+
+        const btn = document.querySelector('#login-section button');
+        btn.textContent = "Weryfikacja konta...";
+        btn.disabled = true;
 
         try {
             const res = await fetch('/api/login', {
@@ -85,8 +86,18 @@
             });
             const data = await res.json();
 
-            currentUser = data.username;
-            document.getElementById('display-user').textContent = currentUser;
+            if (data.error) {
+                alert(data.error); // Wyrzuca błąd "Takie konto nie istnieje!"
+                btn.textContent = "Zaloguj się";
+                btn.disabled = false;
+                return;
+            }
+
+            // Jeśli konto istnieje, ustawiamy dane
+            currentRobloxId = data.roblox_id;
+            
+            document.getElementById('player-avatar').src = data.avatarUrl;
+            document.getElementById('display-user').textContent = data.username;
             document.getElementById('points').textContent = data.points;
 
             document.getElementById('login-section').classList.add('hidden');
@@ -95,18 +106,19 @@
             loadHistory();
         } catch (e) {
             alert('Błąd połączenia z serwerem.');
+            btn.textContent = "Zaloguj się";
+            btn.disabled = false;
         }
     }
 
     async function triggerAd() {
         if (typeof show_11461260 === 'function') {
             show_11461260().then(async () => {
-                // Po udanym obejrzeniu dodajemy punkty do bazy
                 const res = await fetch('/api/add-points', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        username: currentUser,
+                        robloxId: currentRobloxId,
                         pointsToAdd: 50,
                         actionName: 'Obejrzano reklamę Monetag'
                     })
@@ -117,15 +129,16 @@
                     loadHistory();
                 }
             }).catch((err) => {
-                alert('Reklama nie została ukończona lub nie ma dostępnych reklam w tym momencie.');
+                // Nie robimy denerwującego alertu, logujemy tylko w tle
+                console.log('Reklama przerwana za wcześnie.');
             });
         } else {
-            alert('Kod reklamy jeszcze się ładuje. Odczekaj chwilę i spróbuj ponownie.');
+            alert('Kod reklamy jeszcze się ładuje. Odczekaj chwilę.');
         }
     }
 
     async function loadHistory() {
-        const res = await fetch(`/api/history/${currentUser}`);
+        const res = await fetch(`/api/history/${currentRobloxId}`);
         const history = await res.json();
         const tbody = document.getElementById('history-list');
 
