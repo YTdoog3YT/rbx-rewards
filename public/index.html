@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RBX Rewards - Zdobywaj darmowe Robuxy</title>
+  
+  <!-- Skrypt do szyfrowania MD5 (wymagany przez CPX Research) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -140,22 +144,27 @@
   <main>
     <h2 class="section-title">Zarabiaj Punkty</h2>
 
-    <!-- Zachęta do podania nicku -->
+    <!-- Zachęta do logowania -->
     <div id="loginPrompt" class="content-box">
-      <h3 style="color: #fff; font-size: 1.3rem;">Zaloguj się, aby odblokować zadania! 🔒</h3>
-      <p style="color: #a0a0a0; margin-top: 10px;">Podaj swój nick z Robloxa, żebyśmy wiedzieli, komu przypisywać punkty za wypełnione ankiety i zadania.</p>
+      <h3 style="color: #fff; font-size: 1.3rem;">Zaloguj się, aby odblokować ankiety! 🔒</h3>
+      <p style="color: #a0a0a0; margin-top: 10px;">Podaj swój nick z Robloxa, żebyśmy wiedzieli, komu przypisywać punkty za wypełnione zadania.</p>
       <button class="btn-action" onclick="openLoginModal()">Podaj nick z Roblox</button>
     </div>
 
-    <!-- Strefa z ładowanym skryptem z MyLead -->
+    <!-- Prawdziwa ściana ankiet CPX Research -->
     <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
-      <h3 style="color: #00e676; margin-bottom: 15px;">📋 Tablica Zadań</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Wybierz zadanie poniżej. Po jego ukończeniu punkty zostaną doliczone do Twojego konta.</p>
+      <h3 style="color: #00e676; margin-bottom: 15px;">📋 Tablica Ankiet</h3>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Wypełniaj ankiety dopasowane do Ciebie. Punkty zostaną przypisane po udanym ukończeniu.</p>
       
-      <!-- Kod skryptu z MyLead -->
-      <noscript><meta http-equiv="refresh" content="0;url=https://clickanlook.space/noscript"/></noscript>
-      <script>const adblockRedirect = "https://clickanlook.space/adblock";</script>
-      <script type="text/javascript" id="cpljs-2b299a2e-9262-11f1-adee-8a5fb7be40ea" src="https://clickanlook.space/iframeLoader/2b299a2e-9262-11f1-adee-8a5fb7be40ea?allow_translate=1"></script>
+      <!-- Ramka iframe CPX -->
+      <iframe 
+        id="cpxIframe"
+        width="100%" 
+        height="800px" 
+        frameBorder="0" 
+        src="" 
+        style="border-radius: 8px; background: #fff;">
+      </iframe>
     </div>
 
     <!-- Sekcja Wypłat -->
@@ -191,10 +200,23 @@
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
+        // Zalogowany - pokazujemy ścianę ankiet
         document.getElementById("loginBtn").innerText = savedUser;
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("offerwallSection").style.display = "block";
+        
+        // Twój klucz z panelu CPX
+        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
+        
+        // Generujemy bezpieczny hash: md5({unique_user_id}-{app_secure_hash})
+        const secureHashParam = md5(savedUser + "-" + appSecureHash);
+        
+        // Doklejamy nick i zaszyfrowany hash do zapytania!
+        const cpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
+        
+        document.getElementById("cpxIframe").src = cpxUrl;
       } else {
+        // Niezalogowany - blokujemy dostęp
         document.getElementById("loginBtn").innerText = "Zaloguj się";
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("offerwallSection").style.display = "none";
@@ -214,7 +236,7 @@
       if (input) {
         localStorage.setItem("rbx_username", input);
         closeLoginModal();
-        checkLoginStatus();
+        checkLoginStatus(); // Odświeża stronę i ładuje CPX
       } else {
         alert("Wpisz poprawny nick!");
       }
