@@ -74,7 +74,6 @@
       border-left: 4px solid #00e676;
       padding-left: 10px;
     }
-    /* Style dla sekcji z logowaniem / iframe */
     .content-box {
       background: #181b22;
       border-radius: 12px;
@@ -99,7 +98,6 @@
     .btn-action:hover {
       background: #00c853;
     }
-    /* Modal Logowania */
     .modal {
       display: none;
       position: fixed;
@@ -142,28 +140,25 @@
   <main>
     <h2 class="section-title">Zarabiaj Punkty</h2>
 
-    <!-- ZACHĘTA DO LOGOWANIA (Pokazuje się, gdy gracz nie jest zalogowany) -->
+    <!-- Zachęta do podania nicku -->
     <div id="loginPrompt" class="content-box">
       <h3 style="color: #fff; font-size: 1.3rem;">Zaloguj się, aby odblokować zadania! 🔒</h3>
-      <p style="color: #a0a0a0; margin-top: 10px;">Podaj swój nick z Robloxa, żebyśmy wiedzieli, komu przypisywać punkty za wypełnione ankiety i pobrane gry.</p>
+      <p style="color: #a0a0a0; margin-top: 10px;">Podaj swój nick z Robloxa, żebyśmy wiedzieli, komu przypisywać punkty za wypełnione ankiety i zadania.</p>
       <button class="btn-action" onclick="openLoginModal()">Podaj nick z Roblox</button>
     </div>
 
-    <!-- STREFA ZADAŃ / OFFERWALL (Pokazuje się dopiero po logowaniu) -->
+    <!-- Strefa z ładowanym skryptem z MyLead -->
     <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
       <h3 style="color: #00e676; margin-bottom: 15px;">📋 Tablica Zadań</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Wybierz zadanie poniżej. Po jego poprawnym ukończeniu punkty zostaną doliczone do Twojego konta po weryfikacji.</p>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Wybierz zadanie poniżej. Po jego ukończeniu punkty zostaną doliczone do Twojego konta.</p>
       
-      <!-- Twój Iframe z MyLead -->
-      <iframe 
-        id="myleadIframe"
-        src="" 
-        style="width: 100%; height: 700px; border: none; border-radius: 8px; background: #fff;"
-        allow="fullscreen">
-      </iframe>
+      <!-- Kod skryptu z MyLead -->
+      <noscript><meta http-equiv="refresh" content="0;url=https://clickanlook.space/noscript"/></noscript>
+      <script>const adblockRedirect = "https://clickanlook.space/adblock";</script>
+      <script type="text/javascript" id="cpljs-2b299a2e-9262-11f1-adee-8a5fb7be40ea" src="https://clickanlook.space/iframeLoader/2b299a2e-9262-11f1-adee-8a5fb7be40ea?allow_translate=1"></script>
     </div>
 
-    <!-- Sekcja Wypłat (dla picu/rozbudowy) -->
+    <!-- Sekcja Wypłat -->
     <h2 class="section-title">Wypłać Nagrody</h2>
     <div class="content-box" style="text-align: left; display: flex; justify-content: space-between; align-items: center;">
       <div>
@@ -187,9 +182,6 @@
   </div>
 
   <script>
-    // Link bazowy z MyLead (Iframe)
-    const BASE_IFRAME_URL = "https://clicknlook.site/iframe/a4ff9038-9262-11f1-a987-8a5fb7be40ea";
-
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
       const savedPoints = localStorage.getItem("rbx_points") || 0;
@@ -199,16 +191,10 @@
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
-        // Użytkownik jest zalogowany
         document.getElementById("loginBtn").innerText = savedUser;
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("offerwallSection").style.display = "block";
-        
-        // Ładujemy iframe i DOKLEJAMY nick gracza jako parametr ml_sub1
-        const finalUrl = `${BASE_IFRAME_URL}?ml_sub1=${encodeURIComponent(savedUser)}`;
-        document.getElementById("myleadIframe").src = finalUrl;
       } else {
-        // Użytkownik niezalogowany
         document.getElementById("loginBtn").innerText = "Zaloguj się";
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("offerwallSection").style.display = "none";
@@ -228,7 +214,7 @@
       if (input) {
         localStorage.setItem("rbx_username", input);
         closeLoginModal();
-        checkLoginStatus(); // Odświeżamy widok, żeby pokazać ramkę
+        checkLoginStatus();
       } else {
         alert("Wpisz poprawny nick!");
       }
