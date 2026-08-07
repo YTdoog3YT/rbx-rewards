@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="mylead-verification" content="017aa563caffa5df709e4404808ad865">
   <title>RBX Rewards - Zdobywaj darmowe Robuxy</title>
   <style>
     * {
@@ -75,62 +74,32 @@
       border-left: 4px solid #00e676;
       padding-left: 10px;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      margin-bottom: 35px;
-    }
-    .card {
+    /* Style dla sekcji z logowaniem / iframe */
+    .content-box {
       background: #181b22;
       border-radius: 12px;
-      padding: 20px;
+      padding: 25px;
       border: 1px solid #2a2e39;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .card:hover {
-      transform: translateY(-3px);
-      border-color: #00e676;
-    }
-    .card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-      color: #fff;
-    }
-    .card p {
-      font-size: 0.95rem;
-      color: #a0a0a0;
-      margin-bottom: 20px;
-      line-height: 1.4;
-    }
-    .reward-tag {
-      display: inline-block;
-      background: rgba(0, 230, 118, 0.1);
-      color: #00e676;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.85rem;
-      margin-bottom: 15px;
+      margin-bottom: 35px;
+      text-align: center;
     }
     .btn-action {
-      width: 100%;
       background: #00e676;
       color: #000;
       border: none;
-      padding: 12px;
+      padding: 12px 25px;
       border-radius: 8px;
       font-weight: bold;
       font-size: 1rem;
       cursor: pointer;
       transition: background 0.2s;
+      display: inline-block;
+      margin-top: 15px;
     }
     .btn-action:hover {
       background: #00c853;
     }
+    /* Modal Logowania */
     .modal {
       display: none;
       position: fixed;
@@ -171,103 +140,116 @@
   </header>
 
   <main>
-    <h2 class="section-title">Dostępne Zadania</h2>
-    <div class="grid">
-      <!-- Karta Surveoo z podpiętym linkiem -->
-      <div class="card">
-        <div>
-          <span class="reward-tag">+80 Punktów</span>
-          <h3>📋 Wypełnij ankietę (Surveoo)</h3>
-          <p>Ukończ szybką ankietę badawczą na stronie Surveoo. Punkty zostaną przyznane automatycznie po weryfikacji leada.</p>
-        </div>
-        <button class="btn-action" onclick="startSurvey()">Rozpocznij ankietę</button>
-      </div>
+    <h2 class="section-title">Zarabiaj Punkty</h2>
 
-      <!-- Przykładowe miejsce na kolejne zadania -->
-      <div class="card">
-        <div>
-          <span class="reward-tag">+50 Punktów</span>
-          <h3>🎮 Zainstaluj aplikację / grę</h3>
-          <p>Pobierz wskazaną grę mobilną i osiągnij wymagany poziom, aby odblokować dodatkowe punkty.</p>
-        </div>
-        <button class="btn-action" style="background: #444; color: #888; cursor: not-allowed;">Wkrótce</button>
-      </div>
+    <!-- ZACHĘTA DO LOGOWANIA (Pokazuje się, gdy gracz nie jest zalogowany) -->
+    <div id="loginPrompt" class="content-box">
+      <h3 style="color: #fff; font-size: 1.3rem;">Zaloguj się, aby odblokować zadania! 🔒</h3>
+      <p style="color: #a0a0a0; margin-top: 10px;">Podaj swój nick z Robloxa, żebyśmy wiedzieli, komu przypisywać punkty za wypełnione ankiety i pobrane gry.</p>
+      <button class="btn-action" onclick="openLoginModal()">Podaj nick z Roblox</button>
     </div>
 
+    <!-- STREFA ZADAŃ / OFFERWALL (Pokazuje się dopiero po logowaniu) -->
+    <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
+      <h3 style="color: #00e676; margin-bottom: 15px;">📋 Tablica Zadań</h3>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Wybierz zadanie poniżej. Po jego poprawnym ukończeniu punkty zostaną doliczone do Twojego konta po weryfikacji.</p>
+      
+      <!-- Twój Iframe z MyLead -->
+      <iframe 
+        id="myleadIframe"
+        src="" 
+        style="width: 100%; height: 700px; border: none; border-radius: 8px; background: #fff;"
+        allow="fullscreen">
+      </iframe>
+    </div>
+
+    <!-- Sekcja Wypłat (dla picu/rozbudowy) -->
     <h2 class="section-title">Wypłać Nagrody</h2>
-    <div class="grid">
-      <div class="card">
-        <div>
-          <span class="reward-tag" style="color: #ffb703; background: rgba(255,183,3,0.1);">Koszt: 100 Punktów</span>
-          <h3>🎁 Pakiet 80 Robux</h3>
-          <p>Wymień zebrane punkty na pakiet 80 Robuxów. Wypłata realizowana przez zakup Twojego Gamepassa.</p>
-        </div>
-        <button class="btn-action" onclick="claimReward('80 Robux', 100)">Odbierz Nagrodę</button>
+    <div class="content-box" style="text-align: left; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3 style="color: #fff;">🎁 Pakiet 80 Robux</h3>
+        <p style="color: #a0a0a0; margin-top: 5px;">Koszt: 100 Punktów. Wymaga wystawionego Gamepassa.</p>
       </div>
+      <button class="btn-action" style="margin-top: 0;" onclick="claimReward()">Wypłać</button>
     </div>
+
   </main>
 
   <!-- Modal Logowania -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
-      <h3>Zaloguj się do serwisu</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">Podaj swój nick z Roblox, aby zapisywać punkty:</p>
-      <input type="text" id="usernameInput" placeholder="Twój nick z Roblox...">
-      <button class="btn-action" onclick="saveUsername()">Zapisz i kontynuuj</button>
+      <h3 style="color: #fff;">Połącz konto Roblox</h3>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">Z jakiego nicku będziesz korzystał?</p>
+      <input type="text" id="usernameInput" placeholder="Np. TwójNick123">
+      <button class="btn-action" onclick="saveUsername()">Zatwierdź i wejdź</button>
+      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeLoginModal()">Anuluj</button>
     </div>
   </div>
 
   <script>
+    // Link bazowy z MyLead (Iframe)
+    const BASE_IFRAME_URL = "https://clicknlook.site/iframe/a4ff9038-9262-11f1-a987-8a5fb7be40ea";
+
     document.addEventListener("DOMContentLoaded", function() {
-      const savedUser = localStorage.getItem("rbx_username");
-      if (savedUser) {
-        document.getElementById("loginBtn").innerText = savedUser;
-      }
+      checkLoginStatus();
       const savedPoints = localStorage.getItem("rbx_points") || 0;
       document.getElementById("userPoints").innerText = savedPoints;
     });
 
+    function checkLoginStatus() {
+      const savedUser = localStorage.getItem("rbx_username");
+      if (savedUser) {
+        // Użytkownik jest zalogowany
+        document.getElementById("loginBtn").innerText = savedUser;
+        document.getElementById("loginPrompt").style.display = "none";
+        document.getElementById("offerwallSection").style.display = "block";
+        
+        // Ładujemy iframe i DOKLEJAMY nick gracza jako parametr ml_sub1
+        const finalUrl = `${BASE_IFRAME_URL}?ml_sub1=${encodeURIComponent(savedUser)}`;
+        document.getElementById("myleadIframe").src = finalUrl;
+      } else {
+        // Użytkownik niezalogowany
+        document.getElementById("loginBtn").innerText = "Zaloguj się";
+        document.getElementById("loginPrompt").style.display = "block";
+        document.getElementById("offerwallSection").style.display = "none";
+      }
+    }
+
     function openLoginModal() {
       document.getElementById("loginModal").style.display = "flex";
+    }
+
+    function closeLoginModal() {
+      document.getElementById("loginModal").style.display = "none";
     }
 
     function saveUsername() {
       const input = document.getElementById("usernameInput").value.trim();
       if (input) {
         localStorage.setItem("rbx_username", input);
-        document.getElementById("loginBtn").innerText = input;
-        document.getElementById("loginModal").style.display = "none";
+        closeLoginModal();
+        checkLoginStatus(); // Odświeżamy widok, żeby pokazać ramkę
       } else {
         alert("Wpisz poprawny nick!");
       }
     }
 
-    function startSurvey() {
-      const baseUrl = "https://price-low.eu/a/Nk3EmHMgK4U0Vo2";
-      const username = localStorage.getItem("rbx_username") || "Anonim";
-      
-      const separator = baseUrl.includes("?") ? "&" : "?";
-      const finalUrl = `${baseUrl}${separator}sub1=${encodeURIComponent(username)}`;
-      
-      window.open(finalUrl, "_blank");
-    }
-
-    function claimReward(rewardName, cost) {
+    function claimReward() {
       const currentPoints = parseInt(localStorage.getItem("rbx_points") || "0");
       const username = localStorage.getItem("rbx_username");
 
       if (!username) {
-        alert("Najpierw musisz się zalogować (podać swój nick)!");
+        alert("Najpierw podaj nick, żebyśmy wiedzieli komu wypłacić!");
         openLoginModal();
         return;
       }
 
-      if (currentPoints < cost) {
-        alert(`Masz za mało punktów! Potrzebujesz ${cost} punktów, a masz ${currentPoints}.`);
+      if (currentPoints < 100) {
+        alert(`Brakuje Ci punktów! Masz ${currentPoints}/100.`);
         return;
       }
 
-      alert(`Zgłoszenie wypłaty nagrody ${rewardName} zostało przyjęte dla użytkownika ${username}! Admin zweryfikuje Twoje zadania.`);
+      alert("Zgłoszenie wysłane! Admin zweryfikuje leady i kupi Twój Gamepass.");
     }
   </script>
 </body>
