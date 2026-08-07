@@ -1,162 +1,274 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta name="mylead-verification" content="017aa563caffa5df709e4404808ad865">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBX Rewards 🎮</title>
-
-    <!-- 1. Skrypt Reklamy z Nagrodą (Guzik) -->
-    <script src='//libtl.com/sdk.js' data-zone='11461260' data-sdk='show_11461260'></script>
-
-    <!-- 2. Twój Skrypt Popunder (OnClick) - Odpala reklamę w tle przy pierwszym kliknięciu -->
-    <script>(function(s){s.dataset.zone='11510087',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
-    <style>
-        body { font-family: Arial, sans-serif; background: #121212; color: #fff; text-align: center; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 10px; }
-        .hidden { display: none; }
-        input, button { padding: 12px; margin: 8px; font-size: 16px; border-radius: 6px; border: none; }
-        input { background: #2a2a2a; color: white; width: 70%; text-align: center; outline: none; border: 1px solid #333; }
-        button { background: #00b06f; color: white; cursor: pointer; font-weight: bold; width: 80%; }
-        button:hover { background: #008f5a; }
-        
-        .stats { background: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 18px; }
-        .avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #00b06f; margin-bottom: 10px; box-shadow: 0 0 10px rgba(0, 176, 111, 0.5); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
-        th, td { padding: 10px; border-bottom: 1px solid #333; font-size: 14px; }
-        th { background: #2a2a2a; color: #00b06f; }
-        .ad-box { background: #252525; border: 1px dashed #00b06f; padding: 15px; border-radius: 8px; margin: 15px 0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="mylead-verification" content="017aa563caffa5df709e4404808ad865">
+  <title>RBX Rewards - Zdobywaj darmowe Robuxy</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #0f1115;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #181b22;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #00e676;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .points-badge {
+      background: #252a34;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      color: #ffb703;
+      border: 1px solid #ffb703;
+    }
+    .btn-login {
+      background: #00e676;
+      color: #000;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-login:hover {
+      background: #00c853;
+    }
+    main {
+      width: 100%;
+      max-width: 900px;
+    }
+    .section-title {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      color: #e0e0e0;
+      border-left: 4px solid #00e676;
+      padding-left: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 35px;
+    }
+    .card {
+      background: #181b22;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #2a2e39;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #00e676;
+    }
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+    .card p {
+      font-size: 0.95rem;
+      color: #a0a0a0;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .reward-tag {
+      display: inline-block;
+      background: rgba(0, 230, 118, 0.1);
+      color: #00e676;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+    }
+    .btn-action {
+      width: 100%;
+      background: #00e676;
+      color: #000;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-action:hover {
+      background: #00c853;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #181b22;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      border: 1px solid #2a2e39;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #0f1115;
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>RBX Rewards 🎮</h1>
+  <header>
+    <div class="logo">RBX Rewards 💎</div>
+    <div class="user-info">
+      <div class="points-badge">Punkty: <span id="userPoints">0</span> 🪙</div>
+      <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Zaloguj się</button>
+    </div>
+  </header>
 
-    <div id="login-section">
-        <p>Wpisz swój dokładny nick z Roblox:</p>
-        <input type="text" id="username-input" placeholder="Twój nick z Roblox..."><br>
-        <button onclick="login()">Zaloguj się</button>
+  <main>
+    <h2 class="section-title">Dostępne Zadania</h2>
+    <div class="grid">
+      <!-- Karta Surveoo z podpiętym linkiem -->
+      <div class="card">
+        <div>
+          <span class="reward-tag">+80 Punktów</span>
+          <h3>📋 Wypełnij ankietę (Surveoo)</h3>
+          <p>Ukończ szybką ankietę badawczą na stronie Surveoo. Punkty zostaną przyznane automatycznie po weryfikacji leada.</p>
+        </div>
+        <button class="btn-action" onclick="startSurvey()">Rozpocznij ankietę</button>
+      </div>
+
+      <!-- Przykładowe miejsce na kolejne zadania -->
+      <div class="card">
+        <div>
+          <span class="reward-tag">+50 Punktów</span>
+          <h3>🎮 Zainstaluj aplikację / grę</h3>
+          <p>Pobierz wskazaną grę mobilną i osiągnij wymagany poziom, aby odblokować dodatkowe punkty.</p>
+        </div>
+        <button class="btn-action" style="background: #444; color: #888; cursor: not-allowed;">Wkrótce</button>
+      </div>
     </div>
 
-    <div id="main-section" class="hidden">
-        <div class="stats">
-            <img id="player-avatar" class="avatar" src="" alt="Avatar gracza"><br>
-            Gracz: <span id="display-user" style="color: #00b06f;"></span><br>
-            Punkty: <span id="points" style="font-weight: bold; font-size: 22px;">0</span> RBX
+    <h2 class="section-title">Wypłać Nagrody</h2>
+    <div class="grid">
+      <div class="card">
+        <div>
+          <span class="reward-tag" style="color: #ffb703; background: rgba(255,183,3,0.1);">Koszt: 100 Punktów</span>
+          <h3>🎁 Pakiet 80 Robux</h3>
+          <p>Wymień zebrane punkty na pakiet 80 Robuxów. Wypłata realizowana przez zakup Twojego Gamepassa.</p>
         </div>
-
-        <div class="ad-box">
-            <h3>Strefa Zarabiania</h3>
-            <button onclick="triggerAd()" style="background: #ff5555; font-size: 18px;">
-                🎬 Obejrzyj Pełną Reklamę (+50 RBX)
-            </button>
-        </div>
-
-        <h3>Historia Twoich Punktów</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Akcja</th>
-                    <th>Punkty</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody id="history-list">
-                <tr><td colspan="3">Brak historii...</td></tr>
-            </tbody>
-        </table>
+        <button class="btn-action" onclick="claimReward('80 Robux', 100)">Odbierz Nagrodę</button>
+      </div>
     </div>
-</div>
+  </main>
 
-<script>
-    let currentRobloxId = null;
+  <!-- Modal Logowania -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <h3>Zaloguj się do serwisu</h3>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">Podaj swój nick z Roblox, aby zapisywać punkty:</p>
+      <input type="text" id="usernameInput" placeholder="Twój nick z Roblox...">
+      <button class="btn-action" onclick="saveUsername()">Zapisz i kontynuuj</button>
+    </div>
+  </div>
 
-    async function login() {
-        const username = document.getElementById('username-input').value.trim();
-        if (!username) return alert('Wpisz poprawny nick!');
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const savedUser = localStorage.getItem("rbx_username");
+      if (savedUser) {
+        document.getElementById("loginBtn").innerText = savedUser;
+      }
+      const savedPoints = localStorage.getItem("rbx_points") || 0;
+      document.getElementById("userPoints").innerText = savedPoints;
+    });
 
-        const btn = document.querySelector('#login-section button');
-        btn.textContent = "Weryfikacja konta...";
-        btn.disabled = true;
-
-        try {
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
-            });
-            const data = await res.json();
-
-            if (data.error) {
-                alert(data.error);
-                btn.textContent = "Zaloguj się";
-                btn.disabled = false;
-                return;
-            }
-
-            currentRobloxId = data.roblox_id;
-            
-            document.getElementById('player-avatar').src = data.avatarUrl;
-            document.getElementById('display-user').textContent = data.username;
-            document.getElementById('points').textContent = data.points;
-
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('main-section').classList.remove('hidden');
-
-            loadHistory();
-        } catch (e) {
-            alert('Błąd połączenia z serwerem.');
-            btn.textContent = "Zaloguj się";
-            btn.disabled = false;
-        }
+    function openLoginModal() {
+      document.getElementById("loginModal").style.display = "flex";
     }
 
-    async function triggerAd() {
-        if (typeof show_11461260 === 'function') {
-            show_11461260().then(async () => {
-                const res = await fetch('/api/add-points', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        robloxId: currentRobloxId,
-                        pointsToAdd: 50,
-                        actionName: 'Obejrzano reklamę Monetag'
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('points').textContent = data.points;
-                    loadHistory();
-                }
-            }).catch((err) => {
-                console.log('Reklama przerwana za wcześnie.');
-            });
-        } else {
-            alert('Kod reklamy jeszcze się ładuje. Odczekaj chwilę.');
-        }
+    function saveUsername() {
+      const input = document.getElementById("usernameInput").value.trim();
+      if (input) {
+        localStorage.setItem("rbx_username", input);
+        document.getElementById("loginBtn").innerText = input;
+        document.getElementById("loginModal").style.display = "none";
+      } else {
+        alert("Wpisz poprawny nick!");
+      }
     }
 
-    async function loadHistory() {
-        const res = await fetch(`/api/history/${currentRobloxId}`);
-        const history = await res.json();
-        const tbody = document.getElementById('history-list');
-
-        if (history.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3">Brak historii...</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = history.map(row => `
-            <tr>
-                <td>${row.action}</td>
-                <td style="color:#00b06f; font-weight:bold;">+${row.points_earned}</td>
-                <td>${new Date(row.timestamp).toLocaleString()}</td>
-            </tr>
-        `).join('');
+    function startSurvey() {
+      const baseUrl = "https://price-low.eu/a/Nk3EmHMgK4U0Vo2";
+      const username = localStorage.getItem("rbx_username") || "Anonim";
+      
+      const separator = baseUrl.includes("?") ? "&" : "?";
+      const finalUrl = `${baseUrl}${separator}sub1=${encodeURIComponent(username)}`;
+      
+      window.open(finalUrl, "_blank");
     }
-</script>
+
+    function claimReward(rewardName, cost) {
+      const currentPoints = parseInt(localStorage.getItem("rbx_points") || "0");
+      const username = localStorage.getItem("rbx_username");
+
+      if (!username) {
+        alert("Najpierw musisz się zalogować (podać swój nick)!");
+        openLoginModal();
+        return;
+      }
+
+      if (currentPoints < cost) {
+        alert(`Masz za mało punktów! Potrzebujesz ${cost} punktów, a masz ${currentPoints}.`);
+        return;
+      }
+
+      alert(`Zgłoszenie wypłaty nagrody ${rewardName} zostało przyjęte dla użytkownika ${username}! Admin zweryfikuje Twoje zadania.`);
+    }
+  </script>
 </body>
 </html>
