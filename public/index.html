@@ -193,33 +193,46 @@
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
-      const savedPoints = localStorage.getItem("rbx_points") || 0;
-      document.getElementById("userPoints").innerText = savedPoints;
     });
 
-    function checkLoginStatus() {
+    async function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
-        // Zalogowany - pokazujemy ścianę ankiet
+        // Zalogowany - pokazujemy interfejs
         document.getElementById("loginBtn").innerText = savedUser;
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("offerwallSection").style.display = "block";
         
+        // Wysłanie zapytania do naszego serwera o prawdziwe punkty
+        try {
+            const response = await fetch(`/api/points/${savedUser}`);
+            const data = await response.json();
+            
+            document.getElementById("userPoints").innerText = data.points.toFixed(2);
+            localStorage.setItem("rbx_points", data.points); // Backup lokalny
+        } catch (error) {
+            console.error("Błąd przy pobieraniu punktów z serwera:", error);
+            // Wyświetl z zapisu lokalnego w razie błędu serwera
+            const backupPoints = localStorage.getItem("rbx_points") || 0;
+            document.getElementById("userPoints").innerText = parseFloat(backupPoints).toFixed(2);
+        }
+        
         // Twój klucz z panelu CPX
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
         
-        // Generujemy bezpieczny hash: md5({unique_user_id}-{app_secure_hash})
+        // Generujemy bezpieczny hash
         const secureHashParam = md5(savedUser + "-" + appSecureHash);
         
-        // Doklejamy nick i zaszyfrowany hash do zapytania!
+        // Ładujemy ramkę ankiet
         const cpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
         
         document.getElementById("cpxIframe").src = cpxUrl;
       } else {
-        // Niezalogowany - blokujemy dostęp
+        // Niezalogowany - ukrywamy zawartość
         document.getElementById("loginBtn").innerText = "Zaloguj się";
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("offerwallSection").style.display = "none";
+        document.getElementById("userPoints").innerText = "0";
       }
     }
 
@@ -236,14 +249,14 @@
       if (input) {
         localStorage.setItem("rbx_username", input);
         closeLoginModal();
-        checkLoginStatus(); // Odświeża stronę i ładuje CPX
+        checkLoginStatus(); // Odświeża stronę, pobiera punkty z serwera i ładuje CPX
       } else {
         alert("Wpisz poprawny nick!");
       }
     }
 
     function claimReward() {
-      const currentPoints = parseInt(localStorage.getItem("rbx_points") || "0");
+      const currentPoints = parseFloat(localStorage.getItem("rbx_points") || "0");
       const username = localStorage.getItem("rbx_username");
 
       if (!username) {
@@ -253,7 +266,7 @@
       }
 
       if (currentPoints < 100) {
-        alert(`Brakuje Ci punktów! Masz ${currentPoints}/100.`);
+        alert(`Brakuje Ci punktów! Masz ${currentPoints.toFixed(2)}/100.`);
         return;
       }
 
