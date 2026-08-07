@@ -8,6 +8,9 @@
   <!-- Skrypt do szyfrowania MD5 (wymagany przez CPX Research) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
 
+  <!-- SKRYPT MONETAG VIGNETTE AD -->
+  <script>(function(s){s.dataset.zone='11460706',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -33,7 +36,7 @@
       padding: 15px 20px;
       background: #181b22;
       border-radius: 12px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
     .logo {
@@ -71,6 +74,22 @@
       width: 100%;
       max-width: 900px;
     }
+
+    /* KONTENERY NA BANERY MONETAG */
+    .ad-container {
+      width: 100%;
+      background: #14171d;
+      border: 1px dashed #333947;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 90px;
+      overflow: hidden;
+    }
+
     .section-title {
       font-size: 1.4rem;
       margin-bottom: 15px;
@@ -83,7 +102,7 @@
       border-radius: 12px;
       padding: 25px;
       border: 1px solid #2a2e39;
-      margin-bottom: 35px;
+      margin-bottom: 25px;
       text-align: center;
     }
     .btn-action {
@@ -142,6 +161,12 @@
   </header>
 
   <main>
+    <!-- GÓRNY BANER REKLAMOWY -->
+    <div class="ad-container">
+      <!-- MIEJSCE NA KOD BANERA (NP. NATIVE BANNER LUB BANNER 728x90) -->
+      <span style="color: #555; font-size: 0.85rem;">[ Monetag Banner Zone 1 ]</span>
+    </div>
+
     <h2 class="section-title">Zarabiaj Punkty</h2>
 
     <!-- Zachęta do logowania -->
@@ -151,7 +176,7 @@
       <button class="btn-action" onclick="openLoginModal()">Podaj nick z Roblox</button>
     </div>
 
-    <!-- Prawdziwa ściana ankiet CPX Research -->
+    <!-- Ściana ankiet CPX Research -->
     <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
       <h3 style="color: #00e676; margin-bottom: 15px;">📋 Tablica Ankiet</h3>
       <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Wypełniaj ankiety dopasowane do Ciebie. Punkty zostaną przypisane po udanym ukończeniu.</p>
@@ -165,6 +190,12 @@
         src="" 
         style="border-radius: 8px; background: #fff;">
       </iframe>
+    </div>
+
+    <!-- DOLNY BANER REKLAMOWY -->
+    <div class="ad-container">
+      <!-- MIEJSCE NA DRUGI KOD BANERA -->
+      <span style="color: #555; font-size: 0.85rem;">[ Monetag Banner Zone 2 ]</span>
     </div>
 
     <!-- Sekcja Wypłat -->
@@ -194,7 +225,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
       
-      // AUTO-ODŚWIEŻANIE: Co 5 sekund sprawdza serwer, czy wpadły nowe punkty w tle!
+      // AUTO-ODŚWIEŻANIE PUNKTÓW CO 5 SEKUND
       setInterval(fetchUserPoints, 5000);
     });
 
@@ -216,26 +247,19 @@
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
-        // Zalogowany - pokazujemy interfejs
         document.getElementById("loginBtn").innerText = savedUser;
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("offerwallSection").style.display = "block";
         
-        // Pobieramy punkty od razu przy starcie
         fetchUserPoints();
         
-        // Twój klucz z panelu CPX
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
-        
-        // Generujemy bezpieczny hash
         const secureHashParam = md5(savedUser + "-" + appSecureHash);
         
-        // Ładujemy ramkę ankiet
         const cpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
         
         document.getElementById("cpxIframe").src = cpxUrl;
       } else {
-        // Niezalogowany - ukrywamy zawartość
         document.getElementById("loginBtn").innerText = "Zaloguj się";
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("offerwallSection").style.display = "none";
