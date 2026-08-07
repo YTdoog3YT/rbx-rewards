@@ -193,9 +193,27 @@
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
+      
+      // AUTO-ODŚWIEŻANIE: Co 5 sekund sprawdza serwer, czy wpadły nowe punkty w tle!
+      setInterval(fetchUserPoints, 5000);
     });
 
-    async function checkLoginStatus() {
+    async function fetchUserPoints() {
+      const savedUser = localStorage.getItem("rbx_username");
+      if (!savedUser) return;
+
+      try {
+        const response = await fetch(`/api/points/${savedUser}`);
+        const data = await response.json();
+        
+        document.getElementById("userPoints").innerText = data.points.toFixed(2);
+        localStorage.setItem("rbx_points", data.points);
+      } catch (error) {
+        console.error("Błąd synchronizacji punktów:", error);
+      }
+    }
+
+    function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
         // Zalogowany - pokazujemy interfejs
@@ -203,19 +221,8 @@
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("offerwallSection").style.display = "block";
         
-        // Wysłanie zapytania do naszego serwera o prawdziwe punkty
-        try {
-            const response = await fetch(`/api/points/${savedUser}`);
-            const data = await response.json();
-            
-            document.getElementById("userPoints").innerText = data.points.toFixed(2);
-            localStorage.setItem("rbx_points", data.points); // Backup lokalny
-        } catch (error) {
-            console.error("Błąd przy pobieraniu punktów z serwera:", error);
-            // Wyświetl z zapisu lokalnego w razie błędu serwera
-            const backupPoints = localStorage.getItem("rbx_points") || 0;
-            document.getElementById("userPoints").innerText = parseFloat(backupPoints).toFixed(2);
-        }
+        // Pobieramy punkty od razu przy starcie
+        fetchUserPoints();
         
         // Twój klucz z panelu CPX
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
@@ -249,7 +256,7 @@
       if (input) {
         localStorage.setItem("rbx_username", input);
         closeLoginModal();
-        checkLoginStatus(); // Odświeża stronę, pobiera punkty z serwera i ładuje CPX
+        checkLoginStatus();
       } else {
         alert("Wpisz poprawny nick!");
       }
