@@ -1,67 +1,71 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 
 const app = express();
 app.use(cors());
 
-// Udostępniamy pliki HTML (nasz frontend) z folderu 'public'
+// Udostępniamy frontend z folderu 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ścieżka do naszej prostej bazy danych
-const DB_FILE = './db.json';
+// PODŁĄCZENIE BAZY DANYCH (Twój dokładny, czysty link)
+const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
 
-// Funkcja do odczytywania bazy danych
-function readDB() {
-    if (!fs.existsSync(DB_FILE)) return {};
-    return JSON.parse(fs.readFileSync(DB_FILE));
-}
+// Łączymy się z MongoDB
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('✅ Baza MongoDB podłączona pancernie!'))
+    .catch(err => console.error('❌ Błąd bazy:', err));
 
-// Funkcja do zapisywania bazy danych
-function writeDB(data) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-}
+// Struktura gracza w bazie (odpowiednik DataStore z Robloxa)
+const UserSchema = new mongoose.Schema({
+    username: String,
+    points: { type: Number, default: 0 }
+});
+const User = mongoose.model('User', UserSchema);
 
-// 1. ENDPOINT DLA CPX RESEARCH (Odbiór Robuxów i przejście testu)
-// Link do wklejenia w panelu: https://rbx-rewards.onrender.com/postback?status={status}&trans_id={trans_id}&user_id={user_id}&amount_local={amount_local}&hash={hash}
-app.get('/postback', (req, res) => {
+// 1. ENDPOINT DLA CPX RESEARCH
+app.get('/postback', async (req, res) => {
     const userId = req.query.user_id;
     const amount = parseFloat(req.query.amount_local);
     const status = req.query.status;
 
-    console.log(`[POSTBACK CPX] Otrzymano sygnał: User=${userId}, Kwota=${amount}, Status=${status}`);
-
-    // NAJWAŻNIEJSZE: Zawsze najpierw odsyłamy 200 OK, żeby CPX zaliczył test i zapisał link w panelu bez błędów!
+    // Najpierw odsyłamy OK, żeby CPX się nie burzyło
     res.status(200).send('OK'); 
 
-    // Dopiero po udanej odpowiedzi sprawdzamy, czy to prawdziwa ankieta (status 1 oznacza sukces)
+    // Zapis do bezpiecznej bazy w chmurze
     if (status === '1' && userId && amount) {
-        let db = readDB();
-        
-        // Jeśli gracz nie istnieje w bazie, daj mu na start 0
-        if (!db[userId]) db[userId] = 0;
-        
-        // Dodajemy zarobione punkty do konta
-        db[userId] += amount; 
-        writeDB(db);
-        
-        console.log(`[SUKCES] Dodano ${amount} pkt dla ${userId}. Nowy stan konta: ${db[userId]}`);
-    } else {
-        console.log(`[INFO] Zignorowano dodanie punktów. To był tylko test CPX albo ankieta odrzucona (Status: ${status}).`);
+        try {
+            // Szukamy gracza w bazie
+            let user = await User.findOne({ username: userId });
+            
+            // Jeśli to jego pierwsza ankieta, zakładamy profil w bazie
+            if (!user) {
+                user = new User({ username: userId, points: 0 });
+            }
+            
+            // Dodajemy hajs i zapisujemy
+            user.points += amount;
+            await user.save();
+            
+            console.log(`[SUKCES] Dodano ${amount} pkt dla ${userId}. Nowy stan konta: ${user.points}`);
+        } catch (error) {
+            console.error(`[BŁĄD] Nie udało się zapisać punktów:`, error);
+        }
     }
 });
 
-// 2. ENDPOINT DLA STRONY (Zwraca aktualny stan konta dla index.html)
-app.get('/api/points/:username', (req, res) => {
-    const db = readDB();
-    const username = req.params.username;
-    // Zwracamy punkty lub 0, jeśli gracza jeszcze nie ma w bazie
-    const points = db[username] || 0;
-    res.json({ points: points });
+// 2. ENDPOINT DLA STRONY Z PUNKTAMI
+app.get('/api/points/:username', async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.params.username });
+        res.json({ points: user ? user.points : 0 });
+    } catch (error) {
+        res.json({ points: 0 });
+    }
 });
 
-// Uruchamianie serwera
+// Start serwera
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Serwer śmiga i nasłuchuje na porcie ${PORT}`);
