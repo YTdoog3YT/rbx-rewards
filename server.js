@@ -9,15 +9,13 @@ app.use(cors());
 // Udostępniamy frontend z folderu 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// PODŁĄCZENIE BAZY DANYCH (Twój dokładny, czysty link)
+// PODŁĄCZENIE BAZY DANYCH
 const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
 
-// Łączymy się z MongoDB
 mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Baza MongoDB podłączona pancernie!'))
     .catch(err => console.error('❌ Błąd bazy:', err));
 
-// Struktura gracza w bazie (odpowiednik DataStore z Robloxa)
 const UserSchema = new mongoose.Schema({
     username: String,
     points: { type: Number, default: 0 }
@@ -30,25 +28,21 @@ app.get('/postback', async (req, res) => {
     const amount = parseFloat(req.query.amount_local);
     const status = req.query.status;
 
-    // Najpierw odsyłamy OK, żeby CPX się nie burzyło
     res.status(200).send('OK'); 
 
-    // Zapis do bezpiecznej bazy w chmurze
-    if (status === '1' && userId && amount) {
+    // ZMIANA: Akceptujemy status '1' (Sukces) ORAZ status '2' (Screenout / Wywalenie)
+    if ((status === '1' || status === '2') && userId && amount) {
         try {
-            // Szukamy gracza w bazie
             let user = await User.findOne({ username: userId });
             
-            // Jeśli to jego pierwsza ankieta, zakładamy profil w bazie
             if (!user) {
                 user = new User({ username: userId, points: 0 });
             }
             
-            // Dodajemy hajs i zapisujemy
             user.points += amount;
             await user.save();
             
-            console.log(`[SUKCES] Dodano ${amount} pkt dla ${userId}. Nowy stan konta: ${user.points}`);
+            console.log(`[SUKCES] Dodano ${amount} pkt dla ${userId} (Status: ${status}). Nowy stan: ${user.points}`);
         } catch (error) {
             console.error(`[BŁĄD] Nie udało się zapisać punktów:`, error);
         }
@@ -65,7 +59,6 @@ app.get('/api/points/:username', async (req, res) => {
     }
 });
 
-// Start serwera
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Serwer śmiga i nasłuchuje na porcie ${PORT}`);
