@@ -196,7 +196,7 @@
       }
     }
 
-    /* PASEK PRAWDZIWYCH ZAROBKÓW (TICKER) */
+    /* PASEK OSTATNICH ZAROBKÓW (LIVE TICKER) */
     .ticker-wrap {
       width: 100%;
       background: #14171d;
@@ -273,9 +273,9 @@
       </header>
 
       <main>
-        <!-- DYNAMICZNY PASEK Z PRAWDZIWYMI DANYMI Z MONGODB -->
+        <!-- DYNAMICZNY PASEK Z NAJNOWSZYMI ZAROBKAMI -->
         <div class="ticker-wrap">
-          <div class="ticker-title">🔥 Top Earners</div>
+          <div class="ticker-title">🔥 Live Earners</div>
           <div class="ticker-container">
             <div class="ticker-move" id="liveTicker">
               <div class="ticker-item">Loading live stats...</div>
@@ -391,24 +391,26 @@
 
     async function fetchLiveEarners() {
       try {
-        const response = await fetch('/api/top-earners');
+        // Teraz wyciągamy dane z nowego linku (najnowsze transakcje)
+        const response = await fetch('/api/latest-earners');
         const earners = await response.json();
         
         if (earners.length > 0) {
           const tickerContainer = document.getElementById('liveTicker');
           let tickerHTML = '';
           
-          // Generujemy pierwsze 5 wyników z bazy
-          earners.forEach(user => {
-            tickerHTML += `<div class="ticker-item">🎮 ${user.username} has <span>${user.points.toFixed(2)} 🪙</span></div>`;
+          earners.forEach(transaction => {
+            tickerHTML += `<div class="ticker-item">🎮 ${transaction.username} just earned <span>${transaction.amount.toFixed(2)} 🪙</span></div>`;
           });
           
-          // Kopiujemy je drugi raz, żeby animacja płynnie kręciła się w nieskończoność
-          earners.forEach(user => {
-            tickerHTML += `<div class="ticker-item">🎮 ${user.username} has <span>${user.points.toFixed(2)} 🪙</span></div>`;
+          earners.forEach(transaction => {
+            tickerHTML += `<div class="ticker-item">🎮 ${transaction.username} just earned <span>${transaction.amount.toFixed(2)} 🪙</span></div>`;
           });
           
           tickerContainer.innerHTML = tickerHTML;
+        } else {
+            // Jeżeli baza jest pusta, zachęta dla graczy
+            document.getElementById('liveTicker').innerHTML = '<div class="ticker-item">Be the first to earn points today! 💸</div>';
         }
       } catch (error) {
         console.error("Error fetching live earners:", error);
