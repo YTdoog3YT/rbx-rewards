@@ -72,7 +72,7 @@
       max-width: 900px;
     }
 
-    /* KONTENERY NA BANERY MONETAG */
+    /* KONTENERY NA BANERY ADSTERRA */
     .ad-container {
       width: 100%;
       background: #14171d;
@@ -83,8 +83,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 90px;
-      overflow: hidden;
+      min-height: 110px; /* Zwiększone, żeby baner 90px miał oddech */
+      overflow-x: auto;  /* Ważne dla graczy na telefonach! */
+      overflow-y: hidden;
     }
 
     .section-title {
@@ -158,9 +159,18 @@
   </header>
 
   <main>
-    <!-- GÓRNY BANER MONETAG (IN-PAGE PUSH) -->
+    <!-- GÓRNY BANER ADSTERRA (728x90) -->
     <div class="ad-container">
-      <script>(function(s){s.dataset.zone='11460761',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+      <script>
+        atOptions = {
+          'key' : '626fd5b0faa629e0b217285c12343773',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      </script>
+      <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
     </div>
 
     <h2 class="section-title">Earn Points</h2>
@@ -188,9 +198,18 @@
       </iframe>
     </div>
 
-    <!-- DOLNY BANER MONETAG (IN-PAGE PUSH) -->
+    <!-- DOLNY BANER ADSTERRA (728x90) -->
     <div class="ad-container">
-      <script>(function(s){s.dataset.zone='11460761',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+      <script>
+        atOptions = {
+          'key' : '626fd5b0faa629e0b217285c12343773',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      </script>
+      <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
     </div>
 
   </main>
