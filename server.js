@@ -16,11 +16,20 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Baza MongoDB podłączona pancernie!'))
     .catch(err => console.error('❌ Błąd bazy:', err));
 
+// SCHEMAT 1: Całkowite punkty gracza
 const UserSchema = new mongoose.Schema({
     username: String,
     points: { type: Number, default: 0 }
 });
 const User = mongoose.model('User', UserSchema);
+
+// SCHEMAT 2: Historia pojedynczych zarobków (Dla paska na żywo!)
+const EarningSchema = new mongoose.Schema({
+    username: String,
+    amount: Number,
+    createdAt: { type: Date, default: Date.now }
+});
+const Earning = mongoose.model('Earning', EarningSchema);
 
 // 1. ENDPOINT DLA CPX RESEARCH
 app.get('/postback', async (req, res) => {
@@ -42,7 +51,11 @@ app.get('/postback', async (req, res) => {
             user.points += amount;
             await user.save();
             
-            console.log(`[SUKCES] Dodano ${amount} pkt dla ${userId} (Status: ${status}). Nowy stan: ${user.points}`);
+            // Zapisujemy ten pojedynczy zarobek do historii dla paska Live Feed!
+            const newEarning = new Earning({ username: userId, amount: amount });
+            await newEarning.save();
+            
+            console.log(`[SUKCES] Dodano ${amount} pkt dla ${userId}. Stan: ${user.points}`);
         } catch (error) {
             console.error(`[BŁĄD] Nie udało się zapisać punktów:`, error);
         }
@@ -59,11 +72,12 @@ app.get('/api/points/:username', async (req, res) => {
     }
 });
 
-// 3. ENDPOINT DLA PASKA (Top 5 Graczy z bazy MongoDB)
-app.get('/api/top-earners', async (req, res) => {
+// 3. ENDPOINT DLA PASKA (Top 5 NAJNOWSZYCH ZAROBKÓW)
+app.get('/api/latest-earners', async (req, res) => {
     try {
-        const topUsers = await User.find({ points: { $gt: 0 } }).sort({ points: -1 }).limit(5);
-        res.json(topUsers);
+        // Pobieramy 5 najnowszych wpisów z historii sortując po dacie od najnowszej (-1)
+        const latestEarnings = await Earning.find().sort({ createdAt: -1 }).limit(5);
+        res.json(latestEarnings);
     } catch (error) {
         res.json([]);
     }
