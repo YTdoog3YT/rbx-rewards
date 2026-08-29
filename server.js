@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// SCHEMAT 2: Historia pojedynczych zarobków (Dla paska na żywo!)
+// SCHEMAT 2: Historia pojedynczych zarobków (Dla paska na żywo)
 const EarningSchema = new mongoose.Schema({
     username: String,
     amount: Number,
@@ -126,19 +126,19 @@ app.post('/api/withdraw', async (req, res) => {
         await payoutRequest.save();
 
         // ==========================================
-        // TUTAJ MOŻESZ DODAĆ DISCORD WEBHOOK W PRZYSZŁOŚCI
+        // POWIADOMIENIA DISCORD WEBHOOK NA ŻYWO
         // ==========================================
-        /*
-        const discordWebhookUrl = "TWÓJ_LINK_Z_DISCORDA";
+        const discordWebhookUrl = "https://discord.com/api/webhooks/1543215298826473554/oFfYZEMrC_AWsyP06xFXMets-DBv82U76tXk5I5vIQhN8gAFXVp3UOrthamCCx4K8pI_";
+        
         fetch(discordWebhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                content: `🚨 **NEW PAYOUT REQUEST!** 🚨\n**User:** ${username}\n**Email:** ${paypalEmail}\n**Amount:** $${usdAmount.toFixed(4)} (${points} points)`
+                content: `🚨 **NOWA PROŚBA O WYPŁATĘ!** 🚨\n**Gracz:** ${username}\n**Email PayPal:** ${paypalEmail}\n**Kwota:** $${usdAmount.toFixed(4)} (${points} punktów)`
             })
-        });
-        */
+        }).catch(err => console.error("Błąd wysyłania powiadomienia na Discorda:", err));
 
+        // Zwracamy odpowiedź do frontendu
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) {
         console.error('Błąd wypłaty:', error);
