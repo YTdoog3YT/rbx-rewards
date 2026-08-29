@@ -18,15 +18,46 @@
     body {
       background-color: #0f1115;
       color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
       padding: 20px;
     }
-    header {
+
+    /* GŁÓWNY SZKIELET: 3 KOLUMNY */
+    .page-layout {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      width: 100%;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* BOCZNE REKLAMY PIONOWE (160x600) */
+    .sidebar-ad {
+      width: 160px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 20px; /* Reklamy zjeżdżają razem z ekranem podczas przewijania! */
+      display: flex;
+      justify-content: center;
+      background: #14171d;
+      border: 1px dashed #333947;
+      border-radius: 8px;
+      min-height: 620px;
+      padding: 10px;
+    }
+
+    /* ŚRODKOWA KOLUMNA (Główna Strona) */
+    .main-content {
+      flex: 1;
       width: 100%;
       max-width: 900px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -67,10 +98,6 @@
     .btn-login:hover {
       background: #00c853;
     }
-    main {
-      width: 100%;
-      max-width: 900px;
-    }
 
     /* KONTENERY NA DUŻE BANERY ADSTERRA (728x90) */
     .ad-container {
@@ -92,7 +119,7 @@
     .ad-container-box {
       width: 100%;
       max-width: 320px;
-      margin: 0 auto 25px auto;
+      margin: 20px auto 0 auto;
       background: #14171d;
       border: 1px dashed #333947;
       border-radius: 8px;
@@ -162,87 +189,129 @@
       background: #0f1115;
       color: #fff;
     }
+
+    /* ZABEZPIECZENIE NA TELEFONY - ukrywa boczne banery na małych ekranach */
+    @media (max-width: 1280px) {
+      .sidebar-ad {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo">RBX Rewards 💎</div>
-    <div class="user-info">
-      <div class="points-badge">Points: <span id="userPoints">0</span> 🪙</div>
-      <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Login</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- GÓRNY BANER ADSTERRA (728x90) -->
-    <div class="ad-container">
+  <!-- GŁÓWNY WRAPPER NA 3 KOLUMNY -->
+  <div class="page-layout">
+    
+    <!-- LEWA REKLAMA (160x600) -->
+    <aside class="sidebar-ad">
       <script>
         atOptions = {
-          'key' : '626fd5b0faa629e0b217285c12343773',
+          'key' : '93fb80faea7c05146f407641d1535686',
           'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
+          'height' : 600,
+          'width' : 160,
           'params' : {}
         };
       </script>
-      <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
+      <script src="https://www.highrevenueformat.com/93fb80faea7c05146f407641d1535686/invoke.js"></script>
+    </aside>
+
+    <!-- ŚRODKOWA KOLUMNA (Cała zawartość Twojej strony) -->
+    <div class="main-content">
+      <header>
+        <div class="logo">RBX Rewards 💎</div>
+        <div class="user-info">
+          <div class="points-badge">Points: <span id="userPoints">0</span> 🪙</div>
+          <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Login</button>
+        </div>
+      </header>
+
+      <main>
+        <!-- GÓRNY BANER ADSTERRA (728x90) -->
+        <div class="ad-container">
+          <script>
+            atOptions = {
+              'key' : '626fd5b0faa629e0b217285c12343773',
+              'format' : 'iframe',
+              'height' : 90,
+              'width' : 728,
+              'params' : {}
+            };
+          </script>
+          <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
+        </div>
+
+        <h2 class="section-title">Earn Points</h2>
+
+        <!-- Zachęta do logowania -->
+        <div id="loginPrompt" class="content-box">
+          <h3 style="color: #fff; font-size: 1.3rem;">Login to unlock surveys! 🔒</h3>
+          <p style="color: #a0a0a0; margin-top: 10px;">Enter your Roblox username so we know where to send your points for completed tasks.</p>
+          <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
+        </div>
+
+        <!-- Ściana ankiet CPX Research -->
+        <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
+          <h3 style="color: #00e676; margin-bottom: 15px;">📋 Survey Wall</h3>
+          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Complete surveys matched to your profile. Points will be automatically credited upon completion.</p>
+          
+          <!-- Ramka iframe CPX -->
+          <iframe 
+            id="cpxIframe"
+            width="100%" 
+            height="800px" 
+            frameBorder="0" 
+            src="" 
+            style="border-radius: 8px; background: #fff;">
+          </iframe>
+
+          <!-- MAŁY BANER ADSTERRA (300x250) SCHOWANY POD ANKIETAMI -->
+          <div class="ad-container-box">
+            <script>
+              atOptions = {
+                'key' : '532efa4a51965f97fbf56df74914bd23',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highrevenueformat.com/532efa4a51965f97fbf56df74914bd23/invoke.js"></script>
+          </div>
+        </div>
+
+        <!-- DOLNY BANER ADSTERRA (728x90) -->
+        <div class="ad-container">
+          <script>
+            atOptions = {
+              'key' : '626fd5b0faa629e0b217285c12343773',
+              'format' : 'iframe',
+              'height' : 90,
+              'width' : 728,
+              'params' : {}
+            };
+          </script>
+          <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
+        </div>
+      </main>
     </div>
 
-    <h2 class="section-title">Earn Points</h2>
-
-    <!-- Zachęta do logowania -->
-    <div id="loginPrompt" class="content-box">
-      <h3 style="color: #fff; font-size: 1.3rem;">Login to unlock surveys! 🔒</h3>
-      <p style="color: #a0a0a0; margin-top: 10px;">Enter your Roblox username so we know where to send your points for completed tasks.</p>
-      <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
-    </div>
-
-    <!-- Ściana ankiet CPX Research -->
-    <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
-      <h3 style="color: #00e676; margin-bottom: 15px;">📋 Survey Wall</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Complete surveys matched to your profile. Points will be automatically credited upon completion.</p>
-      
-      <!-- Ramka iframe CPX -->
-      <iframe 
-        id="cpxIframe"
-        width="100%" 
-        height="800px" 
-        frameBorder="0" 
-        src="" 
-        style="border-radius: 8px; background: #fff;">
-      </iframe>
-    </div>
-
-    <!-- DOLNY BANER ADSTERRA (728x90) -->
-    <div class="ad-container">
+    <!-- PRAWA REKLAMA (160x600) -->
+    <aside class="sidebar-ad">
       <script>
         atOptions = {
-          'key' : '626fd5b0faa629e0b217285c12343773',
+          'key' : '93fb80faea7c05146f407641d1535686',
           'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
+          'height' : 600,
+          'width' : 160,
           'params' : {}
         };
       </script>
-      <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
-    </div>
+      <script src="https://www.highrevenueformat.com/93fb80faea7c05146f407641d1535686/invoke.js"></script>
+    </aside>
 
-    <!-- MAŁY BANER ADSTERRA (300x250) NA SAMYM DOLE -->
-    <div class="ad-container-box">
-      <script>
-        atOptions = {
-          'key' : '532efa4a51965f97fbf56df74914bd23',
-          'format' : 'iframe',
-          'height' : 250,
-          'width' : 300,
-          'params' : {}
-        };
-      </script>
-      <script src="https://www.highrevenueformat.com/532efa4a51965f97fbf56df74914bd23/invoke.js"></script>
-    </div>
-
-  </main>
+  </div>
 
   <!-- Modal Logowania -->
   <div class="modal" id="loginModal">
@@ -258,8 +327,6 @@
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
-      
-      // AUTO-ODŚWIEŻANIE PUNKTÓW CO 5 SEKUND
       setInterval(fetchUserPoints, 5000);
     });
 
