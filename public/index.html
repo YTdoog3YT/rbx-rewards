@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RBX Rewards - Earn Free Robux</title>
   
-  <!-- Skrypt do szyfrowania MD5 (wymagany przez CPX Research) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
 
   <style>
@@ -196,6 +195,52 @@
         display: none;
       }
     }
+
+    /* PASEK PRAWDZIWYCH ZAROBKÓW (TICKER) */
+    .ticker-wrap {
+      width: 100%;
+      background: #14171d;
+      border: 1px solid #333947;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .ticker-title {
+      background: #00e676;
+      color: #000;
+      padding: 10px 15px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      z-index: 2;
+      box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    }
+    .ticker-container {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ticker-move {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker 25s linear infinite;
+    }
+    .ticker-item {
+      display: inline-block;
+      margin-right: 40px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+    .ticker-item span {
+      color: #ffb703;
+      font-weight: bold;
+    }
+    @keyframes ticker {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-100%, 0, 0); }
+    }
   </style>
 </head>
 <body>
@@ -228,7 +273,15 @@
       </header>
 
       <main>
-        <!-- GÓRNY BANER USUNIĘTY ZGODNIE Z PROŚBĄ -->
+        <!-- DYNAMICZNY PASEK Z PRAWDZIWYMI DANYMI Z MONGODB -->
+        <div class="ticker-wrap">
+          <div class="ticker-title">🔥 Top Earners</div>
+          <div class="ticker-container">
+            <div class="ticker-move" id="liveTicker">
+              <div class="ticker-item">Loading live stats...</div>
+            </div>
+          </div>
+        </div>
 
         <h2 class="section-title">Earn Points</h2>
 
@@ -315,7 +368,10 @@
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
+      fetchLiveEarners();
+      
       setInterval(fetchUserPoints, 5000);
+      setInterval(fetchLiveEarners, 30000); // Odświeża ranking w tle co 30 sekund
     });
 
     async function fetchUserPoints() {
@@ -330,6 +386,32 @@
         localStorage.setItem("rbx_points", data.points);
       } catch (error) {
         console.error("Error syncing points:", error);
+      }
+    }
+
+    async function fetchLiveEarners() {
+      try {
+        const response = await fetch('/api/top-earners');
+        const earners = await response.json();
+        
+        if (earners.length > 0) {
+          const tickerContainer = document.getElementById('liveTicker');
+          let tickerHTML = '';
+          
+          // Generujemy pierwsze 5 wyników z bazy
+          earners.forEach(user => {
+            tickerHTML += `<div class="ticker-item">🎮 ${user.username} has <span>${user.points.toFixed(2)} 🪙</span></div>`;
+          });
+          
+          // Kopiujemy je drugi raz, żeby animacja płynnie kręciła się w nieskończoność
+          earners.forEach(user => {
+            tickerHTML += `<div class="ticker-item">🎮 ${user.username} has <span>${user.points.toFixed(2)} 🪙</span></div>`;
+          });
+          
+          tickerContainer.innerHTML = tickerHTML;
+        }
+      } catch (error) {
+        console.error("Error fetching live earners:", error);
       }
     }
 
