@@ -72,7 +72,7 @@
       max-width: 900px;
     }
 
-    /* KONTENERY NA BANERY ADSTERRA */
+    /* KONTENERY NA DUŻE BANERY ADSTERRA (728x90) */
     .ad-container {
       width: 100%;
       background: #14171d;
@@ -83,9 +83,25 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 110px; /* Zwiększone, żeby baner 90px miał oddech */
-      overflow-x: auto;  /* Ważne dla graczy na telefonach! */
+      min-height: 110px;
+      overflow-x: auto;
       overflow-y: hidden;
+    }
+
+    /* KONTENER NA ŚRODKOWY, KWADRATOWY BANER (300x250) */
+    .ad-container-box {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto 25px auto;
+      background: #14171d;
+      border: 1px dashed #333947;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 270px;
+      overflow: hidden;
     }
 
     .section-title {
@@ -180,6 +196,20 @@
       <h3 style="color: #fff; font-size: 1.3rem;">Login to unlock surveys! 🔒</h3>
       <p style="color: #a0a0a0; margin-top: 10px;">Enter your Roblox username so we know where to send your points for completed tasks.</p>
       <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
+    </div>
+
+    <!-- ŚRODKOWY BANER ADSTERRA (300x250) -->
+    <div class="ad-container-box">
+      <script>
+        atOptions = {
+          'key' : '532efa4a51965f97fbf56df74914bd23',
+          'format' : 'iframe',
+          'height' : 250,
+          'width' : 300,
+          'params' : {}
+        };
+      </script>
+      <script src="https://www.highrevenueformat.com/532efa4a51965f97fbf56df74914bd23/invoke.js"></script>
     </div>
 
     <!-- Ściana ankiet CPX Research -->
