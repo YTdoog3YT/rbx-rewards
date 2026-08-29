@@ -20,7 +20,6 @@
       padding: 20px;
     }
 
-    /* GŁÓWNY SZKIELET: 3 KOLUMNY */
     .page-layout {
       display: flex;
       justify-content: center;
@@ -31,7 +30,6 @@
       margin: 0 auto;
     }
 
-    /* BOCZNE REKLAMY PIONOWE (160x600) */
     .sidebar-ad {
       width: 160px;
       flex-shrink: 0;
@@ -46,7 +44,6 @@
       padding: 10px;
     }
 
-    /* ŚRODKOWA KOLUMNA (Główna Strona) */
     .main-content {
       flex: 1;
       width: 100%;
@@ -97,8 +94,22 @@
     .btn-login:hover {
       background: #00c853;
     }
+    /* PRZYCISK WYPŁATY */
+    .btn-withdraw {
+      background: #ffb703;
+      color: #000;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      display: none; /* Ukryty dopóki się nie zaloguje */
+    }
+    .btn-withdraw:hover {
+      background: #ff9e00;
+    }
 
-    /* KONTENERY NA DUŻE BANERY ADSTERRA (728x90) */
     .ad-container {
       width: 100%;
       background: #14171d;
@@ -114,7 +125,6 @@
       overflow-y: hidden;
     }
 
-    /* KONTENER NA ŚRODKOWY, KWADRATOWY BANER (300x250) */
     .ad-container-box {
       width: 100%;
       max-width: 320px;
@@ -189,14 +199,12 @@
       color: #fff;
     }
 
-    /* ZABEZPIECZENIE NA TELEFONY - ukrywa boczne banery na małych ekranach */
     @media (max-width: 1280px) {
       .sidebar-ad {
         display: none;
       }
     }
 
-    /* PASEK OSTATNICH ZAROBKÓW (LIVE TICKER) */
     .ticker-wrap {
       width: 100%;
       background: #14171d;
@@ -245,10 +253,9 @@
 </head>
 <body>
 
-  <!-- GŁÓWNY WRAPPER NA 3 KOLUMNY -->
   <div class="page-layout">
     
-    <!-- LEWA REKLAMA (160x600) -->
+    <!-- LEWA REKLAMA -->
     <aside class="sidebar-ad">
       <script>
         atOptions = {
@@ -262,18 +269,18 @@
       <script src="https://www.highrevenueformat.com/93fb80faea7c05146f407641d1535686/invoke.js"></script>
     </aside>
 
-    <!-- ŚRODKOWA KOLUMNA (Cała zawartość Twojej strony) -->
     <div class="main-content">
       <header>
         <div class="logo">RBX Rewards 💎</div>
         <div class="user-info">
           <div class="points-badge">Points: <span id="userPoints">0</span> 🪙</div>
+          <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()">Withdraw</button>
           <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Login</button>
         </div>
       </header>
 
       <main>
-        <!-- DYNAMICZNY PASEK Z NAJNOWSZYMI ZAROBKAMI -->
+        <!-- PASEK NAJNOWSZYCH ZAROBKÓW -->
         <div class="ticker-wrap">
           <div class="ticker-title">🔥 Live Earners</div>
           <div class="ticker-container">
@@ -292,22 +299,14 @@
           <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
         </div>
 
-        <!-- Ściana ankiet CPX Research -->
+        <!-- Ściana ankiet -->
         <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
           <h3 style="color: #00e676; margin-bottom: 15px;">📋 Survey Wall</h3>
           <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Complete surveys matched to your profile. Points will be automatically credited upon completion.</p>
           
-          <!-- Ramka iframe CPX -->
-          <iframe 
-            id="cpxIframe"
-            width="100%" 
-            height="800px" 
-            frameBorder="0" 
-            src="" 
-            style="border-radius: 8px; background: #fff;">
-          </iframe>
+          <iframe id="cpxIframe" width="100%" height="800px" frameBorder="0" src="" style="border-radius: 8px; background: #fff;"></iframe>
 
-          <!-- MAŁY BANER ADSTERRA (300x250) SCHOWANY POD ANKIETAMI -->
+          <!-- MAŁY BANER -->
           <div class="ad-container-box">
             <script>
               atOptions = {
@@ -322,7 +321,7 @@
           </div>
         </div>
 
-        <!-- DOLNY BANER ADSTERRA (728x90) -->
+        <!-- DOLNY BANER -->
         <div class="ad-container">
           <script>
             atOptions = {
@@ -338,7 +337,7 @@
       </main>
     </div>
 
-    <!-- PRAWA REKLAMA (160x600) -->
+    <!-- PRAWA REKLAMA -->
     <aside class="sidebar-ad">
       <script>
         atOptions = {
@@ -365,13 +364,29 @@
     </div>
   </div>
 
+  <!-- Modal Wypłat -->
+  <div class="modal" id="withdrawModal">
+    <div class="modal-content">
+      <h3 style="color: #fff;">Withdraw to PayPal</h3>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">100 Points = $0.01 USD</p>
+      
+      <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
+      <input type="number" id="withdrawPoints" placeholder="Amount of Points" oninput="calculateUSD()">
+      
+      <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.0000</span></p>
+      
+      <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()">Request Payout</button>
+      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()">Cancel</button>
+    </div>
+  </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
       fetchLiveEarners();
       
       setInterval(fetchUserPoints, 5000);
-      setInterval(fetchLiveEarners, 30000); // Odświeża ranking w tle co 30 sekund
+      setInterval(fetchLiveEarners, 30000); 
     });
 
     async function fetchUserPoints() {
@@ -391,7 +406,6 @@
 
     async function fetchLiveEarners() {
       try {
-        // Teraz wyciągamy dane z nowego linku (najnowsze transakcje)
         const response = await fetch('/api/latest-earners');
         const earners = await response.json();
         
@@ -409,7 +423,6 @@
           
           tickerContainer.innerHTML = tickerHTML;
         } else {
-            // Jeżeli baza jest pusta, zachęta dla graczy
             document.getElementById('liveTicker').innerHTML = '<div class="ticker-item">Be the first to earn points today! 💸</div>';
         }
       } catch (error) {
@@ -423,6 +436,7 @@
         document.getElementById("loginBtn").innerText = savedUser;
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("offerwallSection").style.display = "block";
+        document.getElementById("withdrawBtn").style.display = "inline-block"; // Pokazuje przycisk wypłaty
         
         fetchUserPoints();
         
@@ -436,17 +450,14 @@
         document.getElementById("loginBtn").innerText = "Login";
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("offerwallSection").style.display = "none";
+        document.getElementById("withdrawBtn").style.display = "none"; // Ukrywa przycisk wypłaty
         document.getElementById("userPoints").innerText = "0";
       }
     }
 
-    function openLoginModal() {
-      document.getElementById("loginModal").style.display = "flex";
-    }
-
-    function closeLoginModal() {
-      document.getElementById("loginModal").style.display = "none";
-    }
+    // FUNKCJE LOGOWANIA
+    function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
+    function closeLoginModal() { document.getElementById("loginModal").style.display = "none"; }
 
     function saveUsername() {
       const input = document.getElementById("usernameInput").value.trim();
@@ -457,6 +468,57 @@
       } else {
         alert("Please enter a valid username!");
       }
+    }
+
+    // FUNKCJE WYPŁAT (NOWE)
+    function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
+    function closeWithdrawModal() { 
+        document.getElementById("withdrawModal").style.display = "none"; 
+        document.getElementById("paypalEmail").value = "";
+        document.getElementById("withdrawPoints").value = "";
+        document.getElementById("usdResult").innerText = "$0.0000";
+    }
+
+    function calculateUSD() {
+        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
+        const usd = points * 0.0001; // 100 pkt = 0.01$
+        document.getElementById("usdResult").innerText = "$" + usd.toFixed(4);
+    }
+
+    async function submitWithdraw() {
+        const email = document.getElementById("paypalEmail").value.trim();
+        const points = parseFloat(document.getElementById("withdrawPoints").value);
+        const username = localStorage.getItem("rbx_username");
+
+        if (!email || !email.includes("@")) {
+            alert("Please enter a valid PayPal email.");
+            return;
+        }
+        if (!points || points <= 0) {
+            alert("Please enter a valid amount of points.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/withdraw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, paypalEmail: email, points: points })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                alert("Error: " + data.error);
+            } else {
+                alert(`Success! You requested a payout of $${data.usd.toFixed(4)}. Admin will process it soon.`);
+                document.getElementById("userPoints").innerText = data.newBalance.toFixed(2);
+                localStorage.setItem("rbx_points", data.newBalance);
+                closeWithdrawModal();
+            }
+        } catch (error) {
+            alert("Connection error. Please try again later.");
+        }
     }
   </script>
 </body>
