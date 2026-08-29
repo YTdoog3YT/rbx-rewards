@@ -6,6 +6,9 @@ const mongoose = require('mongoose');
 const app = express();
 app.use(cors());
 
+// POZWALA SERWEROWI CZYTAĆ DANE Z FORMULARZY (Wypłaty)
+app.use(express.json());
+
 // Udostępniamy frontend z folderu 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -31,6 +34,17 @@ const EarningSchema = new mongoose.Schema({
 });
 const Earning = mongoose.model('Earning', EarningSchema);
 
+// SCHEMAT 3: Prośby o wypłatę (Payouts)
+const PayoutSchema = new mongoose.Schema({
+    username: String,
+    paypalEmail: String,
+    pointsWithdrawn: Number,
+    usdAmount: Number,
+    status: { type: String, default: 'Pending' },
+    createdAt: { type: Date, default: Date.now }
+});
+const Payout = mongoose.model('Payout', PayoutSchema);
+
 // 1. ENDPOINT DLA CPX RESEARCH
 app.get('/postback', async (req, res) => {
     const userId = req.query.user_id;
@@ -39,7 +53,6 @@ app.get('/postback', async (req, res) => {
 
     res.status(200).send('OK'); 
 
-    // Akceptujemy status '1' (Sukces) ORAZ status '2' (Screenout / Wywalenie)
     if ((status === '1' || status === '2') && userId && amount) {
         try {
             let user = await User.findOne({ username: userId });
@@ -51,7 +64,6 @@ app.get('/postback', async (req, res) => {
             user.points += amount;
             await user.save();
             
-            // Zapisujemy ten pojedynczy zarobek do historii dla paska Live Feed!
             const newEarning = new Earning({ username: userId, amount: amount });
             await newEarning.save();
             
@@ -75,11 +87,62 @@ app.get('/api/points/:username', async (req, res) => {
 // 3. ENDPOINT DLA PASKA (Top 5 NAJNOWSZYCH ZAROBKÓW)
 app.get('/api/latest-earners', async (req, res) => {
     try {
-        // Pobieramy 5 najnowszych wpisów z historii sortując po dacie od najnowszej (-1)
         const latestEarnings = await Earning.find().sort({ createdAt: -1 }).limit(5);
         res.json(latestEarnings);
     } catch (error) {
         res.json([]);
+    }
+});
+
+// 4. ENDPOINT DLA WYPŁAT (Zabezpieczony przed oszustwami)
+app.post('/api/withdraw', async (req, res) => {
+    const { username, paypalEmail, points } = req.body;
+
+    if (!username || !paypalEmail || !points || points <= 0) {
+        return res.status(400).json({ error: 'Invalid data provided.' });
+    }
+
+    try {
+        const user = await User.findOne({ username: username });
+        
+        if (!user || user.points < points) {
+            return res.status(400).json({ error: 'You do not have enough points!' });
+        }
+
+        // Zabieramy punkty graczowi
+        user.points -= points;
+        await user.save();
+
+        // 100 punktów = 0.01$ (czyli 1 pkt = 0.0001$)
+        const usdAmount = points * 0.0001;
+
+        // Zapisujemy wypłatę w bazie
+        const payoutRequest = new Payout({
+            username: username,
+            paypalEmail: paypalEmail,
+            pointsWithdrawn: points,
+            usdAmount: usdAmount
+        });
+        await payoutRequest.save();
+
+        // ==========================================
+        // TUTAJ MOŻESZ DODAĆ DISCORD WEBHOOK W PRZYSZŁOŚCI
+        // ==========================================
+        /*
+        const discordWebhookUrl = "TWÓJ_LINK_Z_DISCORDA";
+        fetch(discordWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: `🚨 **NEW PAYOUT REQUEST!** 🚨\n**User:** ${username}\n**Email:** ${paypalEmail}\n**Amount:** $${usdAmount.toFixed(4)} (${points} points)`
+            })
+        });
+        */
+
+        res.json({ success: true, newBalance: user.points, usd: usdAmount });
+    } catch (error) {
+        console.error('Błąd wypłaty:', error);
+        res.status(500).json({ error: 'Server error during withdrawal.' });
     }
 });
 
