@@ -30,7 +30,7 @@ app.get('/postback', async (req, res) => {
 
     res.status(200).send('OK'); 
 
-    // ZMIANA: Akceptujemy status '1' (Sukces) ORAZ status '2' (Screenout / Wywalenie)
+    // Akceptujemy status '1' (Sukces) ORAZ status '2' (Screenout / Wywalenie)
     if ((status === '1' || status === '2') && userId && amount) {
         try {
             let user = await User.findOne({ username: userId });
@@ -56,6 +56,16 @@ app.get('/api/points/:username', async (req, res) => {
         res.json({ points: user ? user.points : 0 });
     } catch (error) {
         res.json({ points: 0 });
+    }
+});
+
+// 3. ENDPOINT DLA PASKA (Top 5 Graczy z bazy MongoDB)
+app.get('/api/top-earners', async (req, res) => {
+    try {
+        const topUsers = await User.find({ points: { $gt: 0 } }).sort({ points: -1 }).limit(5);
+        res.json(topUsers);
+    } catch (error) {
+        res.json([]);
     }
 });
 
