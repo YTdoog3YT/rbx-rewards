@@ -104,7 +104,7 @@
       font-weight: bold;
       cursor: pointer;
       transition: 0.2s;
-      display: none; /* Ukryty dopóki się nie zaloguje */
+      display: none;
     }
     .btn-withdraw:hover {
       background: #ff9e00;
@@ -171,6 +171,8 @@
     .btn-action:hover {
       background: #00c853;
     }
+
+    /* Klasyczne Modale (Logowanie, Wypłaty) */
     .modal {
       display: none;
       position: fixed;
@@ -197,6 +199,103 @@
       border: 1px solid #333;
       background: #0f1115;
       color: #fff;
+    }
+
+    /* --- KAFELKI OFERT (OFFERWALL GRID) --- */
+    .offerwalls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+      margin-bottom: 20px;
+    }
+    .offer-card {
+      background: #1e1e26;
+      border-radius: 12px;
+      padding: 20px 10px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .offer-card .card-icon {
+      font-size: 35px;
+      margin-bottom: 10px;
+    }
+    .offer-card h3 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+    .offer-card p {
+      color: #a0a0b0;
+      font-size: 0.85rem;
+      margin-top: 5px;
+    }
+    .offer-card:hover {
+      transform: translateY(-5px);
+      border-color: #00e676;
+      box-shadow: 0 8px 20px rgba(0, 255, 136, 0.2);
+    }
+
+    /* --- OKIENKO NA ANKIETY (OFFER MODAL) --- */
+    .offer-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .offer-modal-box {
+      background: #181b22;
+      width: 95%;
+      max-width: 1200px;
+      height: 90vh;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      border: 1px solid #2a2e39;
+    }
+    .offer-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #2a2e39;
+    }
+    .offer-modal-header h2 {
+      margin: 0;
+      color: #00e676;
+      font-size: 1.3rem;
+    }
+    .offer-close-btn {
+      color: #aaa;
+      font-size: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      line-height: 1;
+    }
+    .offer-close-btn:hover {
+      color: #ff3333;
+    }
+    #iframeContainer {
+      flex: 1;
+      width: 100%;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+    }
+    #iframeContainer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
     }
 
     @media (max-width: 1280px) {
@@ -299,12 +398,21 @@
           <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
         </div>
 
-        <!-- Ściana ankiet -->
+        <!-- ŚCIANA OFERT (NOWE KAFELKI) -->
         <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
-          <h3 style="color: #00e676; margin-bottom: 15px;">📋 Survey Wall</h3>
-          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Complete surveys matched to your profile. Points will be automatically credited upon completion.</p>
+          <h3 style="color: #00e676; margin-bottom: 5px;">🚀 Choose an Offerwall</h3>
+          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning points.</p>
           
-          <iframe id="cpxIframe" width="100%" height="800px" frameBorder="0" src="" style="border-radius: 8px; background: #fff;"></iframe>
+          <div class="offerwalls-grid">
+              
+              <!-- Kafel CPX Research -->
+              <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
+                  <div class="card-icon">📊</div>
+                  <h3>CPX Research</h3>
+                  <p>High paying surveys</p>
+              </div>
+
+          </div>
 
           <!-- MAŁY BANER -->
           <div class="ad-container-box">
@@ -380,7 +488,21 @@
     </div>
   </div>
 
+  <!-- OKIENKO MODAL DLA SIECI (OFFERWALLS) -->
+  <div class="offer-modal-overlay" id="offerModal">
+    <div class="offer-modal-box">
+      <div class="offer-modal-header">
+        <h2 id="offerModalTitle">Offerwall</h2>
+        <span class="offer-close-btn" onclick="closeOfferModal()">&times;</span>
+      </div>
+      <div id="iframeContainer"></div>
+    </div>
+  </div>
+
   <script>
+    // Zmienna do przechowywania wygenerowanego linku CPX
+    let currentUserCpxUrl = "";
+
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
       fetchLiveEarners();
@@ -436,23 +558,52 @@
         document.getElementById("loginBtn").innerText = savedUser;
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("offerwallSection").style.display = "block";
-        document.getElementById("withdrawBtn").style.display = "inline-block"; // Pokazuje przycisk wypłaty
+        document.getElementById("withdrawBtn").style.display = "inline-block"; 
         
         fetchUserPoints();
         
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
         const secureHashParam = md5(savedUser + "-" + appSecureHash);
         
-        const cpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
+        // Zapisujemy wygenerowany URL do zmiennej, zamiast od razu ładować iframe!
+        currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
         
-        document.getElementById("cpxIframe").src = cpxUrl;
       } else {
         document.getElementById("loginBtn").innerText = "Login";
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("offerwallSection").style.display = "none";
-        document.getElementById("withdrawBtn").style.display = "none"; // Ukrywa przycisk wypłaty
+        document.getElementById("withdrawBtn").style.display = "none";
         document.getElementById("userPoints").innerText = "0";
       }
+    }
+
+    // --- FUNKCJE OBSŁUGI KAFELKÓW --- //
+    function openOfferwall(networkId, networkName) {
+      document.getElementById('offerModalTitle').innerText = networkName;
+      
+      let finalUrl = "";
+      
+      if (networkId === 'CPX') {
+        finalUrl = currentUserCpxUrl;
+      }
+
+      if (finalUrl) {
+        document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`;
+        document.getElementById('offerModal').style.display = 'flex';
+      }
+    }
+
+    function closeOfferModal() {
+      document.getElementById('offerModal').style.display = 'none';
+      document.getElementById('iframeContainer').innerHTML = ''; // Kasujemy zawartość, żeby strona działała szybciej w tle
+    }
+
+    // Zamknij Modal klikając w czarne tło obok okienka
+    window.onclick = function(event) {
+        const offerModal = document.getElementById('offerModal');
+        if (event.target === offerModal) {
+            closeOfferModal();
+        }
     }
 
     // FUNKCJE LOGOWANIA
@@ -470,7 +621,7 @@
       }
     }
 
-    // FUNKCJE WYPŁAT (NOWE)
+    // FUNKCJE WYPŁAT
     function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
@@ -481,7 +632,7 @@
 
     function calculateUSD() {
         const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
-        const usd = points * 0.0001; // 100 pkt = 0.01$
+        const usd = points * 0.0001; 
         document.getElementById("usdResult").innerText = "$" + usd.toFixed(4);
     }
 
