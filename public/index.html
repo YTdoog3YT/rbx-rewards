@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RBX Rewards - Earn Free Robux</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #0f1115; color: #ffffff; padding: 20px; }
+    
+    .page-layout { display: flex; justify-content: center; align-items: flex-start; gap: 20px; width: 100%; max-width: 1450px; margin: 0 auto; }
+    
+    .side-nav { width: 220px; flex-shrink: 0; background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 20px 15px; position: sticky; top: 20px; }
+    .nav-logo { font-size: 1.5rem; font-weight: bold; color: #00e676; margin-bottom: 30px; text-align: center; }
+    .nav-item { display: block; padding: 12px 15px; color: #a0a0a0; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
+    .nav-item:hover { background: #1f232e; color: #fff; }
+    .nav-item.active { background: #00e676; color: #000; }
+
+    .sidebar-ad { width: 160px; flex-shrink: 0; position: sticky; top: 20px; display: flex; justify-content: center; background: #14171d; border: 1px dashed #333947; border-radius: 8px; min-height: 620px; padding: 10px; }
+    .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; }
+    
+    header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
+    .user-info { display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end; }
+    .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; }
+    .btn-login, .btn-withdraw { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; }
+    .btn-login { background: #00e676; }
+    .btn-login:hover { background: #00c853; }
+    .btn-withdraw { background: #ffb703; display: none; }
+    .btn-withdraw:hover { background: #ff9e00; }
+    
+    .ad-container { width: 100%; background: #14171d; border: 1px dashed #333947; border-radius: 8px; margin-bottom: 25px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 110px; overflow-x: auto; overflow-y: hidden; }
+    .ad-container-box { width: 100%; max-width: 320px; margin: 20px auto 0 auto; background: #14171d; border: 1px dashed #333947; border-radius: 8px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 270px; overflow: hidden; }
+    .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
+    .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
+    .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s; display: inline-block; margin-top: 15px; }
+    .btn-action:hover { background: #00c853; }
+    
+    .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
+    .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+    .offer-modal-overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; }
+    .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
+    .modal-content input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
+    
+    .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
+    .offer-card { background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; }
+    .offer-card .card-icon { font-size: 35px; margin-bottom: 10px; }
+    .offer-card h3 { margin: 0; color: #fff; font-size: 1.1rem; }
+    .offer-card p { color: #a0a0b0; font-size: 0.85rem; margin-top: 5px; }
+    .offer-card:hover { transform: translateY(-5px); border-color: #00e676; box-shadow: 0 8px 20px rgba(0, 255, 136, 0.2); }
+    .offer-logo { max-width: 140px; max-height: 45px; margin-bottom: 10px; object-fit: contain; filter: invert(1) brightness(1.5); }
+    
+    .offer-modal-box { background: #181b22; width: 95%; max-width: 1200px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8); border: 1px solid #2a2e39; }
+    .offer-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #2a2e39; }
+    .offer-modal-header h2 { margin: 0; color: #00e676; font-size: 1.3rem; }
+    .offer-close-btn { color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; line-height: 1; }
+    .offer-close-btn:hover { color: #ff3333; }
+    #iframeContainer { flex: 1; width: 100%; border-radius: 0 0 12px 12px; overflow: hidden; }
+    #iframeContainer iframe { width: 100%; height: 100%; border: none; background: #fff; }
+    
+    @media (max-width: 1280px) { .sidebar-ad { display: none; } }
+    @media (max-width: 900px) { .side-nav { display: none; } }
+    
+    .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; }
+    .ticker-title { background: #00e676; color: #000; padding: 10px 15px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; z-index: 2; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+    .ticker-container { flex: 1; overflow: hidden; white-space: nowrap; }
+    .ticker-move { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
+    .ticker-item { display: inline-block; margin-right: 40px; color: #e0e0e0; font-size: 0.95rem; }
+    .ticker-item span { color: #ffb703; font-weight: bold; }
+    @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+    .daily-btn { background: linear-gradient(45deg, #ff0055, #ffb703); color: #fff; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4); animation: pulse 2s infinite; transition: all 0.3s ease; }
+    .daily-btn:hover { transform: scale(1.02); }
+    .daily-btn:disabled { background: #333947 !important; color: #888 !important; animation: none !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
+    
+    .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
+    .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
+    .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; }
+    .ref-table th { background: #1e1e26; color: #00e676; }
+    .ref-table tr:hover { background: #14171d; }
+
+    /* STYL SERII LOGOWAŃ */
+    .streak-box { background: #14171d; border: 1px dashed #ffb703; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: inline-block; width: 100%; }
+    .streak-text { color: #ffb703; font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+
+  <div class="page-layout">
+    
+    <nav class="side-nav">
+        <div class="nav-logo">RBX Rewards 💎</div>
+        <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
+        <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
+        <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
+    </nav>
+
+    <aside class="sidebar-ad">
+      <script> atOptions = { 'key' : '93fb80faea7c05146f407641d1535686', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} }; </script>
+      <script src="https://www.highrevenueformat.com/93fb80faea7c05146f407641d1535686/invoke.js"></script>
+    </aside>
+
+    <div class="main-content">
+      <header>
+        <div class="user-info">
+          <div class="points-badge">Points: <span id="userPoints">0</span> 🪙</div>
+          <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()">Withdraw</button>
+          <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Login</button>
+        </div>
+      </header>
+
+      <!-- ZAKŁADKA 1: HOME -->
+      <main id="tab-home">
+        <div class="ticker-wrap">
+          <div class="ticker-title">🔥 Live Earners</div>
+          <div class="ticker-container">
+            <div class="ticker-move" id="liveTicker">
+              <div class="ticker-item">Loading live stats...</div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title">Earn Points</h2>
+
+        <div id="loginPrompt" class="content-box">
+          <h3 style="color: #fff; font-size: 1.3rem;">Login to unlock surveys! 🔒</h3>
+          <p style="color: #a0a0a0; margin-top: 10px;">Enter your Roblox username so we know where to send your points.</p>
+          <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
+        </div>
+
+        <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
+          
+          <div class="streak-box">
+              <span class="streak-text">🔥 Daily Streak: <span id="userStreakDisplay">0</span> Days</span>
+          </div>
+
+          <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Click here for Daily Reward!</button>
+          <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 25px; font-weight: bold; display: none;"></p>
+
+          <h3 style="color: #00e676; margin-bottom: 5px;">🚀 Choose an Offerwall</h3>
+          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning points.</p>
+          
+          <div class="offerwalls-grid">
+              <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
+                  <img src="cpx-logo.png" alt="CPX Research Logo" class="offer-logo">
+                  <h3>CPX Research</h3>
+                  <p>High paying surveys</p>
+              </div>
+              <div class="offer-card" onclick="openOfferwall('JITSCAPE', 'Jitscape')">
+                  <div class="card-icon">🕹️</div>
+                  <h3>Jitscape</h3>
+                  <p>Play Roblox games for points</p>
+              </div>
+          </div>
+
+          <div class="ad-container-box">
+            <script> atOptions = { 'key' : '532efa4a51965f97fbf56df74914bd23', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} }; </script>
+            <script src="https://www.highrevenueformat.com/532efa4a51965f97fbf56df74914bd23/invoke.js"></script>
+          </div>
+        </div>
+
+        <div class="ad-container">
+          <script> atOptions = { 'key' : '626fd5b0faa629e0b217285c12343773', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} }; </script>
+          <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
+        </div>
+      </main>
+
+      <!-- ZAKŁADKA 2: REFERRALS -->
+      <main id="tab-referrals" style="display: none;">
+        <h2 class="section-title">Invite Friends & Earn 15%</h2>
+
+        <div class="content-box">
+          <h3 style="color: #00e676; margin-bottom: 10px;">Your Referral Code</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to use your Roblox username as the code! You will earn a massive 15% of all points they make for life!</p>
+          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;">
+              <span id="myRefCodeDisplay">Log in first</span>
+          </div>
+        </div>
+
+        <div id="redeemCodeSection" class="content-box">
+          <h3 style="color: #fff; margin-bottom: 10px;">Were you invited?</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Enter your friend's code below to support them!</p>
+          <input type="text" id="friendCodeInput" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
+          <br>
+          <button class="btn-action" onclick="submitReferralCode()">Activate Code</button>
+        </div>
+
+        <div id="referralStatsSection" class="content-box" style="display: none;">
+          <h3 style="color: #fff; margin-bottom: 15px;">Your 15% Commission Stats</h3>
+          <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
+              <option value="7days" selected>Last 7 Days</option>
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="30days">Last 30 Days</option>
+          </select>
+
+          <table class="ref-table">
+              <thead>
+                  <tr>
+                      <th>Friend's Username</th>
+                      <th>You Earned (15%)</th>
+                  </tr>
+              </thead>
+              <tbody id="refTableBody">
+                  <tr><td colspan="2" style="text-align: center; color: #888;">Loading stats...</td></tr>
+              </tbody>
+          </table>
+        </div>
+      </main>
+
+      <!-- ZAKŁADKA 3: PROMO CODES -->
+      <main id="tab-promocodes" style="display: none;">
+        <h2 class="section-title">Redeem Promo Codes</h2>
+        <div class="content-box">
+          <h3 style="color: #00e676; margin-bottom: 10px;">Got a Code?</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Check our Discord server for limited promo codes!</p>
+          <input type="text" id="promoCodeInput" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; text-transform: uppercase;">
+          <br>
+          <button class="btn-action" onclick="submitPromoCode()">Redeem Code</button>
+        </div>
+      </main>
+
+    </div>
+
+    <aside class="sidebar-ad">
+      <script> atOptions = { 'key' : '93fb80faea7c05146f407641d1535686', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} }; </script>
+      <script src="https://www.highrevenueformat.com/93fb80faea7c05146f407641d1535686/invoke.js"></script>
+    </aside>
+
+  </div>
+
+  <!-- MODALS -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <h3 style="color: #fff;">Connect Roblox Account</h3>
+      <input type="text" id="usernameInput" placeholder="e.g., YourUsername123">
+      <button class="btn-action" onclick="saveUsername()">Confirm & Login</button>
+      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeLoginModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal" id="withdrawModal">
+    <div class="modal-content">
+      <h3 style="color: #fff;">Withdraw to PayPal</h3>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">100 Points = $0.01 USD</p>
+      <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
+      <input type="number" id="withdrawPoints" placeholder="Amount of Points" oninput="calculateUSD()">
+      <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.0000</span></p>
+      <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()">Request Payout</button>
+      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- OKIENKO REKLAMY DAILY REWARD -->
+  <div class="modal" id="dailyAdModal" style="z-index: 3000;">
+    <div class="modal-content" style="max-width: 500px; padding: 15px;">
+        <h3 style="color: #fff; margin-bottom: 10px;">🎁 Daily Reward Ad</h3>
+        <p style="color: #00e676; font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;" id="adModalTimerDisplay">⏳ Wait 10 seconds...</p>
+        
+        <div style="width: 100%; height: 300px; background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+            <iframe id="dailyAdIframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+        
+        <p style="color: #888; font-size: 0.85rem;">Please wait for the timer to finish to unlock your reward.</p>
+    </div>
+  </div>
+
+  <div class="offer-modal-overlay" id="offerModal">
+    <div class="offer-modal-box">
+      <div class="offer-modal-header">
+        <h2 id="offerModalTitle">Offerwall</h2>
+        <span class="offer-close-btn" onclick="closeOfferModal()">&times;</span>
+      </div>
+      <div id="iframeContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentUserCpxUrl = "";
+    let currentUserJitscapeUrl = "";
+    const jitscapePubId = "plc_xHHxjKbb5p5P";
+    const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
+
+    document.addEventListener("DOMContentLoaded", function() {
+      checkLoginStatus();
+      fetchLiveEarners();
+      setInterval(fetchUserPoints, 5000);
+      setInterval(fetchLiveEarners, 30000); 
+    });
+
+    function switchTab(tabId) {
+        document.getElementById('tab-home').style.display = 'none';
+        document.getElementById('tab-referrals').style.display = 'none';
+        document.getElementById('tab-promocodes').style.display = 'none';
+        
+        document.getElementById('tab-' + tabId).style.display = 'block';
+        
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-' + tabId).classList.add('active');
+
+        if(tabId === 'referrals') loadReferralStats();
+    }
+
+    let cooldownInterval = null; 
+
+    async function fetchUserPoints() {
+      const savedUser = localStorage.getItem("rbx_username");
+      if (!savedUser) return;
+      try {
+        const response = await fetch(`/api/points/${savedUser}`);
+        const data = await response.json();
+        document.getElementById("userPoints").innerText = data.points.toFixed(2);
+        localStorage.setItem("rbx_points", data.points);
+        
+        document.getElementById("userStreakDisplay").innerText = data.streak;
+
+        checkDailyCooldown(data.lastDailyReward);
+
+        if (data.referredBy) {
+            document.getElementById("redeemCodeSection").style.display = "none";
+        }
+      } catch (error) {}
+    }
+
+    function checkDailyCooldown(lastRewardDateStr) {
+        clearInterval(cooldownInterval); 
+        const btn = document.getElementById("dailyRewardBtn");
+        const timerText = document.getElementById("dailyTimerText");
+
+        if (!lastRewardDateStr) { enableDailyButton(btn, timerText); return; }
+        const lastRewardTime = new Date(lastRewardDateStr).getTime();
+        const cooldown = 86400000; 
+
+        const checkTime = () => {
+            const now = new Date().getTime();
+            const timePassed = now - lastRewardTime;
+
+            if (timePassed >= cooldown) {
+                clearInterval(cooldownInterval);
+                enableDailyButton(btn, timerText);
+            } else {
+                btn.disabled = true;
+                btn.innerText = "⏳ Reward Already Claimed";
+                timerText.style.display = "block";
+                
+                const timeLeft = cooldown - timePassed;
+                const h = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((timeLeft / 1000 / 60) % 60);
+                const s = Math.floor((timeLeft / 1000) % 60);
+                timerText.innerText = `Next reward in: ${h}h ${m}m ${s}s`;
+            }
+        };
+        checkTime();
+        cooldownInterval = setInterval(checkTime, 1000); 
+    }
+
+    function enableDailyButton(btn, timerText) {
+        btn.disabled = false;
+        btn.innerText = "🎁 Click here for Daily Reward!";
+        timerText.style.display = "none";
+    }
+
+    let dailyStageTimer = null;
+
+    function handleDailyRewardClick() {
+        const savedUser = localStorage.getItem("rbx_username");
+        if (!savedUser) return;
+        const btn = document.getElementById("dailyRewardBtn");
+
+        document.getElementById("dailyAdModal").style.display = "flex";
+        document.getElementById("dailyAdIframe").src = "https://omg10.com/4/11460742";
+        
+        btn.disabled = true;
+        btn.innerText = "⏳ Watching ad...";
+        
+        let timeLeft = 10;
+        const timerDisplay = document.getElementById("adModalTimerDisplay");
+        timerDisplay.innerText = `⏳ Wait ${timeLeft} seconds...`;
+        
+        dailyStageTimer = setInterval(() => {
+            timeLeft--;
+            timerDisplay.innerText = `⏳ Wait ${timeLeft} seconds...`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(dailyStageTimer);
+                
+                document.getElementById("dailyAdModal").style.display = "none";
+                document.getElementById("dailyAdIframe").src = "";
+                
+                btn.innerText = "🔄 Processing reward...";
+                claimDailyFromServer(savedUser);
+            }
+        }, 1000);
+    }
+
+    async function claimDailyFromServer(username) {
+        try {
+            const response = await fetch('/api/daily-reward', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
+            const data = await response.json();
+            if (!data.error) {
+                fetchUserPoints(); 
+            } else {
+                document.getElementById("dailyRewardBtn").innerText = "❌ " + data.error; 
+            }
+        } catch (error) {
+            alert("Connection error.");
+            document.getElementById("dailyRewardBtn").disabled = false;
+            document.getElementById("dailyRewardBtn").innerText = "🎁 Click here for Daily Reward!";
+        }
+    }
+
+    async function submitReferralCode() {
+        const code = document.getElementById("friendCodeInput").value.trim();
+        const username = localStorage.getItem("rbx_username");
+        if (!code) return alert("Enter a code first!");
+
+        try {
+            const response = await fetch('/api/redeem-code', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, code })
+            });
+            const data = await response.json();
+            
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert(data.message);
+                document.getElementById("redeemCodeSection").style.display = "none";
+            }
+        } catch (error) { alert("Connection error."); }
+    }
+
+    // --- LOGIKA KODÓW PROMOCYJNYCH (DISCORD BOTA) ---
+    async function submitPromoCode() {
+        const code = document.getElementById("promoCodeInput").value.trim();
+        const username = localStorage.getItem("rbx_username");
+        if (!code) return alert("Enter a code first!");
+
+        try {
+            const response = await fetch('/api/redeem-promo', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, promoCode: code })
+            });
+            const data = await response.json();
+            
+            if (data.error) {
+                alert("❌ " + data.error);
+            } else {
+                alert("✅ " + data.message);
+                document.getElementById("promoCodeInput").value = "";
+                fetchUserPoints(); 
+            }
+        } catch (error) { alert("Connection error."); }
+    }
+
+    async function loadReferralStats() {
+        const username = localStorage.getItem("rbx_username");
+        if (!username) return;
+
+        const period = document.getElementById("refFilterSelect").value;
+        const tableBody = document.getElementById("refTableBody");
+        tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #888;">Fetching stats from database...</td></tr>';
+
+        try {
+            const response = await fetch(`/api/referral-stats/${username}?period=${period}`);
+            const stats = await response.json();
+
+            if (stats.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #ffb703;">You have no active friends yet! Give someone your code.</td></tr>';
+            } else {
+                let rows = '';
+                stats.forEach(user => {
+                    rows += `<tr>
+                                <td style="font-weight: bold; color: #fff;">👤 ${user.username}</td>
+                                <td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} 🪙</td>
+                             </tr>`;
+                });
+                tableBody.innerHTML = rows;
+            }
+        } catch (error) {
+            tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: red;">Error loading stats.</td></tr>';
+        }
+    }
+
+    async function fetchLiveEarners() {
+      try {
+        const response = await fetch('/api/latest-earners');
+        const earners = await response.json();
+        if (earners.length > 0) {
+          let tickerHTML = '';
+          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} 🪙</span></div>`; });
+          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} 🪙</span></div>`; });
+          document.getElementById('liveTicker').innerHTML = tickerHTML;
+        }
+      } catch (error) {}
+    }
+
+    function checkLoginStatus() {
+      const savedUser = localStorage.getItem("rbx_username");
+      if (savedUser) {
+        document.getElementById("loginBtn").innerText = savedUser;
+        document.getElementById("loginPrompt").style.display = "none";
+        document.getElementById("offerwallSection").style.display = "block";
+        document.getElementById("withdrawBtn").style.display = "inline-block"; 
+        
+        document.getElementById("myRefCodeDisplay").innerText = savedUser;
+        document.getElementById("referralStatsSection").style.display = "block";
+
+        fetchUserPoints();
+        
+        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
+        const secureHashParam = md5(savedUser + "-" + appSecureHash);
+        currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
+        
+        const message = jitscapePubId + savedUser;
+        const signature = CryptoJS.HmacSHA256(message, jitscapeSecret).toString(CryptoJS.enc.Hex);
+        currentUserJitscapeUrl = `https://wall.jitscape.com/?pubId=${jitscapePubId}&userId=${encodeURIComponent(savedUser)}&signature=${signature}`;
+        
+      } else {
+        document.getElementById("loginBtn").innerText = "Login";
+        document.getElementById("loginPrompt").style.display = "block";
+        document.getElementById("offerwallSection").style.display = "none";
+        document.getElementById("withdrawBtn").style.display = "none";
+        document.getElementById("referralStatsSection").style.display = "none";
+        document.getElementById("userPoints").innerText = "0";
+      }
+    }
+
+    function openOfferwall(networkId, networkName) {
+      document.getElementById('offerModalTitle').innerText = networkName;
+      let finalUrl = networkId === 'CPX' ? currentUserCpxUrl : currentUserJitscapeUrl;
+      if (finalUrl) { document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; document.getElementById('offerModal').style.display = 'flex'; }
+    }
+    function closeOfferModal() { document.getElementById('offerModal').style.display = 'none'; document.getElementById('iframeContainer').innerHTML = ''; }
+    window.onclick = function(event) { if (event.target === document.getElementById('offerModal')) closeOfferModal(); }
+
+    function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
+    function closeLoginModal() { document.getElementById("loginModal").style.display = "none"; }
+    function saveUsername() {
+      const input = document.getElementById("usernameInput").value.trim();
+      if (input) { localStorage.setItem("rbx_username", input); closeLoginModal(); checkLoginStatus(); } 
+      else { alert("Please enter a valid username!"); }
+    }
+    function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
+    function closeWithdrawModal() { 
+        document.getElementById("withdrawModal").style.display = "none"; 
+        document.getElementById("paypalEmail").value = ""; document.getElementById("withdrawPoints").value = ""; document.getElementById("usdResult").innerText = "$0.0000";
+    }
+    function calculateUSD() {
+        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
+        document.getElementById("usdResult").innerText = "$" + (points * 0.0001).toFixed(4);
+    }
+    async function submitWithdraw() {
+        const email = document.getElementById("paypalEmail").value.trim();
+        const points = parseFloat(document.getElementById("withdrawPoints").value);
+        const username = localStorage.getItem("rbx_username");
+        if (!email || !email.includes("@")) return alert("Please enter a valid PayPal email.");
+        if (!points || points <= 0) return alert("Please enter a valid amount of points.");
+
+        try {
+            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
+            const data = await response.json();
+            if (data.error) alert("Error: " + data.error);
+            else {
+                alert(`Success! Requested payout: $${data.usd.toFixed(4)}.`);
+                document.getElementById("userPoints").innerText = data.newBalance.toFixed(2);
+                localStorage.setItem("rbx_points", data.newBalance);
+                closeWithdrawModal();
+            }
+        } catch (error) { alert("Connection error."); }
+    }
+  </script>
+</body>
+</html>
