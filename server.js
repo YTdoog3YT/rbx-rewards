@@ -7,7 +7,7 @@ const crypto = require('crypto');
 // -----------------------------------------------------
 // 🤖 KONFIGURACJA BOTA DISCORD
 // -----------------------------------------------------
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN; 
+const DISCORD_BOT_TOKEN = "MTU0NjI1MDMyOTA3MzY1NTg1OQ.GP524i.7QnPiBy7iZA4GRuL2UexC_WH7rrAs1PCQcFEw0"; 
 const ADMIN_DISCORD_ID = "398911896893521921";
 
 const app = express();
@@ -205,9 +205,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
 // -----------------------------------------------------
-// LOGIKA BOTA DISCORD (TWORZENIE KODÓW)
+// LOGIKA BOTA DISCORD (TWORZENIE, LISTA I USUWANIE KODÓW)
 // -----------------------------------------------------
-if (DISCORD_BOT_TOKEN !== "TWÓJ_TOKEN_BOTA" && DISCORD_BOT_TOKEN) {
+if (DISCORD_BOT_TOKEN) {
     const { Client, GatewayIntentBits } = require('discord.js');
     const client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
@@ -216,14 +216,15 @@ if (DISCORD_BOT_TOKEN !== "TWÓJ_TOKEN_BOTA" && DISCORD_BOT_TOKEN) {
     client.on('messageCreate', async message => {
         if (message.author.bot) return;
 
-        // Komenda: !kod NAZWA ILOŚĆ_PUNKTÓW MAX_UŻYĆ (np. !kod DROP50 50 10)
-        if (message.content.startsWith('!kod ')) {
-            
-            // Weryfikacja czy to Ty wpisujesz komendę
+        // Weryfikacja uprawnień (tylko Ty możesz sterować kodami)
+        if (message.content.startsWith('!kod') || message.content.startsWith('!kody') || message.content.startsWith('!usunkod')) {
             if (message.author.id !== ADMIN_DISCORD_ID) {
-                return message.reply('❌ Brak uprawnień! Tylko Właściciel może tworzyć kody.');
+                return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać kodami.');
             }
+        }
 
+        // 1. TWORZENIE KODU: !kod NAZWA PUNKTY MAX_UŻYĆ
+        if (message.content.startsWith('!kod ')) {
             const args = message.content.split(' ');
             if (args.length !== 4) return message.reply('⚠️ Poprawne użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`');
 
@@ -240,15 +241,57 @@ if (DISCORD_BOT_TOKEN !== "TWÓJ_TOKEN_BOTA" && DISCORD_BOT_TOKEN) {
                 const newPromo = new PromoCode({ code: codeName, reward: reward, maxUses: maxUses });
                 await newPromo.save();
 
-                message.reply(`✅ **Kod utworzony pomyślnie!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Wartość: **${reward} pkt**\n👥 Limit osób: **${maxUses}**\nMożesz to ogłosić graczom!`);
+                message.reply(`✅ **Kod utworzony pomyślnie!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Wartość: **${reward} pkt**\n👥 Limit osób: **${maxUses}**`);
             } catch (err) {
                 message.reply('❌ Wystąpił błąd podczas zapisywania kodu w bazie MongoDB.');
+            }
+        }
+
+        // 2. LISTA AKTYWNYCH KODÓW: !kody
+        if (message.content === '!kody') {
+            try {
+                // Szukamy kodów, gdzie currentUses jest mniejsze niż maxUses
+                const activeCodes = await PromoCode.find({ 
+                    $expr: { $lt: ["$currentUses", "$maxUses"] } 
+                });
+
+                if (activeCodes.length === 0) {
+                    return message.reply('📭 Brak aktywnych kodów w bazie danych.');
+                }
+
+                let responseText = '📋 **Lista aktywnych kodów promocyjnych:**\n';
+                activeCodes.forEach(p => {
+                    responseText += `🎫 **${p.code}** ➔ 💰 **${p.reward} pkt** ➔ 👥 Użycia: **${p.currentUses} / ${p.maxUses}**\n`;
+                });
+
+                message.reply(responseText);
+            } catch (err) {
+                message.reply('❌ Wystąpił błąd podczas pobierania listy kodów.');
+            }
+        }
+
+        // 3. USUWANIE KODU: !usunkod NAZWA
+        if (message.content.startsWith('!usunkod ')) {
+            const args = message.content.split(' ');
+            if (args.length !== 2) return message.reply('⚠️ Poprawne użycie: `!usunkod <NAZWA_KODU>`');
+
+            const codeName = args[1].toUpperCase();
+
+            try {
+                const deleted = await PromoCode.findOneAndDelete({ code: codeName });
+                if (!deleted) {
+                    return message.reply(`❌ Nie znaleziono aktywnego kodu o nazwie **${codeName}**.`);
+                }
+
+                message.reply(`🗑️ Kod **${codeName}** został pomyślnie usunięty z bazy!`);
+            } catch (err) {
+                message.reply('❌ Wystąpił błąd podczas usuwania kodu.');
             }
         }
     });
 
     client.once('ready', () => {
-        console.log(`🤖 Bot Discord (${client.user.tag}) połączony i gotowy do tworzenia kodów!`);
+        console.log(`🤖 Bot Discord (${client.user.tag}) połączony i zarządza kodami!`);
     });
 
     client.login(DISCORD_BOT_TOKEN).catch(console.error);
