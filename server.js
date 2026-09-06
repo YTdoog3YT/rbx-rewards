@@ -1,5 +1,3 @@
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-console.log("Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -11,6 +9,8 @@ const crypto = require('crypto');
 // -----------------------------------------------------
 const DISCORD_BOT_TOKEN = "MTU0NjI1MDMyOTA3MzY1NTg1OQ.GP524i.7QnPiBy7iZA4GRuL2UexC_WH7rrAs1PCQcFEw0"; 
 const ADMIN_DISCORD_ID = "398911896893521921";
+
+console.log("🔥 Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
 
 const app = express();
 app.use(cors());
