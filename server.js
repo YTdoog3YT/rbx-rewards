@@ -1,4 +1,5 @@
-console.log("🔥 SERWER WYSTARTOWAŁ I CZYTA SERVER.JS!");
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+console.log("Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
