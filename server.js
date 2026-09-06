@@ -7,7 +7,7 @@ const crypto = require('crypto');
 // -----------------------------------------------------
 // 🤖 KONFIGURACJA BOTA DISCORD
 // -----------------------------------------------------
-const DISCORD_BOT_TOKEN = "MTU0NjI1MDMyOTA3MzY1NTg1OQ.GP524i.7QnPiBy7iZA4GRuL2UexC_WH7rrAs1PCQcFEw0"; 
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
 console.log("🔥 Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
