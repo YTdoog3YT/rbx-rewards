@@ -42,11 +42,12 @@ const EarningSchema = new mongoose.Schema({
 });
 const Earning = mongoose.model('Earning', EarningSchema);
 
-// 🔥 POPRAWIONY SCHEMAT WYPŁAT (Tylko Robuxy, bez PayPala)
+// 🔥 PRZYWRÓCONY SCHEMAT PAYPAL
 const PayoutSchema = new mongoose.Schema({
     username: String,
+    paypalEmail: String,
     pointsWithdrawn: Number,
-    robuxAmount: Number,
+    usdAmount: Number,
     status: { type: String, default: 'Pending' },
     createdAt: { type: Date, default: Date.now }
 });
@@ -115,10 +116,10 @@ app.get('/api/latest-earners', async (req, res) => {
     try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 POPRAWIONY ENDPOINT WYPŁAT (1 Punkt = 1 Robux)
+// 🔥 PRZYWRÓCONY PAYPAL Z NOWĄ EKONOMIĄ (1 pkt = 0.025$)
 app.post('/api/withdraw', async (req, res) => {
-    const { username, points } = req.body;
-    if (!username || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
+    const { username, paypalEmail, points } = req.body;
+    if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
     try {
         const user = await User.findOne({ username: username });
         if (!user || user.points < points) return res.status(400).json({ error: 'Not enough points!' });
@@ -126,12 +127,13 @@ app.post('/api/withdraw', async (req, res) => {
         user.points -= points; 
         await user.save();
         
-        await new Payout({ username, pointsWithdrawn: points, robuxAmount: points }).save();
-        res.json({ success: true, newBalance: user.points, robux: points });
+        const usdAmount = points * 0.025; // 40 punktów = 1$
+        
+        await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
+        res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 POPRAWIONY MNOŻNIK JITSCAPE (20 punktów za 1 Dolar, żeby wyrównać z CPX)
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
@@ -142,7 +144,6 @@ app.all('/api/jitscape-postback', async (req, res) => {
     if (data.amountMilliCents == 0) return res.status(200).send('Test OK');
     res.status(200).send('OK');
     
-    // 100,000 milliCents = $1. Gracze dostają 20 punktów za każdego zarobionego dolara.
     const pointsToAward = parseFloat(((data.amountMilliCents / 100000) * 20).toFixed(2));
     
     try {

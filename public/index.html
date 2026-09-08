@@ -224,13 +224,14 @@
     </div>
   </div>
 
-  <!-- 🔥 POPRAWIONE OKIENKO WYPŁAT (Tylko Robuxy, przelicznik 1:1) -->
+  <!-- 🔥 PRZYWRÓCONE OKIENKO PAYPAL (40 pkt = 1.00 USD) -->
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
-      <h3 style="color: #fff;">Withdraw Robux</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">1 Point = 1 Robux</p>
-      <input type="number" id="withdrawPoints" placeholder="Amount of Points" oninput="calculateRobux()">
-      <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="robuxResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">0 R$</span></p>
+      <h3 style="color: #fff;">Withdraw to PayPal</h3>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">40 Points = $1.00 USD</p>
+      <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
+      <input type="number" id="withdrawPoints" placeholder="Amount of Points" oninput="calculateUSD()">
+      <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
       <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()">Request Payout</button>
       <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()">Cancel</button>
     </div>
@@ -571,30 +572,34 @@
       else { alert("Please enter a valid username!"); }
     }
     
-    // 🔥 POPRAWIONE FUNKCJE DO OBLICZANIA ROBUXÓW W OKIENKU WYPŁATY
+    // 🔥 POPRAWIONE FUNKCJE PAYPAL (Z LICZENIEM DOLARÓW: Punkty * 0.025)
     function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
+        document.getElementById("paypalEmail").value = ""; 
         document.getElementById("withdrawPoints").value = ""; 
-        document.getElementById("robuxResult").innerText = "0 R$";
+        document.getElementById("usdResult").innerText = "$0.00";
     }
     
-    function calculateRobux() {
+    function calculateUSD() {
         const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
-        document.getElementById("robuxResult").innerText = points.toFixed(2) + " R$";
+        const usdValue = points * 0.025; // 40 punktów = 1 USD
+        document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
     }
     
     async function submitWithdraw() {
+        const email = document.getElementById("paypalEmail").value.trim();
         const points = parseFloat(document.getElementById("withdrawPoints").value);
         const username = localStorage.getItem("rbx_username");
+        if (!email || !email.includes("@")) return alert("Please enter a valid PayPal email.");
         if (!points || points <= 0) return alert("Please enter a valid amount of points.");
 
         try {
-            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, points }) });
+            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);
             else {
-                alert(`Success! Requested payout: ${data.robux} Robux.`);
+                alert(`Success! Requested payout: $${data.usd.toFixed(2)}.`);
                 document.getElementById("userPoints").innerText = data.newBalance.toFixed(2);
                 localStorage.setItem("rbx_points", data.newBalance);
                 closeWithdrawModal();
