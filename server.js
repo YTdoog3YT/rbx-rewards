@@ -31,7 +31,7 @@ const UserSchema = new mongoose.Schema({
     lastDailyReward: { type: Date, default: null },
     referredBy: { type: String, default: null },
     streak: { type: Number, default: 0 },
-    referredUsers: { type: [String], default: [] } // 🔥 DODANE: Tablica na nicki poleconych osób!
+    referredUsers: { type: [String], default: [] }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -96,8 +96,6 @@ app.get('/api/points/:username', async (req, res) => {
         const username = req.params.username;
         const user = await User.findOne({ username: username });
         
-        // 🔥 WYSZUKIWANIE STARYCH I NOWYCH POLECONYCH:
-        // Szukamy w całej bazie wszystkich graczy, którzy mają Twój nick w polu "referredBy"
         const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
         const allReferredUsernames = referredDocs.map(u => u.username);
 
@@ -106,7 +104,7 @@ app.get('/api/points/:username', async (req, res) => {
             lastDailyReward: user ? user.lastDailyReward : null, 
             referredBy: user ? user.referredBy : null, 
             streak: user ? (user.streak || 0) : 0,
-            referredUsers: allReferredUsernames // <--- Wysyłamy pełną listę na stronę!
+            referredUsers: allReferredUsernames
         });
     } catch (error) { 
         res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0, referredUsers: [] }); 
@@ -167,7 +165,6 @@ app.post('/api/daily-reward', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 TUTAJ SĄ GŁÓWNE ZMIANY (Zapisywanie nicku na liście właściciela kodu)
 app.post('/api/redeem-code', async (req, res) => {
     const { username, code } = req.body;
     if (!username || !code) return res.status(400).json({ error: 'Missing data.' });
@@ -180,11 +177,9 @@ app.post('/api/redeem-code', async (req, res) => {
         let referrer = await User.findOne({ username: new RegExp(`^${code}$`, 'i') });
         if (!referrer) return res.status(404).json({ error: 'Referral not found.' });
         
-        // Zapisujemy użycie po stronie nowego gracza
         user.referredBy = referrer.username; 
         await user.save();
 
-        // 🔥 DODANE: Zapisujemy nick gracza na liście właściciela reflinku
         if (!referrer.referredUsers.includes(user.username)) {
             referrer.referredUsers.push(user.username);
             await referrer.save();
@@ -194,14 +189,20 @@ app.post('/api/redeem-code', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
+// 🔥 TUTAJ WJECHAŁA NAPRAWA DLA index.html
 app.get('/api/referral-stats/:username', async (req, res) => {
     try {
         const username = req.params.username;
-        // Szukamy w bazie wszystkich, którzy w "referredBy" mają wpisany Twój nick
         const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
         
-        // Zwracamy na stronę listę tych użytkowników
-        res.json(referredDocs); 
+        const stats = referredDocs.map(user => {
+            return {
+                username: user.username,
+                earned: user.points * 0.15 
+            };
+        });
+
+        res.json(stats); 
     } catch (error) {
         console.error("Błąd pobierania poleconych:", error);
         res.json([]);
