@@ -165,6 +165,29 @@ app.post('/api/daily-reward', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
+// 🔥 NOWY ENDPOINT: NIELIMITOWANE KLIKNIĘCIA (BONUS CLICKS)
+app.post('/api/bonus-click', async (req, res) => {
+    const { username } = req.body; 
+    if (!username) return res.status(400).json({ error: 'Missing username.' });
+    try {
+        let user = await User.findOne({ username: username });
+        if (!user) user = new User({ username: username, points: 0, streak: 0 });
+        
+        // 🔥 TUTAJ ZMIENIASZ ILE PUNKTÓW DAJE JEDEN KLIK W BONUSIE (obecnie 2 pkt)
+        const rewardPoints = 2; 
+        
+        user.points += rewardPoints; 
+        await user.save();
+        
+        await new Earning({ username: username, amount: rewardPoints }).save();
+        await processReferralBonus(username, rewardPoints);
+        
+        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} points from Bonus Click!` });
+    } catch (error) { 
+        res.status(500).json({ error: 'Server error.' }); 
+    }
+});
+
 app.post('/api/redeem-code', async (req, res) => {
     const { username, code } = req.body;
     if (!username || !code) return res.status(400).json({ error: 'Missing data.' });
@@ -189,7 +212,6 @@ app.post('/api/redeem-code', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 TUTAJ NAPRAWIONA LOGIKA KALKULACJI STATYSTYK NA PODSTAWIE DAT
 app.get('/api/referral-stats/:username', async (req, res) => {
     try {
         const username = req.params.username;
@@ -241,7 +263,6 @@ app.get('/api/referral-stats/:username', async (req, res) => {
             };
         });
 
-        // Sortujemy od najlepiej zarabiających do najgorzej
         finalStats.sort((a, b) => b.earned - a.earned);
 
         res.json(finalStats); 
