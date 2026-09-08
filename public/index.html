@@ -1,543 +1,394 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RBX Rewards - Earn Free Robux</title>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const mongoose = require('mongoose');
+const crypto = require('crypto');
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #0f1115; color: #ffffff; padding: 20px; }
-    
-    .page-layout { display: flex; justify-content: center; align-items: flex-start; gap: 20px; width: 100%; max-width: 1450px; margin: 0 auto; }
-    
-    .side-nav { width: 220px; flex-shrink: 0; background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 20px 15px; position: sticky; top: 20px; }
-    .nav-logo { font-size: 1.5rem; font-weight: bold; color: #00e676; margin-bottom: 30px; text-align: center; }
-    .nav-item { display: block; padding: 12px 15px; color: #a0a0a0; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
-    .nav-item:hover { background: #1f232e; color: #fff; }
-    .nav-item.active { background: #00e676; color: #000; }
+// -----------------------------------------------------
+// 🤖 KONFIGURACJA BOTA DISCORD
+// -----------------------------------------------------
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+const ADMIN_DISCORD_ID = "398911896893521921";
 
-    .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; }
-    
-    header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
-    .user-info { display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end; }
-    .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; }
-    .btn-login, .btn-withdraw { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; }
-    .btn-login { background: #00e676; }
-    .btn-login:hover { background: #00c853; }
-    .btn-withdraw { background: #ffb703; display: none; }
-    .btn-withdraw:hover { background: #ff9e00; }
-    
-    .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
-    .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
-    .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s; display: inline-block; margin-top: 15px; }
-    .btn-action:hover { background: #00c853; }
-    
-    .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
-    .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
-    .offer-modal-overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; }
-    .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
-    .modal-content input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
-    
-    .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
-    .offer-card { background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; }
-    .offer-card .card-icon { font-size: 35px; margin-bottom: 10px; }
-    .offer-card h3 { margin: 0; color: #fff; font-size: 1.1rem; }
-    .offer-card p { color: #a0a0b0; font-size: 0.85rem; margin-top: 5px; }
-    .offer-card:hover { transform: translateY(-5px); border-color: #00e676; box-shadow: 0 8px 20px rgba(0, 255, 136, 0.2); }
-    .offer-logo { max-width: 140px; max-height: 45px; margin-bottom: 10px; object-fit: contain; filter: invert(1) brightness(1.5); }
-    
-    .offer-modal-box { background: #181b22; width: 95%; max-width: 1200px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8); border: 1px solid #2a2e39; }
-    .offer-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #2a2e39; }
-    .offer-modal-header h2 { margin: 0; color: #00e676; font-size: 1.3rem; }
-    .offer-close-btn { color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; line-height: 1; }
-    .offer-close-btn:hover { color: #ff3333; }
-    #iframeContainer { flex: 1; width: 100%; border-radius: 0 0 12px 12px; overflow: hidden; }
-    #iframeContainer iframe { width: 100%; height: 100%; border: none; background: #fff; }
-    
-    @media (max-width: 900px) { .side-nav { display: none; } }
-    
-    .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; }
-    .ticker-title { background: #00e676; color: #000; padding: 10px 15px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; z-index: 2; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-    .ticker-container { flex: 1; overflow: hidden; white-space: nowrap; }
-    .ticker-move { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
-    .ticker-item { display: inline-block; margin-right: 40px; color: #e0e0e0; font-size: 0.95rem; }
-    .ticker-item span { color: #ffb703; font-weight: bold; }
-    @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+console.log("🔥 Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
 
-    .daily-btn { background: linear-gradient(45deg, #ff0055, #ffb703); color: #fff; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4); animation: pulse 2s infinite; transition: all 0.3s ease; }
-    .daily-btn:hover { transform: scale(1.02); }
-    .daily-btn:disabled { background: #333947 !important; color: #888 !important; animation: none !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
-    
-    .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
-    .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
-    .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; }
-    .ref-table th { background: #1e1e26; color: #00e676; }
-    .ref-table tr:hover { background: #14171d; }
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-    /* STYL SERII LOGOWAŃ */
-    .streak-box { background: #14171d; border: 1px dashed #ffb703; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: inline-block; width: 100%; }
-    .streak-text { color: #ffb703; font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; }
-  </style>
-</head>
-<body>
+const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
 
-  <div class="page-layout">
-    
-    <nav class="side-nav">
-        <div class="nav-logo">RBX Rewards 💎</div>
-        <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
-        <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
-        <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
-    </nav>
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('✅ Baza MongoDB podłączona pancernie!'))
+    .catch(err => console.error('❌ Błąd bazy:', err));
 
-    <!-- Usunięto reklamy poboczne -->
+// SCHEMATY
+const UserSchema = new mongoose.Schema({
+    username: String,
+    points: { type: Number, default: 0 },
+    lastDailyReward: { type: Date, default: null },
+    referredBy: { type: String, default: null },
+    streak: { type: Number, default: 0 },
+    referredUsers: { type: [String], default: [] }
+});
+const User = mongoose.model('User', UserSchema);
 
-    <div class="main-content">
-      <header>
-        <div class="user-info">
-          <div class="points-badge">Points: <span id="userPoints">0</span> 🪙</div>
-          <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()">Withdraw</button>
-          <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Login</button>
-        </div>
-      </header>
+const EarningSchema = new mongoose.Schema({
+    username: String,
+    amount: Number,
+    createdAt: { type: Date, default: Date.now }
+});
+const Earning = mongoose.model('Earning', EarningSchema);
 
-      <!-- ZAKŁADKA 1: HOME -->
-      <main id="tab-home">
-        <div class="ticker-wrap">
-          <div class="ticker-title">🔥 Live Earners</div>
-          <div class="ticker-container">
-            <div class="ticker-move" id="liveTicker">
-              <div class="ticker-item">Loading live stats...</div>
-            </div>
-          </div>
-        </div>
+const PayoutSchema = new mongoose.Schema({
+    username: String,
+    paypalEmail: String,
+    pointsWithdrawn: Number,
+    usdAmount: Number,
+    status: { type: String, default: 'Pending' },
+    createdAt: { type: Date, default: Date.now }
+});
+const Payout = mongoose.model('Payout', PayoutSchema);
 
-        <h2 class="section-title">Earn Points</h2>
+const PromoCodeSchema = new mongoose.Schema({
+    code: { type: String, unique: true, uppercase: true },
+    reward: Number,
+    maxUses: Number,
+    currentUses: { type: Number, default: 0 },
+    usedBy: [String] 
+});
+const PromoCode = mongoose.model('PromoCode', PromoCodeSchema);
 
-        <div id="loginPrompt" class="content-box">
-          <h3 style="color: #fff; font-size: 1.3rem;">Login to unlock surveys! 🔒</h3>
-          <p style="color: #a0a0a0; margin-top: 10px;">Enter your Roblox username so we know where to send your points.</p>
-          <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
-        </div>
+// NALICZANIE 15% DLA POLECAJĄCEGO
+async function processReferralBonus(username, amountEarned) {
+    try {
+        const user = await User.findOne({ username: username });
+        if (user && user.referredBy) {
+            const bonus = parseFloat((amountEarned * 0.15).toFixed(2));
+            const referrer = await User.findOne({ username: user.referredBy });
+            if (referrer) {
+                referrer.points += bonus;
+                await referrer.save();
+            }
+        }
+    } catch (err) { console.error("Błąd 15%:", err); }
+}
 
-        <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
-          
-          <div class="streak-box">
-              <span class="streak-text">🔥 Daily Streak: <span id="userStreakDisplay">0</span> Days</span>
-          </div>
+// ENDPOINTY REKLAM I PUNKTÓW
+app.get('/postback', async (req, res) => {
+    const userId = req.query.user_id; const amount = parseFloat(req.query.amount_local); const status = req.query.status;
+    res.status(200).send('OK'); 
+    if ((status === '1' || status === '2') && userId && amount) {
+        try {
+            let user = await User.findOne({ username: userId });
+            if (!user) user = new User({ username: userId, points: 0 });
+            user.points += amount; await user.save();
+            await new Earning({ username: userId, amount: amount }).save();
+            await processReferralBonus(userId, amount);
+        } catch (error) {}
+    }
+});
 
-          <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Click here for Daily Reward!</button>
-          <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 25px; font-weight: bold; display: none;"></p>
+app.get('/api/points/:username', async (req, res) => {
+    try {
+        const username = req.params.username;
+        const user = await User.findOne({ username: username });
+        
+        const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
+        const allReferredUsernames = referredDocs.map(u => u.username);
 
-          <h3 style="color: #00e676; margin-bottom: 5px;">🚀 Choose an Offerwall</h3>
-          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning points.</p>
-          
-          <div class="offerwalls-grid">
-              <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
-                  <img src="cpx-logo.png" alt="CPX Research Logo" class="offer-logo">
-                  <h3>CPX Research</h3>
-                  <p>High paying surveys</p>
-              </div>
-              <div class="offer-card" onclick="openOfferwall('JITSCAPE', 'Jitscape')">
-                  <div class="card-icon">🕹️</div>
-                  <h3>Jitscape</h3>
-                  <p>Play Roblox games for points</p>
-              </div>
-          </div>
-        </div>
+        res.json({ 
+            points: user ? user.points : 0, 
+            lastDailyReward: user ? user.lastDailyReward : null, 
+            referredBy: user ? user.referredBy : null, 
+            streak: user ? (user.streak || 0) : 0,
+            referredUsers: allReferredUsernames
+        });
+    } catch (error) { 
+        res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0, referredUsers: [] }); 
+    }
+});
 
-      </main>
+app.get('/api/latest-earners', async (req, res) => {
+    try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
+});
 
-      <!-- ZAKŁADKA 2: REFERRALS -->
-      <main id="tab-referrals" style="display: none;">
-        <h2 class="section-title">Invite Friends & Earn 15%</h2>
+app.post('/api/withdraw', async (req, res) => {
+    const { username, paypalEmail, points } = req.body;
+    if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user || user.points < points) return res.status(400).json({ error: 'Not enough points!' });
+        user.points -= points; await user.save();
+        const usdAmount = points * 0.0001;
+        await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
+        res.json({ success: true, newBalance: user.points, usd: usdAmount });
+    } catch (error) { res.status(500).json({ error: 'Server error.' }); }
+});
 
-        <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;">Your Referral Code</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to use your Roblox username as the code! You will earn a massive 15% of all points they make for life!</p>
-          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;">
-              <span id="myRefCodeDisplay">Log in first</span>
-          </div>
-        </div>
+app.all('/api/jitscape-postback', async (req, res) => {
+    const data = req.method === 'POST' ? req.body : req.query;
+    if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
+    const JITSCAPE_SECRET = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
+    if (data.signature !== crypto.createHmac('sha256', JITSCAPE_SECRET).update(`${data.txId}:${data.amountMilliCents}:${data.userId}`).digest('hex')) return res.status(400).send('Invalid sig');
+    if (data.amountMilliCents == 0) return res.status(200).send('Test OK');
+    res.status(200).send('OK');
+    const pointsToAward = parseFloat(((data.amountMilliCents / 1000) * 50).toFixed(2));
+    try {
+        let user = await User.findOne({ username: data.userId });
+        if (!user) user = new User({ username: data.userId, points: 0 });
+        user.points += pointsToAward; await user.save();
+        await new Earning({ username: data.userId, amount: pointsToAward }).save();
+        await processReferralBonus(data.userId, pointsToAward);
+    } catch (error) {}
+});
 
-        <div id="redeemCodeSection" class="content-box">
-          <h3 style="color: #fff; margin-bottom: 10px;">Were you invited?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Enter your friend's code below to support them!</p>
-          <input type="text" id="friendCodeInput" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
-          <br>
-          <button class="btn-action" onclick="submitReferralCode()">Activate Code</button>
-        </div>
+app.post('/api/daily-reward', async (req, res) => {
+    const { username } = req.body; if (!username) return res.status(400).json({ error: 'Missing username.' });
+    try {
+        let user = await User.findOne({ username: username });
+        if (!user) user = new User({ username: username, points: 0, streak: 0 });
+        const now = new Date(); let currentStreak = user.streak || 0;
+        if (user.lastDailyReward) {
+            const timeDiff = now - user.lastDailyReward;
+            if (timeDiff < 86400000) return res.status(400).json({ error: `Wait 24h!` });
+            else if (timeDiff <= 172800000) currentStreak += 1;
+            else currentStreak = 1;
+        } else { currentStreak = 1; }
+        const rewardPoints = 10; user.points += rewardPoints; user.lastDailyReward = now; user.streak = currentStreak;
+        await user.save();
+        await new Earning({ username: username, amount: rewardPoints }).save();
+        await processReferralBonus(username, rewardPoints);
+        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} points!` });
+    } catch (error) { res.status(500).json({ error: 'Server error.' }); }
+});
 
-        <div id="referralStatsSection" class="content-box" style="display: none;">
-          <h3 style="color: #fff; margin-bottom: 15px;">Your 15% Commission Stats</h3>
-          <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="7days" selected>Last 7 Days</option>
-              <option value="30days">Last 30 Days</option>
-          </select>
+// 🔥 NOWY ENDPOINT: NIELIMITOWANE KLIKNIĘCIA (BONUS CLICKS)
+app.post('/api/bonus-click', async (req, res) => {
+    const { username } = req.body; 
+    if (!username) return res.status(400).json({ error: 'Missing username.' });
+    try {
+        let user = await User.findOne({ username: username });
+        if (!user) user = new User({ username: username, points: 0, streak: 0 });
+        
+        // 🔥 TUTAJ ZMIENIASZ ILE PUNKTÓW DAJE JEDEN KLIK W BONUSIE (obecnie 2 pkt)
+        const rewardPoints = 2; 
+        
+        user.points += rewardPoints; 
+        await user.save();
+        
+        await new Earning({ username: username, amount: rewardPoints }).save();
+        await processReferralBonus(username, rewardPoints);
+        
+        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} points from Bonus Click!` });
+    } catch (error) { 
+        res.status(500).json({ error: 'Server error.' }); 
+    }
+});
 
-          <table class="ref-table">
-              <thead>
-                  <tr>
-                      <th>Friend's Username</th>
-                      <th>You Earned (15%)</th>
-                  </tr>
-              </thead>
-              <tbody id="refTableBody">
-                  <tr><td colspan="2" style="text-align: center; color: #888;">Loading stats...</td></tr>
-              </tbody>
-          </table>
-        </div>
-      </main>
+app.post('/api/redeem-code', async (req, res) => {
+    const { username, code } = req.body;
+    if (!username || !code) return res.status(400).json({ error: 'Missing data.' });
+    if (username.toLowerCase() === code.toLowerCase()) return res.status(400).json({ error: "Can't refer yourself!" });
+    try {
+        let user = await User.findOne({ username });
+        if (!user) user = new User({ username: username, points: 0 });
+        if (user.referredBy) return res.status(400).json({ error: 'Already used referral code!' });
+        
+        let referrer = await User.findOne({ username: new RegExp(`^${code}$`, 'i') });
+        if (!referrer) return res.status(404).json({ error: 'Referral not found.' });
+        
+        user.referredBy = referrer.username; 
+        await user.save();
 
-      <!-- ZAKŁADKA 3: PROMO CODES -->
-      <main id="tab-promocodes" style="display: none;">
-        <h2 class="section-title">Redeem Promo Codes</h2>
-        <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;">Got a Code?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Check our Discord server for limited promo codes!</p>
-          <input type="text" id="promoCodeInput" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; text-transform: uppercase;">
-          <br>
-          <button class="btn-action" onclick="submitPromoCode()">Redeem Code</button>
-        </div>
-      </main>
+        if (!referrer.referredUsers.includes(user.username)) {
+            referrer.referredUsers.push(user.username);
+            await referrer.save();
+        }
 
-    </div>
+        res.json({ success: true, message: 'Code activated!' });
+    } catch (error) { res.status(500).json({ error: 'Server error.' }); }
+});
 
-  </div>
+app.get('/api/referral-stats/:username', async (req, res) => {
+    try {
+        const username = req.params.username;
+        const period = req.query.period || '7days';
 
-  <!-- MODALS -->
-  <div class="modal" id="loginModal">
-    <div class="modal-content">
-      <h3 style="color: #fff;">Connect Roblox Account</h3>
-      <input type="text" id="usernameInput" placeholder="e.g., YourUsername123">
-      <button class="btn-action" onclick="saveUsername()">Confirm & Login</button>
-      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeLoginModal()">Cancel</button>
-    </div>
-  </div>
+        let startDate = new Date(0);
+        let endDate = new Date();
+        const now = new Date();
 
-  <div class="modal" id="withdrawModal">
-    <div class="modal-content">
-      <h3 style="color: #fff;">Withdraw to PayPal</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">100 Points = $0.01 USD</p>
-      <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
-      <input type="number" id="withdrawPoints" placeholder="Amount of Points" oninput="calculateUSD()">
-      <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.0000</span></p>
-      <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()">Request Payout</button>
-      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()">Cancel</button>
-    </div>
-  </div>
+        if (period === 'today') {
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+        } else if (period === 'yesterday') {
+            const yesterdayStart = new Date();
+            yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+            startDate = new Date(yesterdayStart.setHours(0, 0, 0, 0));
+            
+            const yesterdayEnd = new Date();
+            yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
+            yesterdayEnd.setHours(23, 59, 59, 999);
+            endDate = yesterdayEnd;
+        } else if (period === '7days') {
+            startDate = new Date(now.setDate(now.getDate() - 7));
+        } else if (period === '30days') {
+            startDate = new Date(now.setDate(now.getDate() - 30));
+        }
 
-  <div class="offer-modal-overlay" id="offerModal">
-    <div class="offer-modal-box">
-      <div class="offer-modal-header">
-        <h2 id="offerModalTitle">Offerwall</h2>
-        <span class="offer-close-btn" onclick="closeOfferModal()">&times;</span>
-      </div>
-      <div id="iframeContainer"></div>
-    </div>
-  </div>
+        const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
+        const referredUsernames = referredDocs.map(u => u.username);
 
-  <script>
-    let currentUserCpxUrl = "";
-    let currentUserJitscapeUrl = "";
-    const jitscapePubId = "plc_xHHxjKbb5p5P";
-    const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
+        if (referredUsernames.length === 0) {
+            return res.json([]);
+        }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      checkLoginStatus();
-      fetchLiveEarners();
-      setInterval(fetchUserPoints, 5000);
-      setInterval(fetchLiveEarners, 30000); 
+        const earnings = await Earning.aggregate([
+            { 
+                $match: { 
+                    username: { $in: referredUsernames },
+                    createdAt: { $gte: startDate, $lte: endDate }
+                } 
+            },
+            { $group: { _id: "$username", totalEarned: { $sum: "$amount" } } }
+        ]);
+
+        const finalStats = referredUsernames.map(ru => {
+            const found = earnings.find(e => e._id === ru);
+            return {
+                username: ru,
+                earned: found ? found.totalEarned * 0.15 : 0
+            };
+        });
+
+        finalStats.sort((a, b) => b.earned - a.earned);
+
+        res.json(finalStats); 
+    } catch (error) {
+        console.error("Błąd pobierania poleconych:", error);
+        res.json([]);
+    }
+});
+
+app.post('/api/redeem-promo', async (req, res) => {
+    const { username, promoCode } = req.body;
+    if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
+
+    try {
+        const promo = await PromoCode.findOne({ code: promoCode.toUpperCase() });
+        if (!promo) return res.status(404).json({ error: 'Ten kod nie istnieje lub wygasł.' });
+
+        if (promo.currentUses >= promo.maxUses) return res.status(400).json({ error: 'Kod został w pełni wyczerpany!' });
+        if (promo.usedBy.includes(username)) return res.status(400).json({ error: 'Już użyłeś tego kodu!' });
+
+        let user = await User.findOne({ username });
+        if (!user) user = new User({ username, points: 0, streak: 0 });
+
+        user.points += promo.reward;
+        await user.save();
+
+        promo.currentUses += 1;
+        promo.usedBy.push(username);
+        await promo.save();
+
+        await new Earning({ username, amount: promo.reward }).save();
+        await processReferralBonus(username, promo.reward);
+
+        res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} punktów z kodu!` });
+    } catch (error) {
+        res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
+
+// -----------------------------------------------------
+// LOGIKA BOTA DISCORD (TWORZENIE, LISTA I USUWANIE KODÓW)
+// -----------------------------------------------------
+if (DISCORD_BOT_TOKEN) {
+    const { Client, GatewayIntentBits } = require('discord.js');
+    const client = new Client({
+        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
     });
 
-    function switchTab(tabId) {
-        document.getElementById('tab-home').style.display = 'none';
-        document.getElementById('tab-referrals').style.display = 'none';
-        document.getElementById('tab-promocodes').style.display = 'none';
-        
-        document.getElementById('tab-' + tabId).style.display = 'block';
-        
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('nav-' + tabId).classList.add('active');
+    client.on('messageCreate', async message => {
+        if (message.author.bot) return;
 
-        if(tabId === 'referrals') loadReferralStats();
-    }
-
-    let cooldownInterval = null; 
-
-    async function fetchUserPoints() {
-      const savedUser = localStorage.getItem("rbx_username");
-      if (!savedUser) return;
-      try {
-        const response = await fetch(`/api/points/${savedUser}`);
-        const data = await response.json();
-        document.getElementById("userPoints").innerText = data.points.toFixed(2);
-        localStorage.setItem("rbx_points", data.points);
-        
-        document.getElementById("userStreakDisplay").innerText = data.streak;
-
-        checkDailyCooldown(data.lastDailyReward);
-
-        if (data.referredBy) {
-            document.getElementById("redeemCodeSection").style.display = "none";
+        if (message.content.startsWith('!kod') || message.content.startsWith('!kody') || message.content.startsWith('!usunkod')) {
+            if (message.author.id !== ADMIN_DISCORD_ID) {
+                return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać kodami.');
+            }
         }
-      } catch (error) {}
-    }
 
-    function checkDailyCooldown(lastRewardDateStr) {
-        clearInterval(cooldownInterval); 
-        const btn = document.getElementById("dailyRewardBtn");
-        const timerText = document.getElementById("dailyTimerText");
+        if (message.content.startsWith('!kod ')) {
+            const args = message.content.split(' ');
+            if (args.length !== 4) return message.reply('⚠️ Poprawne użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`');
 
-        if (!lastRewardDateStr) { enableDailyButton(btn, timerText); return; }
-        const lastRewardTime = new Date(lastRewardDateStr).getTime();
-        const cooldown = 86400000; 
+            const codeName = args[1].toUpperCase();
+            const reward = parseFloat(args[2]);
+            const maxUses = parseInt(args[3]);
 
-        const checkTime = () => {
-            const now = new Date().getTime();
-            const timePassed = now - lastRewardTime;
+            if (isNaN(reward) || isNaN(maxUses)) return message.reply('❌ Punkty i max użyć muszą być liczbą!');
 
-            if (timePassed >= cooldown) {
-                clearInterval(cooldownInterval);
-                enableDailyButton(btn, timerText);
-            } else {
-                btn.disabled = true;
-                btn.innerText = "⏳ Reward Already Claimed";
-                timerText.style.display = "block";
-                
-                const timeLeft = cooldown - timePassed;
-                const h = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-                const m = Math.floor((timeLeft / 1000 / 60) % 60);
-                const s = Math.floor((timeLeft / 1000) % 60);
-                timerText.innerText = `Next reward in: ${h}h ${m}m ${s}s`;
+            try {
+                const existing = await PromoCode.findOne({ code: codeName });
+                if (existing) return message.reply('❌ Taki kod już istnieje w bazie!');
+
+                const newPromo = new PromoCode({ code: codeName, reward: reward, maxUses: maxUses });
+                await newPromo.save();
+
+                message.reply(`✅ **Kod utworzony pomyślnie!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Wartość: **${reward} pkt**\n👥 Limit osób: **${maxUses}**`);
+            } catch (err) {
+                message.reply('❌ Wystąpił błąd podczas zapisywania kodu w bazie MongoDB.');
             }
-        };
-        checkTime();
-        cooldownInterval = setInterval(checkTime, 1000); 
-    }
-
-    function enableDailyButton(btn, timerText) {
-        btn.disabled = false;
-        btn.innerText = "🎁 Click here for Daily Reward!";
-        timerText.style.display = "none";
-    }
-
-    let dailyStageTimer = null;
-
-    // 🔥 LOGIKA SKRACACZA LINKÓW Z TWOIM SHRINKME API
-    function handleDailyRewardClick() {
-        const savedUser = localStorage.getItem("rbx_username");
-        if (!savedUser) return;
-        const btn = document.getElementById("dailyRewardBtn");
-        const timerText = document.getElementById("dailyTimerText");
-
-        // 🔥 Twój prawdziwy link z API ShrinkMe.io!
-        const shortlinkUrl = "https://shrinkme.io/st?api=3a0425699d427853ccb863aeabbecd45dae820fb&url=https://rbx-rewards.onrender.com/";
-        window.open(shortlinkUrl, "_blank");
-        
-        btn.disabled = true;
-        btn.innerText = "⏳ Wykonuj zadanie w nowej karcie...";
-        
-        let timeLeft = 20; // 20 sekund dla użytkownika na przeklikanie skracacza
-        timerText.style.display = "block";
-        timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
-        
-        dailyStageTimer = setInterval(() => {
-            timeLeft--;
-            timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
-            
-            if (timeLeft <= 0) {
-                clearInterval(dailyStageTimer);
-                timerText.innerText = "🔄 Przetwarzanie nagrody...";
-                btn.innerText = "🔄 Przetwarzanie...";
-                claimDailyFromServer(savedUser);
-            }
-        }, 1000);
-    }
-
-    async function claimDailyFromServer(username) {
-        try {
-            const response = await fetch('/api/daily-reward', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
-            const data = await response.json();
-            if (!data.error) {
-                fetchUserPoints(); 
-            } else {
-                document.getElementById("dailyRewardBtn").innerText = "❌ " + data.error; 
-                document.getElementById("dailyTimerText").style.display = "none";
-            }
-        } catch (error) {
-            alert("Connection error.");
-            document.getElementById("dailyRewardBtn").disabled = false;
-            document.getElementById("dailyRewardBtn").innerText = "🎁 Click here for Daily Reward!";
-            document.getElementById("dailyTimerText").style.display = "none";
         }
-    }
 
-    async function submitReferralCode() {
-        const code = document.getElementById("friendCodeInput").value.trim();
-        const username = localStorage.getItem("rbx_username");
-        if (!code) return alert("Enter a code first!");
-
-        try {
-            const response = await fetch('/api/redeem-code', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, code })
-            });
-            const data = await response.json();
-            
-            if (data.error) {
-                alert(data.error);
-            } else {
-                alert(data.message);
-                document.getElementById("redeemCodeSection").style.display = "none";
-            }
-        } catch (error) { alert("Connection error."); }
-    }
-
-    async function submitPromoCode() {
-        const code = document.getElementById("promoCodeInput").value.trim();
-        const username = localStorage.getItem("rbx_username");
-        if (!code) return alert("Enter a code first!");
-
-        try {
-            const response = await fetch('/api/redeem-promo', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: username, promoCode: code })
-            });
-            const data = await response.json();
-            
-            if (data.error) {
-                alert("❌ " + data.error);
-            } else {
-                alert("✅ " + data.message);
-                document.getElementById("promoCodeInput").value = "";
-                fetchUserPoints(); 
-            }
-        } catch (error) { alert("Connection error."); }
-    }
-
-    async function loadReferralStats() {
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return;
-
-        const period = document.getElementById("refFilterSelect").value;
-        const tableBody = document.getElementById("refTableBody");
-        tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #888;">Fetching stats from database...</td></tr>';
-
-        try {
-            const response = await fetch(`/api/referral-stats/${username}?period=${period}`);
-            const stats = await response.json();
-
-            if (stats.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #ffb703;">You have no active friends yet! Give someone your code.</td></tr>';
-            } else {
-                let rows = '';
-                stats.forEach(user => {
-                    rows += `<tr>
-                                <td style="font-weight: bold; color: #fff;">👤 ${user.username}</td>
-                                <td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} 🪙</td>
-                             </tr>`;
+        if (message.content === '!kody') {
+            try {
+                const activeCodes = await PromoCode.find({ 
+                    $expr: { $lt: ["$currentUses", "$maxUses"] } 
                 });
-                tableBody.innerHTML = rows;
+
+                if (activeCodes.length === 0) {
+                    return message.reply('📭 Brak aktywnych kodów w bazie danych.');
+                }
+
+                let responseText = '📋 **Lista aktywnych kodów promocyjnych:**\n';
+                activeCodes.forEach(p => {
+                    responseText += `🎫 **${p.code}** ➔ 💰 **${p.reward} pkt** ➔ 👥 Użycia: **${p.currentUses} / ${p.maxUses}**\n`;
+                });
+
+                message.reply(responseText);
+            } catch (err) {
+                message.reply('❌ Wystąpił błąd podczas pobierania listy kodów.');
             }
-        } catch (error) {
-            tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: red;">Error loading stats.</td></tr>';
         }
-    }
 
-    async function fetchLiveEarners() {
-      try {
-        const response = await fetch('/api/latest-earners');
-        const earners = await response.json();
-        if (earners.length > 0) {
-          let tickerHTML = '';
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} 🪙</span></div>`; });
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} 🪙</span></div>`; });
-          document.getElementById('liveTicker').innerHTML = tickerHTML;
-        }
-      } catch (error) {}
-    }
+        if (message.content.startsWith('!usunkod ')) {
+            const args = message.content.split(' ');
+            if (args.length !== 2) return message.reply('⚠️ Poprawne użycie: `!usunkod <NAZWA_KODU>`');
 
-    function checkLoginStatus() {
-      const savedUser = localStorage.getItem("rbx_username");
-      if (savedUser) {
-        document.getElementById("loginBtn").innerText = savedUser;
-        document.getElementById("loginPrompt").style.display = "none";
-        document.getElementById("offerwallSection").style.display = "block";
-        document.getElementById("withdrawBtn").style.display = "inline-block"; 
-        
-        document.getElementById("myRefCodeDisplay").innerText = savedUser;
-        document.getElementById("referralStatsSection").style.display = "block";
+            const codeName = args[1].toUpperCase();
 
-        fetchUserPoints();
-        
-        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
-        const secureHashParam = md5(savedUser + "-" + appSecureHash);
-        currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
-        
-        const message = jitscapePubId + savedUser;
-        const signature = CryptoJS.HmacSHA256(message, jitscapeSecret).toString(CryptoJS.enc.Hex);
-        currentUserJitscapeUrl = `https://wall.jitscape.com/?pubId=${jitscapePubId}&userId=${encodeURIComponent(savedUser)}&signature=${signature}`;
-        
-      } else {
-        document.getElementById("loginBtn").innerText = "Login";
-        document.getElementById("loginPrompt").style.display = "block";
-        document.getElementById("offerwallSection").style.display = "none";
-        document.getElementById("withdrawBtn").style.display = "none";
-        document.getElementById("referralStatsSection").style.display = "none";
-        document.getElementById("userPoints").innerText = "0";
-      }
-    }
+            try {
+                const deleted = await PromoCode.findOneAndDelete({ code: codeName });
+                if (!deleted) {
+                    return message.reply(`❌ Nie znaleziono aktywnego kodu o nazwie **${codeName}**.`);
+                }
 
-    function openOfferwall(networkId, networkName) {
-      document.getElementById('offerModalTitle').innerText = networkName;
-      let finalUrl = networkId === 'CPX' ? currentUserCpxUrl : currentUserJitscapeUrl;
-      if (finalUrl) { document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; document.getElementById('offerModal').style.display = 'flex'; }
-    }
-    function closeOfferModal() { document.getElementById('offerModal').style.display = 'none'; document.getElementById('iframeContainer').innerHTML = ''; }
-    window.onclick = function(event) { if (event.target === document.getElementById('offerModal')) closeOfferModal(); }
-
-    function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
-    function closeLoginModal() { document.getElementById("loginModal").style.display = "none"; }
-    function saveUsername() {
-      const input = document.getElementById("usernameInput").value.trim();
-      if (input) { localStorage.setItem("rbx_username", input); closeLoginModal(); checkLoginStatus(); } 
-      else { alert("Please enter a valid username!"); }
-    }
-    function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
-    function closeWithdrawModal() { 
-        document.getElementById("withdrawModal").style.display = "none"; 
-        document.getElementById("paypalEmail").value = ""; document.getElementById("withdrawPoints").value = ""; document.getElementById("usdResult").innerText = "$0.0000";
-    }
-    function calculateUSD() {
-        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
-        document.getElementById("usdResult").innerText = "$" + (points * 0.0001).toFixed(4);
-    }
-    async function submitWithdraw() {
-        const email = document.getElementById("paypalEmail").value.trim();
-        const points = parseFloat(document.getElementById("withdrawPoints").value);
-        const username = localStorage.getItem("rbx_username");
-        if (!email || !email.includes("@")) return alert("Please enter a valid PayPal email.");
-        if (!points || points <= 0) return alert("Please enter a valid amount of points.");
-
-        try {
-            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
-            const data = await response.json();
-            if (data.error) alert("Error: " + data.error);
-            else {
-                alert(`Success! Requested payout: $${data.usd.toFixed(4)}.`);
-                document.getElementById("userPoints").innerText = data.newBalance.toFixed(2);
-                localStorage.setItem("rbx_points", data.newBalance);
-                closeWithdrawModal();
+                message.reply(`🗑️ Kod **${codeName}** został pomyślnie usunięty z bazy!`);
+            } catch (err) {
+                message.reply('❌ Wystąpił błąd podczas usuwania kodu.');
             }
-        } catch (error) { alert("Connection error."); }
-    }
-  </script>
-</body>
-</html>
+        }
+    });
+
+    client.once('ready', () => {
+        console.log(`🤖 Bot Discord (${client.user.tag}) połączony i zarządza kodami!`);
+    });
+
+    client.login(DISCORD_BOT_TOKEN).catch(console.error);
+}
