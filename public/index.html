@@ -75,6 +75,8 @@
     .bonus-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4); transition: all 0.3s ease; }
     .bonus-btn:hover { transform: scale(1.02); }
     .bonus-btn:disabled { background: #333947 !important; color: #888 !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
+
+    .warning-text { color: #ff5555; font-size: 0.85rem; margin-top: 5px; font-weight: bold; }
     
     .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
     .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
@@ -131,11 +133,14 @@
               <span class="streak-text">🔥 Daily Streak: <span id="userStreakDisplay">0</span> Days</span>
           </div>
 
-          <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Click here for Daily Reward!</button>
-          <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 15px; font-weight: bold; display: none;"></p>
+          <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Claim 0.5 R$ Daily Reward!</button>
+          <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 10px; font-weight: bold; display: none;"></p>
 
-          <button id="bonusClickBtn" class="bonus-btn" onclick="handleBonusClick()">♾️ Infinite Bonus Clicks (+2 R$)</button>
-          <p id="bonusTimerText" style="color: #00d2ff; font-size: 0.95rem; text-align: center; margin-bottom: 25px; font-weight: bold; display: none;"></p>
+          <!-- 🔥 PRZYWRÓCONY GUZIK DO BONUS CLICKS (z Exe.io i nagrodą 0.1 R$) -->
+          <button id="bonusClickBtn" class="bonus-btn" onclick="handleBonusClick()">♾️ Infinite Bonus Clicks (+0.1 R$)</button>
+          <p id="bonusTimerText" style="color: #00d2ff; font-size: 0.95rem; text-align: center; margin-bottom: 10px; font-weight: bold; display: none;"></p>
+
+          <p class="warning-text" style="margin-bottom: 25px;">⚠️ Ważne: Strona otworzy kilka reklam. Zamykaj wyskakujące okienka (pop-ups) i klikaj tylko 'Continue' na oryginalnej stronie, aż wrócisz tutaj!</p>
 
           <h3 style="color: #00e676; margin-bottom: 5px;">🚀 Choose an Offerwall</h3>
           <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning Robux.</p>
@@ -327,20 +332,20 @@
 
     function enableDailyButton(btn, timerText) {
         btn.disabled = false;
-        btn.innerText = "🎁 Click here for Daily Reward!";
+        btn.innerText = "🎁 Claim 0.5 R$ Daily Reward!";
         timerText.style.display = "none";
     }
 
     let dailyStageTimer = null;
 
-    // 🔥 TWÓJ NOWY LINK WORK.INK W DAILY REWARD
     function handleDailyRewardClick() {
         const savedUser = localStorage.getItem("rbx_username");
         if (!savedUser) return;
         const btn = document.getElementById("dailyRewardBtn");
         const timerText = document.getElementById("dailyTimerText");
 
-        const shortlinkUrl = "https://work.ink/2WFO/rbx-rewards";
+        // 🔥 LINK DO EXE.IO W DAILY REWARD
+        const shortlinkUrl = "https://exe.io/g6R72vHa";
         window.open(shortlinkUrl, "_blank");
         
         btn.disabled = true;
@@ -376,21 +381,21 @@
         } catch (error) {
             alert("Connection error.");
             document.getElementById("dailyRewardBtn").disabled = false;
-            document.getElementById("dailyRewardBtn").innerText = "🎁 Click here for Daily Reward!";
+            document.getElementById("dailyRewardBtn").innerText = "🎁 Claim 0.5 R$ Daily Reward!";
             document.getElementById("dailyTimerText").style.display = "none";
         }
     }
 
     let bonusStageTimer = null;
     
-    // 🔥 TWÓJ NOWY LINK WORK.INK W BONUS CLICK
+    // 🔥 PRZYWRÓCONY BONUS CLICK Z LINKIEM DO EXE.IO
     function handleBonusClick() {
         const savedUser = localStorage.getItem("rbx_username");
         if (!savedUser) return;
         const btn = document.getElementById("bonusClickBtn");
         const timerText = document.getElementById("bonusTimerText");
 
-        const shortlinkUrl = "https://work.ink/2WFO/rbx-rewards"; 
+        const shortlinkUrl = "https://exe.io/g6R72vHa"; 
         window.open(shortlinkUrl, "_blank");
         
         btn.disabled = true;
@@ -424,20 +429,20 @@
             if (!data.error) {
                 fetchUserPoints(); 
                 btn.disabled = false;
-                btn.innerText = "♾️ Infinite Bonus Clicks (+2 R$)";
+                btn.innerText = "♾️ Infinite Bonus Clicks (+0.1 R$)";
                 timerText.style.display = "none";
             } else {
                 btn.innerText = "❌ " + data.error; 
                 setTimeout(() => {
                     btn.disabled = false;
-                    btn.innerText = "♾️ Infinite Bonus Clicks (+2 R$)";
+                    btn.innerText = "♾️ Infinite Bonus Clicks (+0.1 R$)";
                     timerText.style.display = "none";
                 }, 4000);
             }
         } catch (error) {
             alert("Connection error.");
             document.getElementById("bonusClickBtn").disabled = false;
-            document.getElementById("bonusClickBtn").innerText = "♾️ Infinite Bonus Clicks (+2 R$)";
+            document.getElementById("bonusClickBtn").innerText = "♾️ Infinite Bonus Clicks (+0.1 R$)";
             document.getElementById("bonusTimerText").style.display = "none";
         }
     }
