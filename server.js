@@ -32,7 +32,6 @@ const UserSchema = new mongoose.Schema({
     referredBy: { type: String, default: null },
     streak: { type: Number, default: 0 },
     referredUsers: { type: [String], default: [] },
-    // Dodane pola do obsługi Bonus Clicks
     bonusClicksToday: { type: Number, default: 0 },
     lastBonusClickDate: { type: Date, default: null }
 });
@@ -158,7 +157,7 @@ app.all('/api/jitscape-postback', async (req, res) => {
     } catch (error) {}
 });
 
-// 🔥 DAILY REWARD USTAWIONY NA 0.5 ROBUXA (LOSS LEADER)
+// 🔥 DAILY REWARD UCIĘTY NA 0.1 ROBUXA (JAK NA CLAIMRBX)
 app.post('/api/daily-reward', async (req, res) => {
     const { username } = req.body; if (!username) return res.status(400).json({ error: 'Missing username.' });
     try {
@@ -172,7 +171,7 @@ app.post('/api/daily-reward', async (req, res) => {
             else currentStreak = 1;
         } else { currentStreak = 1; }
         
-        const rewardPoints = 0.5; 
+        const rewardPoints = 0.1; // Ucięte z 0.5 na 0.1 R$
         
         user.points += rewardPoints; user.lastDailyReward = now; user.streak = currentStreak;
         await user.save();
@@ -182,7 +181,7 @@ app.post('/api/daily-reward', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 PRZYWRÓCONE BONUS CLICKS (0.1 ROBUXA / MAX 3x DZIENNIE)
+// 🔥 BONUS CLICKS NA 0.1 ROBUXA / MAX 3x DZIENNIE
 app.post('/api/bonus-click', async (req, res) => {
     const { username } = req.body; 
     if (!username) return res.status(400).json({ error: 'Missing username.' });
@@ -213,7 +212,7 @@ app.post('/api/bonus-click', async (req, res) => {
         
         user.lastBonusClickDate = now;
         
-        const rewardPoints = 0.1; // Exe.io daje ~0.12 Robuxa, oddajesz 0.1. Jesteś na plus!
+        const rewardPoints = 0.1; 
         
         user.points += rewardPoints; 
         await user.save();
@@ -376,14 +375,14 @@ if (DISCORD_BOT_TOKEN) {
 > **Przykład:** \`!kod WAKACJE 10 50\` *(Tworzy kod "WAKACJE", który daje 10 R$, a użyć go może max 50 osób)*.
 
 🔹 \`!kody\`
-> **Opis:** Wyświetla listę wszystkich aktualnie aktywnych kodów oraz informacje, ile razy zostały już użyte.
+> **Opis:** Wyświetla listę wszystkich aktywnych kodów oraz informacje o ich użyciu.
 
 🔹 \`!usunkod <NAZWA_KODU>\`
-> **Opis:** Trwale usuwa kod promocyjny z bazy danych, żeby nikt więcej nie mógł go wpisać.
+> **Opis:** Trwale usuwa kod promocyjny z bazy danych.
 > **Przykład:** \`!usunkod WAKACJE\`
 
 🔹 \`!resetdaily <NICK_ROBLOX>\`
-> **Opis:** Natychmiastowo zdejmuje 24-godzinną blokadę na nagrodę Daily Reward dla podanego gracza.
+> **Opis:** Zdejmuje blokadę Daily Reward dla gracza.
 > **Przykład:** \`!resetdaily Brajanek123\`
 
 🔹 \`!komendy\`
