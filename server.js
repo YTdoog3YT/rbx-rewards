@@ -42,11 +42,11 @@ const EarningSchema = new mongoose.Schema({
 });
 const Earning = mongoose.model('Earning', EarningSchema);
 
+// 🔥 POPRAWIONY SCHEMAT WYPŁAT (Tylko Robuxy, bez PayPala)
 const PayoutSchema = new mongoose.Schema({
     username: String,
-    paypalEmail: String,
     pointsWithdrawn: Number,
-    usdAmount: Number,
+    robuxAmount: Number,
     status: { type: String, default: 'Pending' },
     createdAt: { type: Date, default: Date.now }
 });
@@ -115,27 +115,36 @@ app.get('/api/latest-earners', async (req, res) => {
     try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
+// 🔥 POPRAWIONY ENDPOINT WYPŁAT (1 Punkt = 1 Robux)
 app.post('/api/withdraw', async (req, res) => {
-    const { username, paypalEmail, points } = req.body;
-    if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
+    const { username, points } = req.body;
+    if (!username || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
     try {
         const user = await User.findOne({ username: username });
         if (!user || user.points < points) return res.status(400).json({ error: 'Not enough points!' });
-        user.points -= points; await user.save();
-        const usdAmount = points * 0.0001;
-        await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
-        res.json({ success: true, newBalance: user.points, usd: usdAmount });
+        
+        user.points -= points; 
+        await user.save();
+        
+        await new Payout({ username, pointsWithdrawn: points, robuxAmount: points }).save();
+        res.json({ success: true, newBalance: user.points, robux: points });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
+// 🔥 POPRAWIONY MNOŻNIK JITSCAPE (20 punktów za 1 Dolar, żeby wyrównać z CPX)
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
+    
     const JITSCAPE_SECRET = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
     if (data.signature !== crypto.createHmac('sha256', JITSCAPE_SECRET).update(`${data.txId}:${data.amountMilliCents}:${data.userId}`).digest('hex')) return res.status(400).send('Invalid sig');
+    
     if (data.amountMilliCents == 0) return res.status(200).send('Test OK');
     res.status(200).send('OK');
-    const pointsToAward = parseFloat(((data.amountMilliCents / 1000) * 50).toFixed(2));
+    
+    // 100,000 milliCents = $1. Gracze dostają 20 punktów za każdego zarobionego dolara.
+    const pointsToAward = parseFloat(((data.amountMilliCents / 100000) * 20).toFixed(2));
+    
     try {
         let user = await User.findOne({ username: data.userId });
         if (!user) user = new User({ username: data.userId, points: 0 });
@@ -165,7 +174,6 @@ app.post('/api/daily-reward', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 NOWY ENDPOINT: NIELIMITOWANE KLIKNIĘCIA (BONUS CLICKS)
 app.post('/api/bonus-click', async (req, res) => {
     const { username } = req.body; 
     if (!username) return res.status(400).json({ error: 'Missing username.' });
@@ -173,7 +181,6 @@ app.post('/api/bonus-click', async (req, res) => {
         let user = await User.findOne({ username: username });
         if (!user) user = new User({ username: username, points: 0, streak: 0 });
         
-        // 🔥 TUTAJ ZMIENIASZ ILE PUNKTÓW DAJE JEDEN KLIK W BONUSIE (obecnie 2 pkt)
         const rewardPoints = 2; 
         
         user.points += rewardPoints; 
