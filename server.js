@@ -189,20 +189,62 @@ app.post('/api/redeem-code', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 TUTAJ WJECHAŁA NAPRAWA DLA index.html
+// 🔥 TUTAJ NAPRAWIONA LOGIKA KALKULACJI STATYSTYK NA PODSTAWIE DAT
 app.get('/api/referral-stats/:username', async (req, res) => {
     try {
         const username = req.params.username;
+        const period = req.query.period || '7days';
+
+        let startDate = new Date(0);
+        let endDate = new Date();
+        const now = new Date();
+
+        if (period === 'today') {
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+        } else if (period === 'yesterday') {
+            const yesterdayStart = new Date();
+            yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+            startDate = new Date(yesterdayStart.setHours(0, 0, 0, 0));
+            
+            const yesterdayEnd = new Date();
+            yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
+            yesterdayEnd.setHours(23, 59, 59, 999);
+            endDate = yesterdayEnd;
+        } else if (period === '7days') {
+            startDate = new Date(now.setDate(now.getDate() - 7));
+        } else if (period === '30days') {
+            startDate = new Date(now.setDate(now.getDate() - 30));
+        }
+
         const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
-        
-        const stats = referredDocs.map(user => {
+        const referredUsernames = referredDocs.map(u => u.username);
+
+        if (referredUsernames.length === 0) {
+            return res.json([]);
+        }
+
+        const earnings = await Earning.aggregate([
+            { 
+                $match: { 
+                    username: { $in: referredUsernames },
+                    createdAt: { $gte: startDate, $lte: endDate }
+                } 
+            },
+            { $group: { _id: "$username", totalEarned: { $sum: "$amount" } } }
+        ]);
+
+        const finalStats = referredUsernames.map(ru => {
+            const found = earnings.find(e => e._id === ru);
             return {
-                username: user.username,
-                earned: user.points * 0.15 
+                username: ru,
+                earned: found ? found.totalEarned * 0.15 : 0
             };
         });
 
-        res.json(stats); 
+        // Sortujemy od najlepiej zarabiających do najgorzej
+        finalStats.sort((a, b) => b.earned - a.earned);
+
+        res.json(finalStats); 
     } catch (error) {
         console.error("Błąd pobierania poleconych:", error);
         res.json([]);
