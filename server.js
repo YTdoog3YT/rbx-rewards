@@ -42,7 +42,7 @@ const EarningSchema = new mongoose.Schema({
 });
 const Earning = mongoose.model('Earning', EarningSchema);
 
-// 🔥 PRZYWRÓCONY SCHEMAT PAYPAL
+// Schemat wypłat 
 const PayoutSchema = new mongoose.Schema({
     username: String,
     paypalEmail: String,
@@ -116,18 +116,19 @@ app.get('/api/latest-earners', async (req, res) => {
     try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 PRZYWRÓCONY PAYPAL Z NOWĄ EKONOMIĄ (1 pkt = 0.025$)
+// 🔥 NOWY PRZELICZNIK WYPŁAT (80 Robuxów = 1.00 USD)
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
     try {
         const user = await User.findOne({ username: username });
-        if (!user || user.points < points) return res.status(400).json({ error: 'Not enough points!' });
+        if (!user || user.points < points) return res.status(400).json({ error: 'Not enough Robux!' });
         
         user.points -= points; 
         await user.save();
         
-        const usdAmount = points * 0.025; // 40 punktów = 1$
+        // 1 Robux = 0.0125$ (czyli 80 Robuxów = 1.00$)
+        const usdAmount = points * 0.0125; 
         
         await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
@@ -171,7 +172,7 @@ app.post('/api/daily-reward', async (req, res) => {
         await user.save();
         await new Earning({ username: username, amount: rewardPoints }).save();
         await processReferralBonus(username, rewardPoints);
-        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} points!` });
+        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux!` });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
@@ -190,7 +191,7 @@ app.post('/api/bonus-click', async (req, res) => {
         await new Earning({ username: username, amount: rewardPoints }).save();
         await processReferralBonus(username, rewardPoints);
         
-        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} points from Bonus Click!` });
+        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux from Bonus Click!` });
     } catch (error) { 
         res.status(500).json({ error: 'Server error.' }); 
     }
@@ -304,7 +305,7 @@ app.post('/api/redeem-promo', async (req, res) => {
         await new Earning({ username, amount: promo.reward }).save();
         await processReferralBonus(username, promo.reward);
 
-        res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} punktów z kodu!` });
+        res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} Robuxów z kodu!` });
     } catch (error) {
         res.status(500).json({ error: 'Błąd serwera.' });
     }
@@ -339,7 +340,7 @@ if (DISCORD_BOT_TOKEN) {
             const reward = parseFloat(args[2]);
             const maxUses = parseInt(args[3]);
 
-            if (isNaN(reward) || isNaN(maxUses)) return message.reply('❌ Punkty i max użyć muszą być liczbą!');
+            if (isNaN(reward) || isNaN(maxUses)) return message.reply('❌ Robuxy i max użyć muszą być liczbą!');
 
             try {
                 const existing = await PromoCode.findOne({ code: codeName });
@@ -348,7 +349,7 @@ if (DISCORD_BOT_TOKEN) {
                 const newPromo = new PromoCode({ code: codeName, reward: reward, maxUses: maxUses });
                 await newPromo.save();
 
-                message.reply(`✅ **Kod utworzony pomyślnie!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Wartość: **${reward} pkt**\n👥 Limit osób: **${maxUses}**`);
+                message.reply(`✅ **Kod utworzony pomyślnie!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Wartość: **${reward} R$**\n👥 Limit osób: **${maxUses}**`);
             } catch (err) {
                 message.reply('❌ Wystąpił błąd podczas zapisywania kodu w bazie MongoDB.');
             }
@@ -366,7 +367,7 @@ if (DISCORD_BOT_TOKEN) {
 
                 let responseText = '📋 **Lista aktywnych kodów promocyjnych:**\n';
                 activeCodes.forEach(p => {
-                    responseText += `🎫 **${p.code}** ➔ 💰 **${p.reward} pkt** ➔ 👥 Użycia: **${p.currentUses} / ${p.maxUses}**\n`;
+                    responseText += `🎫 **${p.code}** ➔ 💰 **${p.reward} R$** ➔ 👥 Użycia: **${p.currentUses} / ${p.maxUses}**\n`;
                 });
 
                 message.reply(responseText);
