@@ -155,6 +155,7 @@ app.all('/api/jitscape-postback', async (req, res) => {
     } catch (error) {}
 });
 
+// 🔥 DAILY REWARD USTAWIONY NA 0.5 ROBUXA (LOSS LEADER)
 app.post('/api/daily-reward', async (req, res) => {
     const { username } = req.body; if (!username) return res.status(400).json({ error: 'Missing username.' });
     try {
@@ -167,33 +168,15 @@ app.post('/api/daily-reward', async (req, res) => {
             else if (timeDiff <= 172800000) currentStreak += 1;
             else currentStreak = 1;
         } else { currentStreak = 1; }
-        const rewardPoints = 10; user.points += rewardPoints; user.lastDailyReward = now; user.streak = currentStreak;
+        
+        const rewardPoints = 0.5; 
+        
+        user.points += rewardPoints; user.lastDailyReward = now; user.streak = currentStreak;
         await user.save();
         await new Earning({ username: username, amount: rewardPoints }).save();
         await processReferralBonus(username, rewardPoints);
         res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux!` });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
-});
-
-app.post('/api/bonus-click', async (req, res) => {
-    const { username } = req.body; 
-    if (!username) return res.status(400).json({ error: 'Missing username.' });
-    try {
-        let user = await User.findOne({ username: username });
-        if (!user) user = new User({ username: username, points: 0, streak: 0 });
-        
-        const rewardPoints = 2; 
-        
-        user.points += rewardPoints; 
-        await user.save();
-        
-        await new Earning({ username: username, amount: rewardPoints }).save();
-        await processReferralBonus(username, rewardPoints);
-        
-        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux from Bonus Click!` });
-    } catch (error) { 
-        res.status(500).json({ error: 'Server error.' }); 
-    }
 });
 
 app.post('/api/redeem-code', async (req, res) => {
@@ -325,15 +308,49 @@ if (DISCORD_BOT_TOKEN) {
     client.on('messageCreate', async message => {
         if (message.author.bot) return;
 
-        if (message.content.startsWith('!kod') || message.content.startsWith('!kody') || message.content.startsWith('!usunkod')) {
+        // Lista dozwolonych komend (żeby nie pisać długich warunków)
+        const cmd = message.content.split(' ')[0].toLowerCase();
+        const allowedCommands = ['!kod', '!kody', '!usunkod', '!resetdaily', '!komendy'];
+
+        if (allowedCommands.includes(cmd)) {
+            // 🔥 POPRAWIONE UPRAWNIENIA - Chroni WSZYSTKIE komendy
             if (message.author.id !== ADMIN_DISCORD_ID) {
-                return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać kodami.');
+                return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać tą stroną.');
             }
+        } else {
+            // Jeśli to zwykła wiadomość, bot ignoruje
+            return;
         }
 
-        if (message.content.startsWith('!kod ')) {
+        // 🔥 NOWA KOMENDA: WYSYŁA INSTRUKCJĘ DO WSZYSTKIEGO
+        if (cmd === '!komendy') {
+            const helpText = `
+**🛠️ PANEL ADMINISTRATORA - DOSTĘPNE KOMENDY:**
+
+🔹 \`!kod <NAZWA> <PUNKTY> <MAX_OSÓB>\`
+> **Opis:** Tworzy nowy kod promocyjny dla graczy.
+> **Przykład:** \`!kod WAKACJE 10 50\` *(Tworzy kod "WAKACJE", który daje 10 R$, a użyć go może max 50 osób)*.
+
+🔹 \`!kody\`
+> **Opis:** Wyświetla listę wszystkich aktualnie aktywnych kodów oraz informacje, ile razy zostały już użyte.
+
+🔹 \`!usunkod <NAZWA_KODU>\`
+> **Opis:** Trwale usuwa kod promocyjny z bazy danych, żeby nikt więcej nie mógł go wpisać.
+> **Przykład:** \`!usunkod WAKACJE\`
+
+🔹 \`!resetdaily <NICK_ROBLOX>\`
+> **Opis:** Natychmiastowo zdejmuje 24-godzinną blokadę na nagrodę Daily Reward dla podanego gracza.
+> **Przykład:** \`!resetdaily Brajanek123\`
+
+🔹 \`!komendy\`
+> **Opis:** Wyświetla tę listę pomocy.
+            `;
+            return message.reply(helpText);
+        }
+
+        if (cmd === '!kod') {
             const args = message.content.split(' ');
-            if (args.length !== 4) return message.reply('⚠️ Poprawne użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`');
+            if (args.length !== 4) return message.reply('⚠️ Poprawne użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`\n*Przykład: !kod LATOWIKA 5 100*');
 
             const codeName = args[1].toUpperCase();
             const reward = parseFloat(args[2]);
@@ -354,7 +371,7 @@ if (DISCORD_BOT_TOKEN) {
             }
         }
 
-        if (message.content === '!kody') {
+        if (cmd === '!kody') {
             try {
                 const activeCodes = await PromoCode.find({ 
                     $expr: { $lt: ["$currentUses", "$maxUses"] } 
@@ -375,7 +392,7 @@ if (DISCORD_BOT_TOKEN) {
             }
         }
 
-        if (message.content.startsWith('!usunkod ')) {
+        if (cmd === '!usunkod') {
             const args = message.content.split(' ');
             if (args.length !== 2) return message.reply('⚠️ Poprawne użycie: `!usunkod <NAZWA_KODU>`');
 
@@ -392,12 +409,26 @@ if (DISCORD_BOT_TOKEN) {
                 message.reply('❌ Wystąpił błąd podczas usuwania kodu.');
             }
         }
-        if (message.content.startsWith('!resetdaily ')) {
-            const targetUser = message.content.split(' ')[1];
-            if (!targetUser) return message.reply('⚠️ Użycie: `!resetdaily <NICK>`');
 
-            await User.updateOne({ username: targetUser }, { $set: { lastDailyReward: null } });
-            message.reply(`✅ Daily zresetowane dla gracza **${targetUser}**!`);
+        if (cmd === '!resetdaily') {
+            const args = message.content.split(' ');
+            const targetUser = args[1];
+            if (!targetUser) return message.reply('⚠️ Poprawne użycie: `!resetdaily <NICK>`');
+
+            try {
+                const updatedUser = await User.findOneAndUpdate(
+                    { username: new RegExp(`^${targetUser}$`, 'i') }, 
+                    { $set: { lastDailyReward: null } }
+                );
+                
+                if (updatedUser) {
+                    message.reply(`✅ Czas dla gracza **${targetUser}** został zresetowany. Może on odebrać Daily Reward ponownie!`);
+                } else {
+                    message.reply(`❌ Nie znaleziono gracza **${targetUser}** w bazie danych.`);
+                }
+            } catch (err) {
+                message.reply('❌ Wystąpił błąd podczas resetowania.');
+            }
         }
     });
 
