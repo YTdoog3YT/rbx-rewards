@@ -195,8 +195,17 @@ app.post('/api/redeem-code', async (req, res) => {
 });
 
 app.get('/api/referral-stats/:username', async (req, res) => {
-    /*... zwinąłem kod z racji limitów, pozostaje ten sam system dat co wcześniej ...*/
-    res.json([]); // Uproszczenie widoku pod kod promocyjny
+    try {
+        const username = req.params.username;
+        // Szukamy w bazie wszystkich, którzy w "referredBy" mają wpisany Twój nick
+        const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
+        
+        // Zwracamy na stronę listę tych użytkowników
+        res.json(referredDocs); 
+    } catch (error) {
+        console.error("Błąd pobierania poleconych:", error);
+        res.json([]);
+    }
 });
 
 app.post('/api/redeem-promo', async (req, res) => {
