@@ -31,7 +31,10 @@ const UserSchema = new mongoose.Schema({
     lastDailyReward: { type: Date, default: null },
     referredBy: { type: String, default: null },
     streak: { type: Number, default: 0 },
-    referredUsers: { type: [String], default: [] }
+    referredUsers: { type: [String], default: [] },
+    // Dodane pola do obsługi Bonus Clicks
+    bonusClicksToday: { type: Number, default: 0 },
+    lastBonusClickDate: { type: Date, default: null }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -115,7 +118,7 @@ app.get('/api/latest-earners', async (req, res) => {
     try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 NOWY PRZELICZNIK WYPŁAT (80 Robuxów = 2.00 USD -> 1 Robux = 0.025 USD)
+// 🔥 PRZELICZNIK WYPŁAT (80 Robuxów = 2.00 USD -> 1 Robux = 0.025 USD)
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -177,6 +180,51 @@ app.post('/api/daily-reward', async (req, res) => {
         await processReferralBonus(username, rewardPoints);
         res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux!` });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
+});
+
+// 🔥 PRZYWRÓCONE BONUS CLICKS (0.1 ROBUXA / MAX 3x DZIENNIE)
+app.post('/api/bonus-click', async (req, res) => {
+    const { username } = req.body; 
+    if (!username) return res.status(400).json({ error: 'Missing username.' });
+    try {
+        let user = await User.findOne({ username: username });
+        if (!user) user = new User({ username: username, points: 0, streak: 0 });
+        
+        const now = new Date();
+        let isSameDay = false;
+        
+        if (user.lastBonusClickDate) {
+            const lastDate = new Date(user.lastBonusClickDate);
+            if (lastDate.getFullYear() === now.getFullYear() &&
+                lastDate.getMonth() === now.getMonth() &&
+                lastDate.getDate() === now.getDate()) {
+                isSameDay = true;
+            }
+        }
+
+        if (isSameDay) {
+            if (user.bonusClicksToday >= 3) {
+                return res.status(400).json({ error: 'Limit reached! Come back tomorrow.' });
+            }
+            user.bonusClicksToday += 1;
+        } else {
+            user.bonusClicksToday = 1;
+        }
+        
+        user.lastBonusClickDate = now;
+        
+        const rewardPoints = 0.1; // Exe.io daje ~0.12 Robuxa, oddajesz 0.1. Jesteś na plus!
+        
+        user.points += rewardPoints; 
+        await user.save();
+        
+        await new Earning({ username: username, amount: rewardPoints }).save();
+        await processReferralBonus(username, rewardPoints);
+        
+        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux from Bonus Click!` });
+    } catch (error) { 
+        res.status(500).json({ error: 'Server error.' }); 
+    }
 });
 
 app.post('/api/redeem-code', async (req, res) => {
@@ -308,21 +356,17 @@ if (DISCORD_BOT_TOKEN) {
     client.on('messageCreate', async message => {
         if (message.author.bot) return;
 
-        // Lista dozwolonych komend (żeby nie pisać długich warunków)
         const cmd = message.content.split(' ')[0].toLowerCase();
         const allowedCommands = ['!kod', '!kody', '!usunkod', '!resetdaily', '!komendy'];
 
         if (allowedCommands.includes(cmd)) {
-            // 🔥 POPRAWIONE UPRAWNIENIA - Chroni WSZYSTKIE komendy
             if (message.author.id !== ADMIN_DISCORD_ID) {
                 return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać tą stroną.');
             }
         } else {
-            // Jeśli to zwykła wiadomość, bot ignoruje
             return;
         }
 
-        // 🔥 NOWA KOMENDA: WYSYŁA INSTRUKCJĘ DO WSZYSTKIEGO
         if (cmd === '!komendy') {
             const helpText = `
 **🛠️ PANEL ADMINISTRATORA - DOSTĘPNE KOMENDY:**
