@@ -224,7 +224,6 @@
     </div>
   </div>
 
-  <!-- 🔥 ZAKTUALIZOWANE OKIENKO PAYPAL (80 Robux = 2.00 USD) -->
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="color: #fff;">Withdraw to PayPal</h3>
@@ -334,13 +333,14 @@
 
     let dailyStageTimer = null;
 
+    // 🔥 TWÓJ NOWY LINK WORK.INK W DAILY REWARD
     function handleDailyRewardClick() {
         const savedUser = localStorage.getItem("rbx_username");
         if (!savedUser) return;
         const btn = document.getElementById("dailyRewardBtn");
         const timerText = document.getElementById("dailyTimerText");
 
-        const shortlinkUrl = "https://shrinkme.io/st?api=3a0425699d427853ccb863aeabbecd45dae820fb&url=https://rbx-rewards.onrender.com/";
+        const shortlinkUrl = "https://work.ink/2WFO/rbx-rewards";
         window.open(shortlinkUrl, "_blank");
         
         btn.disabled = true;
@@ -382,13 +382,15 @@
     }
 
     let bonusStageTimer = null;
+    
+    // 🔥 TWÓJ NOWY LINK WORK.INK W BONUS CLICK
     function handleBonusClick() {
         const savedUser = localStorage.getItem("rbx_username");
         if (!savedUser) return;
         const btn = document.getElementById("bonusClickBtn");
         const timerText = document.getElementById("bonusTimerText");
 
-        const shortlinkUrl = "https://shrinkme.io/st?api=3a0425699d427853ccb863aeabbecd45dae820fb&url=https://rbx-rewards.onrender.com/";
+        const shortlinkUrl = "https://work.ink/2WFO/rbx-rewards"; 
         window.open(shortlinkUrl, "_blank");
         
         btn.disabled = true;
@@ -430,7 +432,7 @@
                     btn.disabled = false;
                     btn.innerText = "♾️ Infinite Bonus Clicks (+2 R$)";
                     timerText.style.display = "none";
-                }, 3000);
+                }, 4000);
             }
         } catch (error) {
             alert("Connection error.");
@@ -572,7 +574,6 @@
       else { alert("Please enter a valid username!"); }
     }
     
-    // 🔥 FUNKCJE Z TWOIM PRZELICZNIKIEM (80 Robux = 2.00 USD -> 1 R$ = 0.025 USD)
     function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
@@ -583,7 +584,7 @@
     
     function calculateUSD() {
         const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
-        const usdValue = points * 0.025; // 1 Robux = 0.025 USD
+        const usdValue = points * 0.025; 
         document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
     }
     
