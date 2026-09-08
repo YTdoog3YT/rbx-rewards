@@ -93,16 +93,24 @@ app.get('/postback', async (req, res) => {
 
 app.get('/api/points/:username', async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.params.username });
-        // 🔥 DODANE: Endpoint zwraca teraz też tablicę referredUsers
+        const username = req.params.username;
+        const user = await User.findOne({ username: username });
+        
+        // 🔥 WYSZUKIWANIE STARYCH I NOWYCH POLECONYCH:
+        // Szukamy w całej bazie wszystkich graczy, którzy mają Twój nick w polu "referredBy"
+        const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
+        const allReferredUsernames = referredDocs.map(u => u.username);
+
         res.json({ 
             points: user ? user.points : 0, 
             lastDailyReward: user ? user.lastDailyReward : null, 
             referredBy: user ? user.referredBy : null, 
             streak: user ? (user.streak || 0) : 0,
-            referredUsers: user ? user.referredUsers : [] 
+            referredUsers: allReferredUsernames // <--- Wysyłamy pełną listę na stronę!
         });
-    } catch (error) { res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0, referredUsers: [] }); }
+    } catch (error) { 
+        res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0, referredUsers: [] }); 
+    }
 });
 
 app.get('/api/latest-earners', async (req, res) => {
