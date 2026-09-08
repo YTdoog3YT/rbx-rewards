@@ -100,7 +100,7 @@
     <div class="main-content">
       <header>
         <div class="user-info">
-          <div class="points-badge">Points: <span id="userPoints">0</span> 🪙</div>
+          <div class="points-badge">Robux: <span id="userPoints">0</span> R$</div>
           <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()">Withdraw</button>
           <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Login</button>
         </div>
@@ -117,11 +117,11 @@
           </div>
         </div>
 
-        <h2 class="section-title">Earn Points</h2>
+        <h2 class="section-title">Earn Robux</h2>
 
         <div id="loginPrompt" class="content-box">
           <h3 style="color: #fff; font-size: 1.3rem;">Login to unlock surveys! 🔒</h3>
-          <p style="color: #a0a0a0; margin-top: 10px;">Enter your Roblox username so we know where to send your points.</p>
+          <p style="color: #a0a0a0; margin-top: 10px;">Enter your Roblox username so we know where to send your Robux.</p>
           <button class="btn-action" onclick="openLoginModal()">Enter Roblox Username</button>
         </div>
 
@@ -134,11 +134,11 @@
           <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Click here for Daily Reward!</button>
           <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 15px; font-weight: bold; display: none;"></p>
 
-          <button id="bonusClickBtn" class="bonus-btn" onclick="handleBonusClick()">♾️ Infinite Bonus Clicks (+2 🪙)</button>
+          <button id="bonusClickBtn" class="bonus-btn" onclick="handleBonusClick()">♾️ Infinite Bonus Clicks (+2 R$)</button>
           <p id="bonusTimerText" style="color: #00d2ff; font-size: 0.95rem; text-align: center; margin-bottom: 25px; font-weight: bold; display: none;"></p>
 
           <h3 style="color: #00e676; margin-bottom: 5px;">🚀 Choose an Offerwall</h3>
-          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning points.</p>
+          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning Robux.</p>
           
           <div class="offerwalls-grid">
               <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
@@ -149,7 +149,7 @@
               <div class="offer-card" onclick="openOfferwall('JITSCAPE', 'Jitscape')">
                   <div class="card-icon">🕹️</div>
                   <h3>Jitscape</h3>
-                  <p>Play Roblox games for points</p>
+                  <p>Play Roblox games for Robux</p>
               </div>
           </div>
         </div>
@@ -162,7 +162,7 @@
 
         <div class="content-box">
           <h3 style="color: #00e676; margin-bottom: 10px;">Your Referral Code</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to use your Roblox username as the code! You will earn a massive 15% of all points they make for life!</p>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to use your Roblox username as the code! You will earn a massive 15% of all Robux they make for life!</p>
           <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;">
               <span id="myRefCodeDisplay">Log in first</span>
           </div>
@@ -224,13 +224,13 @@
     </div>
   </div>
 
-  <!-- 🔥 PRZYWRÓCONE OKIENKO PAYPAL (40 pkt = 1.00 USD) -->
+  <!-- 🔥 NOWY PRZELICZNIK W OKIENKU WYPŁAT (80 Robux = 1.00 USD) -->
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="color: #fff;">Withdraw to PayPal</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">40 Points = $1.00 USD</p>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">80 Robux = $1.00 USD</p>
       <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
-      <input type="number" id="withdrawPoints" placeholder="Amount of Points" oninput="calculateUSD()">
+      <input type="number" id="withdrawPoints" placeholder="Amount of Robux" oninput="calculateUSD()">
       <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
       <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()">Request Payout</button>
       <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()">Cancel</button>
@@ -422,20 +422,20 @@
             if (!data.error) {
                 fetchUserPoints(); 
                 btn.disabled = false;
-                btn.innerText = "♾️ Infinite Bonus Clicks (+2 🪙)";
+                btn.innerText = "♾️ Infinite Bonus Clicks (+2 R$)";
                 timerText.style.display = "none";
             } else {
                 btn.innerText = "❌ " + data.error; 
                 setTimeout(() => {
                     btn.disabled = false;
-                    btn.innerText = "♾️ Infinite Bonus Clicks (+2 🪙)";
+                    btn.innerText = "♾️ Infinite Bonus Clicks (+2 R$)";
                     timerText.style.display = "none";
                 }, 3000);
             }
         } catch (error) {
             alert("Connection error.");
             document.getElementById("bonusClickBtn").disabled = false;
-            document.getElementById("bonusClickBtn").innerText = "♾️ Infinite Bonus Clicks (+2 🪙)";
+            document.getElementById("bonusClickBtn").innerText = "♾️ Infinite Bonus Clicks (+2 R$)";
             document.getElementById("bonusTimerText").style.display = "none";
         }
     }
@@ -502,7 +502,7 @@
                 stats.forEach(user => {
                     rows += `<tr>
                                 <td style="font-weight: bold; color: #fff;">👤 ${user.username}</td>
-                                <td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} 🪙</td>
+                                <td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} R$</td>
                              </tr>`;
                 });
                 tableBody.innerHTML = rows;
@@ -518,8 +518,8 @@
         const earners = await response.json();
         if (earners.length > 0) {
           let tickerHTML = '';
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} 🪙</span></div>`; });
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} 🪙</span></div>`; });
+          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
+          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
           document.getElementById('liveTicker').innerHTML = tickerHTML;
         }
       } catch (error) {}
@@ -572,7 +572,7 @@
       else { alert("Please enter a valid username!"); }
     }
     
-    // 🔥 POPRAWIONE FUNKCJE PAYPAL (Z LICZENIEM DOLARÓW: Punkty * 0.025)
+    // 🔥 POPRAWIONE FUNKCJE PAYPAL (Z LICZENIEM DOLARÓW: Punkty * 0.0125)
     function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
@@ -583,7 +583,7 @@
     
     function calculateUSD() {
         const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
-        const usdValue = points * 0.025; // 40 punktów = 1 USD
+        const usdValue = points * 0.0125; // 80 Robuxów = 1 USD
         document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
     }
     
@@ -592,7 +592,7 @@
         const points = parseFloat(document.getElementById("withdrawPoints").value);
         const username = localStorage.getItem("rbx_username");
         if (!email || !email.includes("@")) return alert("Please enter a valid PayPal email.");
-        if (!points || points <= 0) return alert("Please enter a valid amount of points.");
+        if (!points || points <= 0) return alert("Please enter a valid amount of Robux.");
 
         try {
             const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
