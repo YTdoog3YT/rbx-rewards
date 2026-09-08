@@ -20,7 +20,6 @@
     .nav-item:hover { background: #1f232e; color: #fff; }
     .nav-item.active { background: #00e676; color: #000; }
 
-    .sidebar-ad { width: 160px; flex-shrink: 0; position: sticky; top: 20px; display: flex; justify-content: center; background: #14171d; border: 1px dashed #333947; border-radius: 8px; min-height: 620px; padding: 10px; }
     .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; }
     
     header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
@@ -32,8 +31,6 @@
     .btn-withdraw { background: #ffb703; display: none; }
     .btn-withdraw:hover { background: #ff9e00; }
     
-    .ad-container { width: 100%; background: #14171d; border: 1px dashed #333947; border-radius: 8px; margin-bottom: 25px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 110px; overflow-x: auto; overflow-y: hidden; }
-    .ad-container-box { width: 100%; max-width: 320px; margin: 20px auto 0 auto; background: #14171d; border: 1px dashed #333947; border-radius: 8px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 270px; overflow: hidden; }
     .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
     .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
     .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s; display: inline-block; margin-top: 15px; }
@@ -61,7 +58,6 @@
     #iframeContainer { flex: 1; width: 100%; border-radius: 0 0 12px 12px; overflow: hidden; }
     #iframeContainer iframe { width: 100%; height: 100%; border: none; background: #fff; }
     
-    @media (max-width: 1280px) { .sidebar-ad { display: none; } }
     @media (max-width: 900px) { .side-nav { display: none; } }
     
     .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; }
@@ -98,10 +94,7 @@
         <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
     </nav>
 
-    <aside class="sidebar-ad">
-      <script> atOptions = { 'key' : '93fb80faea7c05146f407641d1535686', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} }; </script>
-      <script src="https://www.highrevenueformat.com/93fb80faea7c05146f407641d1535686/invoke.js"></script>
-    </aside>
+    <!-- Usunięto reklamy poboczne -->
 
     <div class="main-content">
       <header>
@@ -155,17 +148,8 @@
                   <p>Play Roblox games for points</p>
               </div>
           </div>
-
-          <div class="ad-container-box">
-            <script> atOptions = { 'key' : '532efa4a51965f97fbf56df74914bd23', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} }; </script>
-            <script src="https://www.highrevenueformat.com/532efa4a51965f97fbf56df74914bd23/invoke.js"></script>
-          </div>
         </div>
 
-        <div class="ad-container">
-          <script> atOptions = { 'key' : '626fd5b0faa629e0b217285c12343773', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} }; </script>
-          <script src="https://www.highrevenueformat.com/626fd5b0faa629e0b217285c12343773/invoke.js"></script>
-        </div>
       </main>
 
       <!-- ZAKŁADKA 2: REFERRALS -->
@@ -190,7 +174,6 @@
 
         <div id="referralStatsSection" class="content-box" style="display: none;">
           <h3 style="color: #fff; margin-bottom: 15px;">Your 15% Commission Stats</h3>
-          <!-- 🔥 TUTAJ NAPRAWIONA KOLEJNOŚĆ DAT -->
           <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
               <option value="today">Today</option>
               <option value="yesterday">Yesterday</option>
@@ -226,11 +209,6 @@
 
     </div>
 
-    <aside class="sidebar-ad">
-      <script> atOptions = { 'key' : '93fb80faea7c05146f407641d1535686', 'format' : 'iframe', 'height' : 600, 'width' : 160, 'params' : {} }; </script>
-      <script src="https://www.highrevenueformat.com/93fb80faea7c05146f407641d1535686/invoke.js"></script>
-    </aside>
-
   </div>
 
   <!-- MODALS -->
@@ -252,20 +230,6 @@
       <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.0000</span></p>
       <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()">Request Payout</button>
       <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- OKIENKO REKLAMY DAILY REWARD -->
-  <div class="modal" id="dailyAdModal" style="z-index: 3000;">
-    <div class="modal-content" style="max-width: 500px; padding: 15px;">
-        <h3 style="color: #fff; margin-bottom: 10px;">🎁 Daily Reward Ad</h3>
-        <p style="color: #00e676; font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;" id="adModalTimerDisplay">⏳ Wait 10 seconds...</p>
-        
-        <div style="width: 100%; height: 300px; background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
-            <iframe id="dailyAdIframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
-        </div>
-        
-        <p style="color: #888; font-size: 0.85rem;">Please wait for the timer to finish to unlock your reward.</p>
     </div>
   </div>
 
@@ -366,32 +330,32 @@
 
     let dailyStageTimer = null;
 
+    // 🔥 LOGIKA SKRACACZA LINKÓW
     function handleDailyRewardClick() {
         const savedUser = localStorage.getItem("rbx_username");
         if (!savedUser) return;
         const btn = document.getElementById("dailyRewardBtn");
+        const timerText = document.getElementById("dailyTimerText");
 
-        document.getElementById("dailyAdModal").style.display = "flex";
-        document.getElementById("dailyAdIframe").src = "https://omg10.com/4/11460742";
+        // 🔥 UWAGA: Tutaj wklej swój prawdziwy skrócony link z ShrinkMe.io!
+        const shortlinkUrl = "https://shrinkme.io/TWÓJ_LINK_TUTAJ";
+        window.open(shortlinkUrl, "_blank");
         
         btn.disabled = true;
-        btn.innerText = "⏳ Watching ad...";
+        btn.innerText = "⏳ Wykonuj zadanie w nowej karcie...";
         
-        let timeLeft = 10;
-        const timerDisplay = document.getElementById("adModalTimerDisplay");
-        timerDisplay.innerText = `⏳ Wait ${timeLeft} seconds...`;
+        let timeLeft = 20; // 20 sekund dla użytkownika na przeklikanie skracacza
+        timerText.style.display = "block";
+        timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
         
         dailyStageTimer = setInterval(() => {
             timeLeft--;
-            timerDisplay.innerText = `⏳ Wait ${timeLeft} seconds...`;
+            timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
             
             if (timeLeft <= 0) {
                 clearInterval(dailyStageTimer);
-                
-                document.getElementById("dailyAdModal").style.display = "none";
-                document.getElementById("dailyAdIframe").src = "";
-                
-                btn.innerText = "🔄 Processing reward...";
+                timerText.innerText = "🔄 Przetwarzanie nagrody...";
+                btn.innerText = "🔄 Przetwarzanie...";
                 claimDailyFromServer(savedUser);
             }
         }, 1000);
@@ -405,11 +369,13 @@
                 fetchUserPoints(); 
             } else {
                 document.getElementById("dailyRewardBtn").innerText = "❌ " + data.error; 
+                document.getElementById("dailyTimerText").style.display = "none";
             }
         } catch (error) {
             alert("Connection error.");
             document.getElementById("dailyRewardBtn").disabled = false;
             document.getElementById("dailyRewardBtn").innerText = "🎁 Click here for Daily Reward!";
+            document.getElementById("dailyTimerText").style.display = "none";
         }
     }
 
@@ -434,7 +400,6 @@
         } catch (error) { alert("Connection error."); }
     }
 
-    // --- LOGIKA KODÓW PROMOCYJNYCH (DISCORD BOTA) ---
     async function submitPromoCode() {
         const code = document.getElementById("promoCodeInput").value.trim();
         const username = localStorage.getItem("rbx_username");
