@@ -330,15 +330,15 @@
 
     let dailyStageTimer = null;
 
-    // 🔥 LOGIKA SKRACACZA LINKÓW
+    // 🔥 LOGIKA SKRACACZA LINKÓW Z TWOIM SHRINKME API
     function handleDailyRewardClick() {
         const savedUser = localStorage.getItem("rbx_username");
         if (!savedUser) return;
         const btn = document.getElementById("dailyRewardBtn");
         const timerText = document.getElementById("dailyTimerText");
 
-        // 🔥 UWAGA: Tutaj wklej swój prawdziwy skrócony link z ShrinkMe.io!
-        const shortlinkUrl = "https://shrinkme.io/TWÓJ_LINK_TUTAJ";
+        // 🔥 Twój prawdziwy link z API ShrinkMe.io!
+        const shortlinkUrl = "https://shrinkme.io/st?api=3a0425699d427853ccb863aeabbecd45dae820fb&url=https://rbx-rewards.onrender.com/";
         window.open(shortlinkUrl, "_blank");
         
         btn.disabled = true;
