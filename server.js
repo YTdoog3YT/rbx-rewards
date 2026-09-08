@@ -392,6 +392,13 @@ if (DISCORD_BOT_TOKEN) {
                 message.reply('❌ Wystąpił błąd podczas usuwania kodu.');
             }
         }
+        if (message.content.startsWith('!resetdaily ')) {
+            const targetUser = message.content.split(' ')[1];
+            if (!targetUser) return message.reply('⚠️ Użycie: `!resetdaily <NICK>`');
+
+            await User.updateOne({ username: targetUser }, { $set: { lastDailyReward: null } });
+            message.reply(`✅ Daily zresetowane dla gracza **${targetUser}**!`);
+        }
     });
 
     client.once('ready', () => {
