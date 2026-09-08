@@ -30,7 +30,8 @@ const UserSchema = new mongoose.Schema({
     points: { type: Number, default: 0 },
     lastDailyReward: { type: Date, default: null },
     referredBy: { type: String, default: null },
-    streak: { type: Number, default: 0 } 
+    streak: { type: Number, default: 0 },
+    referredUsers: { type: [String], default: [] } // 🔥 DODANE: Tablica na nicki poleconych osób!
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -51,13 +52,12 @@ const PayoutSchema = new mongoose.Schema({
 });
 const Payout = mongoose.model('Payout', PayoutSchema);
 
-// NOWY SCHEMAT: KODY PROMOCYJNE
 const PromoCodeSchema = new mongoose.Schema({
     code: { type: String, unique: true, uppercase: true },
     reward: Number,
     maxUses: Number,
     currentUses: { type: Number, default: 0 },
-    usedBy: [String] // Zapisujemy nicki, żeby nikt nie użył kodu 2 razy
+    usedBy: [String] 
 });
 const PromoCode = mongoose.model('PromoCode', PromoCodeSchema);
 
@@ -94,8 +94,15 @@ app.get('/postback', async (req, res) => {
 app.get('/api/points/:username', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.params.username });
-        res.json({ points: user ? user.points : 0, lastDailyReward: user ? user.lastDailyReward : null, referredBy: user ? user.referredBy : null, streak: user ? (user.streak || 0) : 0 });
-    } catch (error) { res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0 }); }
+        // 🔥 DODANE: Endpoint zwraca teraz też tablicę referredUsers
+        res.json({ 
+            points: user ? user.points : 0, 
+            lastDailyReward: user ? user.lastDailyReward : null, 
+            referredBy: user ? user.referredBy : null, 
+            streak: user ? (user.streak || 0) : 0,
+            referredUsers: user ? user.referredUsers : [] 
+        });
+    } catch (error) { res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0, referredUsers: [] }); }
 });
 
 app.get('/api/latest-earners', async (req, res) => {
@@ -152,6 +159,7 @@ app.post('/api/daily-reward', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
+// 🔥 TUTAJ SĄ GŁÓWNE ZMIANY (Zapisywanie nicku na liście właściciela kodu)
 app.post('/api/redeem-code', async (req, res) => {
     const { username, code } = req.body;
     if (!username || !code) return res.status(400).json({ error: 'Missing data.' });
@@ -160,9 +168,20 @@ app.post('/api/redeem-code', async (req, res) => {
         let user = await User.findOne({ username });
         if (!user) user = new User({ username: username, points: 0 });
         if (user.referredBy) return res.status(400).json({ error: 'Already used referral code!' });
+        
         let referrer = await User.findOne({ username: new RegExp(`^${code}$`, 'i') });
         if (!referrer) return res.status(404).json({ error: 'Referral not found.' });
-        user.referredBy = referrer.username; await user.save();
+        
+        // Zapisujemy użycie po stronie nowego gracza
+        user.referredBy = referrer.username; 
+        await user.save();
+
+        // 🔥 DODANE: Zapisujemy nick gracza na liście właściciela reflinku
+        if (!referrer.referredUsers.includes(user.username)) {
+            referrer.referredUsers.push(user.username);
+            await referrer.save();
+        }
+
         res.json({ success: true, message: 'Code activated!' });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
@@ -172,7 +191,6 @@ app.get('/api/referral-stats/:username', async (req, res) => {
     res.json([]); // Uproszczenie widoku pod kod promocyjny
 });
 
-// NOWY ENDPOINT: ODBIÓR KODU PROMOCYJNEGO
 app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body;
     if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
@@ -218,14 +236,12 @@ if (DISCORD_BOT_TOKEN) {
     client.on('messageCreate', async message => {
         if (message.author.bot) return;
 
-        // Weryfikacja uprawnień (tylko Ty możesz sterować kodami)
         if (message.content.startsWith('!kod') || message.content.startsWith('!kody') || message.content.startsWith('!usunkod')) {
             if (message.author.id !== ADMIN_DISCORD_ID) {
                 return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać kodami.');
             }
         }
 
-        // 1. TWORZENIE KODU: !kod NAZWA PUNKTY MAX_UŻYĆ
         if (message.content.startsWith('!kod ')) {
             const args = message.content.split(' ');
             if (args.length !== 4) return message.reply('⚠️ Poprawne użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`');
@@ -249,10 +265,8 @@ if (DISCORD_BOT_TOKEN) {
             }
         }
 
-        // 2. LISTA AKTYWNYCH KODÓW: !kody
         if (message.content === '!kody') {
             try {
-                // Szukamy kodów, gdzie currentUses jest mniejsze niż maxUses
                 const activeCodes = await PromoCode.find({ 
                     $expr: { $lt: ["$currentUses", "$maxUses"] } 
                 });
@@ -272,7 +286,6 @@ if (DISCORD_BOT_TOKEN) {
             }
         }
 
-        // 3. USUWANIE KODU: !usunkod NAZWA
         if (message.content.startsWith('!usunkod ')) {
             const args = message.content.split(' ');
             if (args.length !== 2) return message.reply('⚠️ Poprawne użycie: `!usunkod <NAZWA_KODU>`');
