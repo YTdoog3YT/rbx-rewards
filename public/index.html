@@ -224,11 +224,11 @@
     </div>
   </div>
 
-  <!-- 🔥 NOWY PRZELICZNIK W OKIENKU WYPŁAT (80 Robux = 1.00 USD) -->
+  <!-- 🔥 ZAKTUALIZOWANE OKIENKO PAYPAL (80 Robux = 2.00 USD) -->
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="color: #fff;">Withdraw to PayPal</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">80 Robux = $1.00 USD</p>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">80 Robux = $2.00 USD</p>
       <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
       <input type="number" id="withdrawPoints" placeholder="Amount of Robux" oninput="calculateUSD()">
       <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
@@ -572,7 +572,7 @@
       else { alert("Please enter a valid username!"); }
     }
     
-    // 🔥 POPRAWIONE FUNKCJE PAYPAL (Z LICZENIEM DOLARÓW: Punkty * 0.0125)
+    // 🔥 FUNKCJE Z TWOIM PRZELICZNIKIEM (80 Robux = 2.00 USD -> 1 R$ = 0.025 USD)
     function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
@@ -583,7 +583,7 @@
     
     function calculateUSD() {
         const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
-        const usdValue = points * 0.0125; // 80 Robuxów = 1 USD
+        const usdValue = points * 0.025; // 1 Robux = 0.025 USD
         document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
     }
     

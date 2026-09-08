@@ -42,7 +42,6 @@ const EarningSchema = new mongoose.Schema({
 });
 const Earning = mongoose.model('Earning', EarningSchema);
 
-// Schemat wypłat 
 const PayoutSchema = new mongoose.Schema({
     username: String,
     paypalEmail: String,
@@ -116,7 +115,7 @@ app.get('/api/latest-earners', async (req, res) => {
     try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 NOWY PRZELICZNIK WYPŁAT (80 Robuxów = 1.00 USD)
+// 🔥 NOWY PRZELICZNIK WYPŁAT (80 Robuxów = 2.00 USD -> 1 Robux = 0.025 USD)
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -127,14 +126,14 @@ app.post('/api/withdraw', async (req, res) => {
         user.points -= points; 
         await user.save();
         
-        // 1 Robux = 0.0125$ (czyli 80 Robuxów = 1.00$)
-        const usdAmount = points * 0.0125; 
+        const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
         
         await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
+// 🔥 JITSCAPE USTAWIONE NA 15 ROBUXÓW ZA 1 DOLARA
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
@@ -145,7 +144,7 @@ app.all('/api/jitscape-postback', async (req, res) => {
     if (data.amountMilliCents == 0) return res.status(200).send('Test OK');
     res.status(200).send('OK');
     
-    const pointsToAward = parseFloat(((data.amountMilliCents / 100000) * 20).toFixed(2));
+    const pointsToAward = parseFloat(((data.amountMilliCents / 100000) * 15).toFixed(2));
     
     try {
         let user = await User.findOne({ username: data.userId });
