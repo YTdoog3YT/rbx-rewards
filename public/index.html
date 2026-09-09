@@ -8,9 +8,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-  <!-- 🔥 TWÓJ SKRYPT GOOGLE ADSENSE -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275"
-     crossorigin="anonymous"></script>
+  <!-- 🔥 GŁÓWNY SKRYPT GOOGLE ADSENSE -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -108,11 +107,10 @@
 
         <!-- 🔥 BOKS REKLAMOWY ADSENSE W PANELU BOCZNYM -->
         <div class="adsense-sidebar">
-            <!-- AdSense kod wstawiany przez Google, poniżej zostawiamy znacznik -->
             <ins class="adsbygoogle"
                  style="display:block"
                  data-ad-client="ca-pub-6665069359963275"
-                 data-ad-slot="auto"
+                 data-ad-slot="3674362524"
                  data-ad-format="auto"
                  data-full-width-responsive="true"></ins>
             <script>
@@ -155,16 +153,15 @@
               <span class="streak-text">🔥 Daily Streak: <span id="userStreakDisplay">0</span> Days</span>
           </div>
 
-          <!-- Guzik Daily został dla estetyki, usunęliśmy chore wirusy -->
           <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Claim 0.1 R$ Daily Reward!</button>
           <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 25px; font-weight: bold; display: none;"></p>
 
-          <!-- 🔥 GŁÓWNY BOKS REKLAMOWY ADSENSE NAD OFERTÓWKAMI -->
+          <!-- 🔥 GŁÓWNY BOKS REKLAMOWY ADSENSE NAD OFERTÓWKAMI (TWÓJ NOWY KOD) -->
           <div class="adsense-banner">
               <ins class="adsbygoogle"
                    style="display:block"
                    data-ad-client="ca-pub-6665069359963275"
-                   data-ad-slot="auto"
+                   data-ad-slot="1438091742"
                    data-ad-format="auto"
                    data-full-width-responsive="true"></ins>
               <script>
@@ -374,14 +371,12 @@
         const btn = document.getElementById("dailyRewardBtn");
         const timerText = document.getElementById("dailyTimerText");
 
-        // Po kliknięciu "Daily Reward" otwiera na razie bezpieczny, czysty link, 
-        // a ty zarabiasz pasywnie z reklam AdSense na stronie głównej.
         window.open("https://www.google.com", "_blank"); 
         
         btn.disabled = true;
         btn.innerText = "⏳ Oczekiwanie na odebranie...";
         
-        let timeLeft = 10; // Zmniejszono do 10 sekund dla wygody
+        let timeLeft = 10; 
         timerText.style.display = "block";
         timerText.innerText = `⏳ Zostań na stronie... ${timeLeft}s`;
         
