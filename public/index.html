@@ -8,17 +8,25 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
+  <!-- 🔥 TWÓJ SKRYPT GOOGLE ADSENSE -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275"
+     crossorigin="anonymous"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #0f1115; color: #ffffff; padding: 20px; }
     
     .page-layout { display: flex; justify-content: center; align-items: flex-start; gap: 20px; width: 100%; max-width: 1450px; margin: 0 auto; }
     
-    .side-nav { width: 220px; flex-shrink: 0; background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 20px 15px; position: sticky; top: 20px; }
+    .side-nav-container { display: flex; flex-direction: column; gap: 20px; width: 220px; flex-shrink: 0; position: sticky; top: 20px; }
+    .side-nav { background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 20px 15px; }
     .nav-logo { font-size: 1.5rem; font-weight: bold; color: #00e676; margin-bottom: 30px; text-align: center; }
     .nav-item { display: block; padding: 12px 15px; color: #a0a0a0; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
     .nav-item:hover { background: #1f232e; color: #fff; }
     .nav-item.active { background: #00e676; color: #000; }
+
+    /* Boks na boczną reklamę AdSense */
+    .adsense-sidebar { background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; padding: 10px; text-align: center; min-height: 250px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 
     .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; }
     
@@ -33,6 +41,10 @@
     
     .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
     .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
+    
+    /* Boks na reklamę nad ofertówkami */
+    .adsense-banner { background: #14171d; border: 1px dashed #333947; border-radius: 8px; margin-bottom: 20px; padding: 10px; text-align: center; min-height: 100px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
     .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s; display: inline-block; margin-top: 15px; }
     .btn-action:hover { background: #00c853; }
     
@@ -58,7 +70,7 @@
     #iframeContainer { flex: 1; width: 100%; border-radius: 0 0 12px 12px; overflow: hidden; }
     #iframeContainer iframe { width: 100%; height: 100%; border: none; background: #fff; }
     
-    @media (max-width: 900px) { .side-nav { display: none; } }
+    @media (max-width: 900px) { .side-nav-container { display: none; } }
     
     .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; }
     .ticker-title { background: #00e676; color: #000; padding: 10px 15px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; z-index: 2; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
@@ -68,16 +80,10 @@
     .ticker-item span { color: #ffb703; font-weight: bold; }
     @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-    .daily-btn { background: linear-gradient(45deg, #ff0055, #ffb703); color: #fff; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4); animation: pulse 2s infinite; transition: all 0.3s ease; }
+    .daily-btn { background: linear-gradient(45deg, #ff0055, #ffb703); color: #fff; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4); transition: all 0.3s ease; }
     .daily-btn:hover { transform: scale(1.02); }
-    .daily-btn:disabled { background: #333947 !important; color: #888 !important; animation: none !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
+    .daily-btn:disabled { background: #333947 !important; color: #888 !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
 
-    .bonus-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4); transition: all 0.3s ease; }
-    .bonus-btn:hover { transform: scale(1.02); }
-    .bonus-btn:disabled { background: #333947 !important; color: #888 !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
-
-    .warning-text { color: #ff5555; font-size: 0.85rem; margin-top: 5px; font-weight: bold; }
-    
     .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
     .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
     .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; }
@@ -92,12 +98,28 @@
 
   <div class="page-layout">
     
-    <nav class="side-nav">
-        <div class="nav-logo">RBX Rewards 💎</div>
-        <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
-        <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
-        <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
-    </nav>
+    <div class="side-nav-container">
+        <nav class="side-nav">
+            <div class="nav-logo">RBX Rewards 💎</div>
+            <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
+            <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
+            <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
+        </nav>
+
+        <!-- 🔥 BOKS REKLAMOWY ADSENSE W PANELU BOCZNYM -->
+        <div class="adsense-sidebar">
+            <!-- AdSense kod wstawiany przez Google, poniżej zostawiamy znacznik -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-6665069359963275"
+                 data-ad-slot="auto"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </div>
 
     <div class="main-content">
       <header>
@@ -133,14 +155,22 @@
               <span class="streak-text">🔥 Daily Streak: <span id="userStreakDisplay">0</span> Days</span>
           </div>
 
-          <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Claim 0.5 R$ Daily Reward!</button>
-          <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 10px; font-weight: bold; display: none;"></p>
+          <!-- Guzik Daily został dla estetyki, usunęliśmy chore wirusy -->
+          <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Claim 0.1 R$ Daily Reward!</button>
+          <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 25px; font-weight: bold; display: none;"></p>
 
-          <!-- 🔥 PRZYWRÓCONY GUZIK DO BONUS CLICKS (z Exe.io i nagrodą 0.1 R$) -->
-          <button id="bonusClickBtn" class="bonus-btn" onclick="handleBonusClick()">♾️ Infinite Bonus Clicks (+0.1 R$)</button>
-          <p id="bonusTimerText" style="color: #00d2ff; font-size: 0.95rem; text-align: center; margin-bottom: 10px; font-weight: bold; display: none;"></p>
-
-          <p class="warning-text" style="margin-bottom: 25px;">⚠️ Ważne: Strona otworzy kilka reklam. Zamykaj wyskakujące okienka (pop-ups) i klikaj tylko 'Continue' na oryginalnej stronie, aż wrócisz tutaj!</p>
+          <!-- 🔥 GŁÓWNY BOKS REKLAMOWY ADSENSE NAD OFERTÓWKAMI -->
+          <div class="adsense-banner">
+              <ins class="adsbygoogle"
+                   style="display:block"
+                   data-ad-client="ca-pub-6665069359963275"
+                   data-ad-slot="auto"
+                   data-ad-format="auto"
+                   data-full-width-responsive="true"></ins>
+              <script>
+                   (adsbygoogle = window.adsbygoogle || []).push({});
+              </script>
+          </div>
 
           <h3 style="color: #00e676; margin-bottom: 5px;">🚀 Choose an Offerwall</h3>
           <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning Robux.</p>
@@ -332,7 +362,7 @@
 
     function enableDailyButton(btn, timerText) {
         btn.disabled = false;
-        btn.innerText = "🎁 Claim 0.5 R$ Daily Reward!";
+        btn.innerText = "🎁 Claim 0.1 R$ Daily Reward!";
         timerText.style.display = "none";
     }
 
@@ -344,20 +374,20 @@
         const btn = document.getElementById("dailyRewardBtn");
         const timerText = document.getElementById("dailyTimerText");
 
-        // 🔥 LINK DO EXE.IO W DAILY REWARD
-        const shortlinkUrl = "https://exe.io/g6R72vHa";
-        window.open(shortlinkUrl, "_blank");
+        // Po kliknięciu "Daily Reward" otwiera na razie bezpieczny, czysty link, 
+        // a ty zarabiasz pasywnie z reklam AdSense na stronie głównej.
+        window.open("https://www.google.com", "_blank"); 
         
         btn.disabled = true;
-        btn.innerText = "⏳ Wykonuj zadanie w nowej karcie...";
+        btn.innerText = "⏳ Oczekiwanie na odebranie...";
         
-        let timeLeft = 20; 
+        let timeLeft = 10; // Zmniejszono do 10 sekund dla wygody
         timerText.style.display = "block";
-        timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
+        timerText.innerText = `⏳ Zostań na stronie... ${timeLeft}s`;
         
         dailyStageTimer = setInterval(() => {
             timeLeft--;
-            timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
+            timerText.innerText = `⏳ Zostań na stronie... ${timeLeft}s`;
             
             if (timeLeft <= 0) {
                 clearInterval(dailyStageTimer);
@@ -381,69 +411,8 @@
         } catch (error) {
             alert("Connection error.");
             document.getElementById("dailyRewardBtn").disabled = false;
-            document.getElementById("dailyRewardBtn").innerText = "🎁 Claim 0.5 R$ Daily Reward!";
+            document.getElementById("dailyRewardBtn").innerText = "🎁 Claim 0.1 R$ Daily Reward!";
             document.getElementById("dailyTimerText").style.display = "none";
-        }
-    }
-
-    let bonusStageTimer = null;
-    
-    // 🔥 PRZYWRÓCONY BONUS CLICK Z LINKIEM DO EXE.IO
-    function handleBonusClick() {
-        const savedUser = localStorage.getItem("rbx_username");
-        if (!savedUser) return;
-        const btn = document.getElementById("bonusClickBtn");
-        const timerText = document.getElementById("bonusTimerText");
-
-        const shortlinkUrl = "https://exe.io/g6R72vHa"; 
-        window.open(shortlinkUrl, "_blank");
-        
-        btn.disabled = true;
-        btn.innerText = "⏳ Wykonuj zadanie w nowej karcie...";
-        
-        let timeLeft = 20; 
-        timerText.style.display = "block";
-        timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
-        
-        bonusStageTimer = setInterval(() => {
-            timeLeft--;
-            timerText.innerText = `⏳ Przejdź przez skrócony link. Oczekiwanie: ${timeLeft}s`;
-            
-            if (timeLeft <= 0) {
-                clearInterval(bonusStageTimer);
-                timerText.innerText = "🔄 Przetwarzanie nagrody...";
-                btn.innerText = "🔄 Przetwarzanie...";
-                claimBonusFromServer(savedUser);
-            }
-        }, 1000);
-    }
-
-    async function claimBonusFromServer(username) {
-        try {
-            const response = await fetch('/api/bonus-click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
-            const data = await response.json();
-            
-            const btn = document.getElementById("bonusClickBtn");
-            const timerText = document.getElementById("bonusTimerText");
-            
-            if (!data.error) {
-                fetchUserPoints(); 
-                btn.disabled = false;
-                btn.innerText = "♾️ Infinite Bonus Clicks (+0.1 R$)";
-                timerText.style.display = "none";
-            } else {
-                btn.innerText = "❌ " + data.error; 
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerText = "♾️ Infinite Bonus Clicks (+0.1 R$)";
-                    timerText.style.display = "none";
-                }, 4000);
-            }
-        } catch (error) {
-            alert("Connection error.");
-            document.getElementById("bonusClickBtn").disabled = false;
-            document.getElementById("bonusClickBtn").innerText = "♾️ Infinite Bonus Clicks (+0.1 R$)";
-            document.getElementById("bonusTimerText").style.display = "none";
         }
     }
 
