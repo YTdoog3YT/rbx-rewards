@@ -34,7 +34,6 @@ const UserSchema = new mongoose.Schema({
     referredUsers: { type: [String], default: [] },
     bonusClicksToday: { type: Number, default: 0 },
     lastBonusClickDate: { type: Date, default: null },
-    // Tablica trzymająca historię użytych kodów
     redeemedPromoCodes: { 
         type: [{ code: String, reward: Number, date: { type: Date, default: Date.now } }], 
         default: [] 
@@ -122,7 +121,16 @@ app.get('/api/latest-earners', async (req, res) => {
     try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 PRZELICZNIK WYPŁAT (80 Robuxów = 2.00 USD -> 1 Robux = 0.025 USD)
+// 🔥 NOWE: POBIERANIE 5 OSTATNICH WYPŁAT
+app.get('/api/latest-payouts', async (req, res) => {
+    try { 
+        res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); 
+    } catch (error) { 
+        res.json([]); 
+    }
+});
+
+// 🔥 PRZELICZNIK WYPŁAT
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -140,7 +148,7 @@ app.post('/api/withdraw', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 JITSCAPE USTAWIONE NA 15 ROBUXÓW ZA 1 DOLARA
+// 🔥 JITSCAPE
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
@@ -162,7 +170,7 @@ app.all('/api/jitscape-postback', async (req, res) => {
     } catch (error) {}
 });
 
-// 🔥 DAILY REWARD UCIĘTY NA 0.1 ROBUXA (JAK NA CLAIMRBX)
+// 🔥 DAILY REWARD
 app.post('/api/daily-reward', async (req, res) => {
     const { username } = req.body; if (!username) return res.status(400).json({ error: 'Missing username.' });
     try {
@@ -186,7 +194,7 @@ app.post('/api/daily-reward', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 BONUS CLICKS NA 0.1 ROBUXA / MAX 3x DZIENNIE
+// 🔥 BONUS CLICKS
 app.post('/api/bonus-click', async (req, res) => {
     const { username } = req.body; 
     if (!username) return res.status(400).json({ error: 'Missing username.' });
@@ -315,7 +323,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
     }
 });
 
-// ODBIERANIE KODÓW (Zapisuje do bazy historię)
+// ODBIERANIE KODÓW PROMOCYJNYCH
 app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body;
     if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
@@ -361,7 +369,6 @@ app.get('/api/promo-history/:username', async (req, res) => {
         }
 
         const history = user.redeemedPromoCodes || [];
-        
         history.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         res.json(history);
@@ -375,7 +382,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
 // -----------------------------------------------------
-// LOGIKA BOTA DISCORD (TWORZENIE, LISTA I USUWANIE KODÓW)
+// LOGIKA BOTA DISCORD
 // -----------------------------------------------------
 if (DISCORD_BOT_TOKEN) {
     const { Client, GatewayIntentBits } = require('discord.js');
@@ -436,21 +443,18 @@ if (DISCORD_BOT_TOKEN) {
                 let existing = await PromoCode.findOne({ code: codeName });
                 
                 if (existing) {
-                    // 🔥 Jeśli kod istnieje, sprawdzamy czy został całkowicie wyczerpany
                     if (existing.currentUses >= existing.maxUses) {
                         existing.reward = reward;
                         existing.maxUses = maxUses;
                         existing.currentUses = 0;
-                        existing.usedBy = []; // Czyścimy listę, by gracze mogli ponownie go użyć
+                        existing.usedBy = []; 
                         await existing.save();
                         return message.reply(`♻️ **Wyczerpany kod został odnowiony!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Nowa wartość: **${reward} R$**\n👥 Nowy limit osób: **${maxUses}**`);
                     } else {
-                        // Jeśli wciąż są wolne miejsca, blokujemy nadpisanie, żeby nie psuć aktywnego dropu
                         return message.reply(`❌ Ten kod wciąż jest aktywny (${existing.currentUses}/${existing.maxUses} użyć)! Jeśli koniecznie chcesz go nadpisać, usuń go najpierw komendą \`!usunkod ${codeName}\`.`);
                     }
                 }
 
-                // Jeśli kodu wcześniej nie było, tworzymy nowy (standardowe działanie)
                 const newPromo = new PromoCode({ code: codeName, reward: reward, maxUses: maxUses });
                 await newPromo.save();
 

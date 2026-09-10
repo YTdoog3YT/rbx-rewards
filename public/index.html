@@ -220,7 +220,24 @@
           </div>
         </div>
 
-        <!-- 🔥 ZAKTUALIZOWANE: Sekcja FAQ -->
+        <!-- 🔥 NOWE: Ostatnie prawdziwe wypłaty (Odbudowuje ruch na głównej) -->
+        <div class="content-box" id="recentPayoutsBox" style="display: none;">
+            <h3 style="color: #ffb703; margin-bottom: 15px;">💸 Recent Cashouts</h3>
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Amount</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="recentPayoutsBody">
+                    <tr><td colspan="3" style="text-align: center; color: #888;">Loading real cashouts...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sekcja FAQ -->
         <div class="content-box faq-section">
             <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;">FAQ - Frequently Asked Questions</h3>
             
@@ -234,7 +251,6 @@
                 <div class="faq-answer">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly directly to your linked account.</div>
             </div>
             
-            <!-- POPRAWIONE PYTANIE O ANKIETY -->
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">Why are there no surveys for me? <span>▼</span></div>
                 <div class="faq-answer">Survey availability depends on your region, age, and profile. If you get screened out, keep trying different surveys! Remember to always provide <strong>honest and consistent answers</strong>, as survey networks verify real demographic data and will reject fake or inconsistent profiles.</div>
@@ -367,8 +383,10 @@
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
       fetchLiveEarners();
+      fetchLatestPayouts(); // Ładuje wypłaty na starcie
       setInterval(fetchUserPoints, 5000);
       setInterval(fetchLiveEarners, 30000); 
+      setInterval(fetchLatestPayouts, 30000); // Odświeża wypłaty co 30 sek
     });
 
     function switchTab(tabId) {
@@ -542,6 +560,34 @@
       } catch (error) {}
     }
 
+    // 🔥 NOWE: Funkcja do pobierania ostatnich wypłat
+    async function fetchLatestPayouts() {
+        try {
+            const response = await fetch('/api/latest-payouts');
+            const payouts = await response.json();
+            const tbody = document.getElementById('recentPayoutsBody');
+            
+            if (payouts.length === 0) {
+                document.getElementById('recentPayoutsBox').style.display = 'none'; // Ukrywamy tabelkę jeśli pusta
+                return;
+            }
+            
+            document.getElementById('recentPayoutsBox').style.display = 'block'; // Pokazujemy, jeśli są dane
+
+            let html = '';
+            payouts.forEach(p => {
+                const date = new Date(p.createdAt);
+                const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                html += `<tr>
+                            <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
+                            <td style="color: #ffb703; font-weight: bold;">-${p.pointsWithdrawn.toFixed(2)} R$</td>
+                            <td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td>
+                         </tr>`;
+            });
+            tbody.innerHTML = html;
+        } catch (error) {}
+    }
+
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
@@ -625,6 +671,7 @@
                 document.getElementById("userPoints").innerText = data.newBalance.toFixed(2);
                 localStorage.setItem("rbx_points", data.newBalance);
                 closeWithdrawModal();
+                fetchLatestPayouts(); // Odświeżanie tabeli wypłat po udanej operacji!
             }
         } catch (error) { alert("Connection error."); }
     }
