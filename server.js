@@ -4,6 +4,8 @@ const path = require('path');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { Client, GatewayIntentBits } = require('discord.js');
+const http = require('http');
+const { Server } = require('socket.io');
 
 // -----------------------------------------------------
 // 🤖 KONFIGURACJA BOTA DISCORD
@@ -21,6 +23,9 @@ if (DISCORD_BOT_TOKEN) {
 }
 
 const app = express();
+const server = http.createServer(app); 
+const io = new Server(server, { cors: { origin: "*" } }); 
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,7 +37,6 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Baza MongoDB podłączona pancernie!'))
     .catch(err => console.error('❌ Błąd bazy:', err));
 
-// SCHEMATY
 const UserSchema = new mongoose.Schema({
     username: String,
     points: { type: Number, default: 0 },
@@ -75,7 +79,6 @@ const PromoCodeSchema = new mongoose.Schema({
 });
 const PromoCode = mongoose.model('PromoCode', PromoCodeSchema);
 
-// NALICZANIE 15% DLA POLECAJĄCEGO
 async function processReferralBonus(username, amountEarned) {
     try {
         const user = await User.findOne({ username: username });
@@ -90,7 +93,6 @@ async function processReferralBonus(username, amountEarned) {
     } catch (err) { console.error("Błąd 15%:", err); }
 }
 
-// ENDPOINTY REKLAM I PUNKTÓW
 app.get('/postback', async (req, res) => {
     const userId = req.query.user_id; const amount = parseFloat(req.query.amount_local); const status = req.query.status;
     res.status(200).send('OK'); 
@@ -109,10 +111,8 @@ app.get('/api/points/:username', async (req, res) => {
     try {
         const username = req.params.username;
         const user = await User.findOne({ username: username });
-        
         const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
         const allReferredUsernames = referredDocs.map(u => u.username);
-
         res.json({ 
             points: user ? user.points : 0, 
             lastDailyReward: user ? user.lastDailyReward : null, 
@@ -120,9 +120,7 @@ app.get('/api/points/:username', async (req, res) => {
             streak: user ? (user.streak || 0) : 0,
             referredUsers: allReferredUsernames
         });
-    } catch (error) { 
-        res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0, referredUsers: [] }); 
-    }
+    } catch (error) { res.json({ points: 0, lastDailyReward: null, referredBy: null, streak: 0, referredUsers: [] }); }
 });
 
 app.get('/api/latest-earners', async (req, res) => {
@@ -130,14 +128,33 @@ app.get('/api/latest-earners', async (req, res) => {
 });
 
 app.get('/api/latest-payouts', async (req, res) => {
-    try { 
-        res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); 
-    } catch (error) { 
-        res.json([]); 
+    try { res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
+});
+
+// 🔥 SYSTEM TICKETÓW (Teraz bezpieczniejszy!)
+app.post('/api/support-ticket', async (req, res) => {
+    try {
+        const { username, message } = req.body;
+        if (!username || !message) return res.status(400).json({ error: 'Brak wymaganych danych w formularzu.' });
+        
+        if (discordClient && discordClient.isReady()) {
+            const targetChannel = discordClient.channels.cache.find(c => c.name === 'support-tickets');
+            if (targetChannel && targetChannel.isTextBased()) {
+                await targetChannel.send(`🚨 **NOWY TICKET ZGŁOSZENIOWY** 🚨\n👤 **Od Gracza:** \`${username}\`\n📝 **Wiadomość:**\n> ${message}`);
+                return res.json({ success: true, message: 'Ticket pomyślnie wysłany do Administracji!' });
+            } else {
+                console.log("BŁĄD: Bot nie widzi kanału o nazwie 'support-tickets'. Sprawdź wielkość liter i uprawnienia bota!");
+                return res.status(500).json({ error: 'Błąd konfiguracji: Bot Discord nie widzi kanału "support-tickets".' });
+            }
+        }
+        return res.status(500).json({ error: 'Bot Discord jest obecnie offline.' });
+    } catch (error) {
+        console.error("Błąd wewnętrzny serwera przy ticketach:", error);
+        return res.status(500).json({ error: 'Wewnętrzny błąd serwera. Spróbuj ponownie później.' });
     }
 });
 
-// 🔥 PRZELICZNIK WYPŁAT I POWIADOMIENIA DISCORD (NA KANAŁ)
+// PRZELICZNIK WYPŁAT
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -147,42 +164,29 @@ app.post('/api/withdraw', async (req, res) => {
         
         user.points -= points; 
         await user.save();
-        
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
-        
         await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
 
-        // 🔥 WYSYŁANIE POWIADOMIENIA NA KANAŁ DISCORD O NAZWIE "robux"
         if (discordClient && discordClient.isReady()) {
             try {
                 const targetChannel = discordClient.channels.cache.find(c => c.name === 'robux');
                 if (targetChannel && targetChannel.isTextBased()) {
-                    targetChannel.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount})\n📧 E-mail (PayPal): **${paypalEmail}**`);
-                } else {
-                    console.log("Nie znaleziono kanału tekstowego o nazwie 'robux'.");
+                    await targetChannel.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount})\n📧 E-mail (PayPal): **${paypalEmail}**`);
                 }
-            } catch (err) {
-                console.error("Błąd wysyłania powiadomienia o wypłacie na kanał Discord:", err);
-            }
+            } catch (err) { console.error("Błąd powiadomienia Discord (Wypłata):", err); }
         }
-
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// 🔥 JITSCAPE
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
-    
     const JITSCAPE_SECRET = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
     if (data.signature !== crypto.createHmac('sha256', JITSCAPE_SECRET).update(`${data.txId}:${data.amountMilliCents}:${data.userId}`).digest('hex')) return res.status(400).send('Invalid sig');
-    
     if (data.amountMilliCents == 0) return res.status(200).send('Test OK');
     res.status(200).send('OK');
-    
     const pointsToAward = parseFloat(((data.amountMilliCents / 100000) * 15).toFixed(2));
-    
     try {
         let user = await User.findOne({ username: data.userId });
         if (!user) user = new User({ username: data.userId, points: 0 });
@@ -192,74 +196,8 @@ app.all('/api/jitscape-postback', async (req, res) => {
     } catch (error) {}
 });
 
-// 🔥 DAILY REWARD
-app.post('/api/daily-reward', async (req, res) => {
-    const { username } = req.body; if (!username) return res.status(400).json({ error: 'Missing username.' });
-    try {
-        let user = await User.findOne({ username: username });
-        if (!user) user = new User({ username: username, points: 0, streak: 0 });
-        const now = new Date(); let currentStreak = user.streak || 0;
-        if (user.lastDailyReward) {
-            const timeDiff = now - user.lastDailyReward;
-            if (timeDiff < 86400000) return res.status(400).json({ error: `Wait 24h!` });
-            else if (timeDiff <= 172800000) currentStreak += 1;
-            else currentStreak = 1;
-        } else { currentStreak = 1; }
-        
-        const rewardPoints = 0.1; 
-        
-        user.points += rewardPoints; user.lastDailyReward = now; user.streak = currentStreak;
-        await user.save();
-        await new Earning({ username: username, amount: rewardPoints }).save();
-        await processReferralBonus(username, rewardPoints);
-        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux!` });
-    } catch (error) { res.status(500).json({ error: 'Server error.' }); }
-});
-
-// 🔥 BONUS CLICKS
-app.post('/api/bonus-click', async (req, res) => {
-    const { username } = req.body; 
-    if (!username) return res.status(400).json({ error: 'Missing username.' });
-    try {
-        let user = await User.findOne({ username: username });
-        if (!user) user = new User({ username: username, points: 0, streak: 0 });
-        
-        const now = new Date();
-        let isSameDay = false;
-        
-        if (user.lastBonusClickDate) {
-            const lastDate = new Date(user.lastBonusClickDate);
-            if (lastDate.getFullYear() === now.getFullYear() &&
-                lastDate.getMonth() === now.getMonth() &&
-                lastDate.getDate() === now.getDate()) {
-                isSameDay = true;
-            }
-        }
-
-        if (isSameDay) {
-            if (user.bonusClicksToday >= 3) {
-                return res.status(400).json({ error: 'Limit reached! Come back tomorrow.' });
-            }
-            user.bonusClicksToday += 1;
-        } else {
-            user.bonusClicksToday = 1;
-        }
-        
-        user.lastBonusClickDate = now;
-        
-        const rewardPoints = 0.1; 
-        
-        user.points += rewardPoints; 
-        await user.save();
-        
-        await new Earning({ username: username, amount: rewardPoints }).save();
-        await processReferralBonus(username, rewardPoints);
-        
-        res.json({ success: true, newBalance: user.points, message: `Received ${rewardPoints} Robux from Bonus Click!` });
-    } catch (error) { 
-        res.status(500).json({ error: 'Server error.' }); 
-    }
-});
+app.post('/api/daily-reward', async (req, res) => { /* wyłączone */ });
+app.post('/api/bonus-click', async (req, res) => { /* wyłączone */ });
 
 app.post('/api/redeem-code', async (req, res) => {
     const { username, code } = req.body;
@@ -269,90 +207,46 @@ app.post('/api/redeem-code', async (req, res) => {
         let user = await User.findOne({ username });
         if (!user) user = new User({ username: username, points: 0 });
         if (user.referredBy) return res.status(400).json({ error: 'Already used referral code!' });
-        
         let referrer = await User.findOne({ username: new RegExp(`^${code}$`, 'i') });
         if (!referrer) return res.status(404).json({ error: 'Referral not found.' });
-        
-        user.referredBy = referrer.username; 
-        await user.save();
-
-        if (!referrer.referredUsers.includes(user.username)) {
-            referrer.referredUsers.push(user.username);
-            await referrer.save();
-        }
-
+        user.referredBy = referrer.username; await user.save();
+        if (!referrer.referredUsers.includes(user.username)) { referrer.referredUsers.push(user.username); await referrer.save(); }
         res.json({ success: true, message: 'Code activated!' });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
 app.get('/api/referral-stats/:username', async (req, res) => {
     try {
-        const username = req.params.username;
-        const period = req.query.period || '7days';
-
-        let startDate = new Date(0);
-        let endDate = new Date();
-        const now = new Date();
-
-        if (period === 'today') {
-            startDate = new Date(now.setHours(0, 0, 0, 0));
-        } else if (period === 'yesterday') {
-            const yesterdayStart = new Date();
-            yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-            startDate = new Date(yesterdayStart.setHours(0, 0, 0, 0));
-            
-            const yesterdayEnd = new Date();
-            yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
-            yesterdayEnd.setHours(23, 59, 59, 999);
-            endDate = yesterdayEnd;
-        } else if (period === '7days') {
-            startDate = new Date(now.setDate(now.getDate() - 7));
-        } else if (period === '30days') {
-            startDate = new Date(now.setDate(now.getDate() - 30));
-        }
+        const username = req.params.username; const period = req.query.period || '7days';
+        let startDate = new Date(0); let endDate = new Date(); const now = new Date();
+        if (period === 'today') { startDate = new Date(now.setHours(0, 0, 0, 0)); } 
+        else if (period === 'yesterday') { const yesterdayStart = new Date(); yesterdayStart.setDate(yesterdayStart.getDate() - 1); startDate = new Date(yesterdayStart.setHours(0, 0, 0, 0)); const yesterdayEnd = new Date(); yesterdayEnd.setDate(yesterdayEnd.getDate() - 1); yesterdayEnd.setHours(23, 59, 59, 999); endDate = yesterdayEnd; } 
+        else if (period === '7days') { startDate = new Date(now.setDate(now.getDate() - 7)); } 
+        else if (period === '30days') { startDate = new Date(now.setDate(now.getDate() - 30)); }
 
         const referredDocs = await User.find({ referredBy: new RegExp(`^${username}$`, 'i') });
         const referredUsernames = referredDocs.map(u => u.username);
-
-        if (referredUsernames.length === 0) {
-            return res.json([]);
-        }
+        if (referredUsernames.length === 0) return res.json([]);
 
         const earnings = await Earning.aggregate([
-            { 
-                $match: { 
-                    username: { $in: referredUsernames },
-                    createdAt: { $gte: startDate, $lte: endDate }
-                } 
-            },
+            { $match: { username: { $in: referredUsernames }, createdAt: { $gte: startDate, $lte: endDate } } },
             { $group: { _id: "$username", totalEarned: { $sum: "$amount" } } }
         ]);
-
         const finalStats = referredUsernames.map(ru => {
             const found = earnings.find(e => e._id === ru);
-            return {
-                username: ru,
-                earned: found ? found.totalEarned * 0.15 : 0
-            };
+            return { username: ru, earned: found ? found.totalEarned * 0.15 : 0 };
         });
-
         finalStats.sort((a, b) => b.earned - a.earned);
-
         res.json(finalStats); 
-    } catch (error) {
-        console.error("Błąd pobierania poleconych:", error);
-        res.json([]);
-    }
+    } catch (error) { res.json([]); }
 });
 
 app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body;
     if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
-
     try {
         const promo = await PromoCode.findOne({ code: promoCode.toUpperCase() });
         if (!promo) return res.status(404).json({ error: 'Ten kod nie istnieje lub wygasł.' });
-
         if (promo.currentUses >= promo.maxUses) return res.status(400).json({ error: 'Kod został w pełni wyczerpany!' });
         if (promo.usedBy.includes(username)) return res.status(400).json({ error: 'Już użyłeś tego kodu!' });
 
@@ -360,189 +254,102 @@ app.post('/api/redeem-promo', async (req, res) => {
         if (!user) user = new User({ username, points: 0, streak: 0 });
 
         user.points += promo.reward;
-        
         if (!user.redeemedPromoCodes) user.redeemedPromoCodes = [];
         user.redeemedPromoCodes.push({ code: promo.code, reward: promo.reward, date: new Date() });
-
         await user.save();
 
-        promo.currentUses += 1;
-        promo.usedBy.push(username);
-        await promo.save();
-
+        promo.currentUses += 1; promo.usedBy.push(username); await promo.save();
         await new Earning({ username, amount: promo.reward }).save();
         await processReferralBonus(username, promo.reward);
 
         res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} Robuxów z kodu!` });
-    } catch (error) {
-        res.status(500).json({ error: 'Błąd serwera.' });
-    }
+    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
 app.get('/api/promo-history/:username', async (req, res) => {
     try {
-        const username = req.params.username;
-        const user = await User.findOne({ username: username });
-        
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
+        const username = req.params.username; const user = await User.findOne({ username: username });
+        if (!user) return res.status(404).json({ error: "User not found" });
         const history = user.redeemedPromoCodes || [];
         history.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
         res.json(history);
-    } catch (error) {
-        console.error("Error fetching promo history:", error);
-        res.status(500).json({ error: "Internal server error" });
-    }
+    } catch (error) { res.status(500).json({ error: "Internal server error" }); }
+});
+
+io.on('connection', (socket) => {
+    socket.on('chatMessage', (data) => {
+        io.emit('chatMessage', data);
+    });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
+server.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
-// -----------------------------------------------------
-// LOGIKA BOTA DISCORD
-// -----------------------------------------------------
 if (discordClient) {
     discordClient.on('messageCreate', async message => {
         if (message.author.bot) return;
-
         const cmd = message.content.split(' ')[0].toLowerCase();
         const allowedCommands = ['!kod', '!kody', '!usunkod', '!resetdaily', '!komendy'];
-
         if (allowedCommands.includes(cmd)) {
-            if (message.author.id !== ADMIN_DISCORD_ID) {
-                return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać tą stroną.');
-            }
-        } else {
-            return;
-        }
+            if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ Brak uprawnień! Tylko Właściciel może zarządzać tą stroną.');
+        } else { return; }
 
         if (cmd === '!komendy') {
             const helpText = `
 **🛠️ PANEL ADMINISTRATORA - DOSTĘPNE KOMENDY:**
-
 🔹 \`!kod <NAZWA> <PUNKTY> <MAX_OSÓB>\`
-> **Opis:** Tworzy nowy kod promocyjny dla graczy.
-> **Przykład:** \`!kod WAKACJE 10 50\` *(Tworzy kod "WAKACJE", który daje 10 R$, a użyć go może max 50 osób)*.
-
 🔹 \`!kody\`
-> **Opis:** Wyświetla listę wszystkich aktywnych kodów oraz informacje o ich użyciu.
-
 🔹 \`!usunkod <NAZWA_KODU>\`
-> **Opis:** Trwale usuwa kod promocyjny z bazy danych.
-> **Przykład:** \`!usunkod WAKACJE\`
-
 🔹 \`!resetdaily <NICK_ROBLOX>\`
-> **Opis:** Zdejmuje blokadę Daily Reward dla gracza.
-> **Przykład:** \`!resetdaily Brajanek123\`
-
 🔹 \`!komendy\`
-> **Opis:** Wyświetla tę listę pomocy.
             `;
             return message.reply(helpText);
         }
 
         if (cmd === '!kod') {
             const args = message.content.split(' ');
-            if (args.length !== 4) return message.reply('⚠️ Poprawne użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`\n*Przykład: !kod LATOWIKA 5 100*');
-
-            const codeName = args[1].toUpperCase();
-            const reward = parseFloat(args[2]);
-            const maxUses = parseInt(args[3]);
-
+            if (args.length !== 4) return message.reply('⚠️ Poprawne użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`');
+            const codeName = args[1].toUpperCase(); const reward = parseFloat(args[2]); const maxUses = parseInt(args[3]);
             if (isNaN(reward) || isNaN(maxUses)) return message.reply('❌ Robuxy i max użyć muszą być liczbą!');
-
             try {
                 let existing = await PromoCode.findOne({ code: codeName });
-                
                 if (existing) {
                     if (existing.currentUses >= existing.maxUses) {
-                        existing.reward = reward;
-                        existing.maxUses = maxUses;
-                        existing.currentUses = 0;
-                        existing.usedBy = []; 
+                        existing.reward = reward; existing.maxUses = maxUses; existing.currentUses = 0; existing.usedBy = []; 
                         await existing.save();
                         return message.reply(`♻️ **Wyczerpany kod został odnowiony!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Nowa wartość: **${reward} R$**\n👥 Nowy limit osób: **${maxUses}**`);
                     } else {
                         return message.reply(`❌ Ten kod wciąż jest aktywny (${existing.currentUses}/${existing.maxUses} użyć)! Jeśli koniecznie chcesz go nadpisać, usuń go najpierw komendą \`!usunkod ${codeName}\`.`);
                     }
                 }
-
                 const newPromo = new PromoCode({ code: codeName, reward: reward, maxUses: maxUses });
                 await newPromo.save();
-
                 message.reply(`✅ **Kod utworzony pomyślnie!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Wartość: **${reward} R$**\n👥 Limit osób: **${maxUses}**`);
-            } catch (err) {
-                message.reply('❌ Wystąpił błąd podczas zapisywania kodu w bazie MongoDB.');
-            }
+            } catch (err) { message.reply('❌ Wystąpił błąd podczas zapisywania kodu.'); }
         }
 
         if (cmd === '!kody') {
             try {
-                const activeCodes = await PromoCode.find({ 
-                    $expr: { $lt: ["$currentUses", "$maxUses"] } 
-                });
-
-                if (activeCodes.length === 0) {
-                    return message.reply('📭 Brak aktywnych kodów w bazie danych.');
-                }
-
+                const activeCodes = await PromoCode.find({ $expr: { $lt: ["$currentUses", "$maxUses"] } });
+                if (activeCodes.length === 0) return message.reply('📭 Brak aktywnych kodów w bazie danych.');
                 let responseText = '📋 **Lista aktywnych kodów promocyjnych:**\n';
-                activeCodes.forEach(p => {
-                    responseText += `🎫 **${p.code}** ➔ 💰 **${p.reward} R$** ➔ 👥 Użycia: **${p.currentUses} / ${p.maxUses}**\n`;
-                });
-
+                activeCodes.forEach(p => { responseText += `🎫 **${p.code}** ➔ 💰 **${p.reward} R$** ➔ 👥 Użycia: **${p.currentUses} / ${p.maxUses}**\n`; });
                 message.reply(responseText);
-            } catch (err) {
-                message.reply('❌ Wystąpił błąd podczas pobierania listy kodów.');
-            }
+            } catch (err) { message.reply('❌ Wystąpił błąd podczas pobierania listy kodów.'); }
         }
 
         if (cmd === '!usunkod') {
             const args = message.content.split(' ');
             if (args.length !== 2) return message.reply('⚠️ Poprawne użycie: `!usunkod <NAZWA_KODU>`');
-
             const codeName = args[1].toUpperCase();
-
             try {
                 const deleted = await PromoCode.findOneAndDelete({ code: codeName });
-                if (!deleted) {
-                    return message.reply(`❌ Nie znaleziono aktywnego kodu o nazwie **${codeName}**.`);
-                }
-
+                if (!deleted) return message.reply(`❌ Nie znaleziono aktywnego kodu o nazwie **${codeName}**.`);
                 message.reply(`🗑️ Kod **${codeName}** został pomyślnie usunięty z bazy!`);
-            } catch (err) {
-                message.reply('❌ Wystąpił błąd podczas usuwania kodu.');
-            }
-        }
-
-        if (cmd === '!resetdaily') {
-            const args = message.content.split(' ');
-            const targetUser = args[1];
-            if (!targetUser) return message.reply('⚠️ Poprawne użycie: `!resetdaily <NICK>`');
-
-            try {
-                const updatedUser = await User.findOneAndUpdate(
-                    { username: new RegExp(`^${targetUser}$`, 'i') }, 
-                    { $set: { lastDailyReward: null } }
-                );
-                
-                if (updatedUser) {
-                    message.reply(`✅ Czas dla gracza **${targetUser}** został zresetowany. Może on odebrać Daily Reward ponownie!`);
-                } else {
-                    message.reply(`❌ Nie znaleziono gracza **${targetUser}** w bazie danych.`);
-                }
-            } catch (err) {
-                message.reply('❌ Wystąpił błąd podczas resetowania.');
-            }
+            } catch (err) { message.reply('❌ Wystąpił błąd podczas usuwania kodu.'); }
         }
     });
 
-    discordClient.once('ready', () => {
-        console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza kodami!`);
-    });
-
+    discordClient.once('ready', () => { console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza kodami!`); });
     discordClient.login(DISCORD_BOT_TOKEN).catch(console.error);
 }

@@ -317,7 +317,7 @@
           <p style="color: #a0a0a0; margin-bottom: 15px;">If you have any issues with withdrawing Robux or an offer didn't credit properly, describe your problem below. A ticket will be sent directly to our Admins on Discord!</p>
           <textarea id="ticketMessageInput" rows="5" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
           <br>
-          <button class="btn-action" onclick="submitSupportTicket()">Submit Ticket</button>
+          <button class="btn-action" id="submitTicketBtn" onclick="submitSupportTicket()">Submit Ticket</button>
         </div>
       </main>
 
@@ -418,7 +418,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-      checkLoginStatus(); // Teraz to uruchomi się ZAWSZE, logując Cię z automatu
+      checkLoginStatus(); 
       fetchLiveEarners();
       fetchLatestPayouts(); 
       setInterval(fetchUserPoints, 5000);
@@ -506,14 +506,18 @@
         });
     }
 
-    // 🔥 FUNKCJA WYSYŁANIA TICKETÓW
+    // 🔥 NAPRAWIONA FUNKCJA WYSYŁANIA TICKETÓW (Pokaże Ci DOKŁADNIE gdzie leży błąd)
     async function submitSupportTicket() {
         const messageInput = document.getElementById("ticketMessageInput");
         const message = messageInput.value.trim();
         const username = localStorage.getItem("rbx_username");
+        const btn = document.getElementById("submitTicketBtn");
 
         if (!username) return alert("Musisz być zalogowany, aby wysłać zgłoszenie.");
         if (!message || message.length < 10) return alert("Twoja wiadomość musi mieć co najmniej 10 znaków.");
+
+        btn.innerText = "Wysyłanie...";
+        btn.disabled = true;
 
         try {
             const response = await fetch('/api/support-ticket', {
@@ -521,6 +525,22 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, message })
             });
+            
+            // Zabezpieczenie przed błędem 404 lub 502 od Rendera!
+            if (!response.ok) {
+                const errText = await response.text();
+                console.error("Szczegóły błędu serwera:", errText);
+                try {
+                    const jsonErr = JSON.parse(errText);
+                    alert("❌ Błąd serwera: " + (jsonErr.error || response.status));
+                } catch(e) {
+                    alert("❌ KRYTYCZNY BŁĄD SERWERA (Kod: " + response.status + "). Endpoint prawdopodobnie nie istnieje. Sprawdź, czy wgrałeś socket.io do package.json!");
+                }
+                btn.innerText = "Submit Ticket";
+                btn.disabled = false;
+                return;
+            }
+
             const data = await response.json();
             
             if (data.error) {
@@ -531,8 +551,11 @@
                 switchTab('home'); 
             }
         } catch (error) {
-            alert("Błąd połączenia z serwerem.");
+            alert("Błąd połączenia z serwerem: " + error.message);
         }
+        
+        btn.innerText = "Submit Ticket";
+        btn.disabled = false;
     }
 
     let previousPoints = null;
@@ -780,6 +803,7 @@
         document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
     }
     
+    // 🔥 Usprawnione błędy wypłaty (To samo zabezpieczenie co przy ticketach)
     async function submitWithdraw() {
         const email = document.getElementById("paypalEmail").value.trim();
         const points = parseFloat(document.getElementById("withdrawPoints").value);
@@ -789,6 +813,18 @@
 
         try {
             const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
+            
+            if (!response.ok) {
+                const errText = await response.text();
+                try {
+                    const jsonErr = JSON.parse(errText);
+                    alert("❌ Błąd serwera: " + (jsonErr.error || response.status));
+                } catch(e) {
+                    alert("❌ KRYTYCZNY BŁĄD SERWERA (Kod: " + response.status + "). Podobnie jak przy ticketach – sprawdź Render!");
+                }
+                return;
+            }
+
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);
             else {
@@ -798,7 +834,7 @@
                 closeWithdrawModal();
                 fetchLatestPayouts(); 
             }
-        } catch (error) { alert("Connection error."); }
+        } catch (error) { alert("Błąd połączenia z serwerem."); }
     }
   </script>
 </body>
