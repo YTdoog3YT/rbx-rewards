@@ -11,6 +11,9 @@
   <!-- 🔥 GŁÓWNY SKRYPT GOOGLE ADSENSE -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
 
+  <!-- 🔥 SKRYPT SOCKET.IO DO CZATU NA ŻYWO -->
+  <script src="/socket.io/socket.io.js"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #0f1115; color: #ffffff; padding: 20px; }
@@ -63,37 +66,13 @@
     .modal-content input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
     
     .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
-    
-    .offer-card { 
-        position: relative; 
-        background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 1px solid #2a2e39; 
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; 
-    }
+    .offer-card { position: relative; background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 1px solid #2a2e39; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; }
     .offer-card .card-icon { font-size: 35px; margin-bottom: 10px; }
     .offer-card h3 { margin: 0; color: #fff; font-size: 1.1rem; }
     .offer-card p { color: #a0a0b0; font-size: 0.85rem; margin-top: 5px; }
-    
-    .offer-card:hover { 
-        transform: translateY(-8px) scale(1.02); 
-        border-color: #444c5e; 
-        box-shadow: 0 12px 25px rgba(0,0,0,0.4); 
-    }
-    
+    .offer-card:hover { transform: translateY(-8px) scale(1.02); border-color: #444c5e; box-shadow: 0 12px 25px rgba(0,0,0,0.4); }
     .offer-logo { max-width: 140px; max-height: 45px; margin-bottom: 10px; object-fit: contain; }
-    
-    .badge {
-        position: absolute;
-        top: -12px;
-        right: -10px;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-weight: 900;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        z-index: 2;
-    }
+    .badge { position: absolute; top: -12px; right: -10px; padding: 5px 12px; border-radius: 20px; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 2; }
     .badge-hot { background: #ff0055; color: #fff; }
     .badge-new { background: #00e676; color: #000; }
 
@@ -121,14 +100,12 @@
     .ref-table th { background: #1e1e26; color: #00e676; }
     .ref-table tr:hover { background: #14171d; }
 
-    /* FAQ Styles */
     .faq-section { text-align: left; margin-top: 30px; }
     .faq-item { background: #14171d; border: 1px solid #2a2e39; border-radius: 8px; margin-bottom: 10px; padding: 15px; cursor: pointer; transition: 0.2s; }
     .faq-item:hover { border-color: #00e676; }
     .faq-question { font-weight: bold; color: #fff; font-size: 1.05rem; display: flex; justify-content: space-between; }
     .faq-answer { display: none; color: #a0a0a0; margin-top: 10px; font-size: 0.95rem; line-height: 1.5; }
     
-    /* Footer & Social Media Styles */
     footer { margin-top: 40px; padding: 20px; text-align: center; border-top: 1px solid #2a2e39; font-size: 0.9rem; }
     footer .legal-links a { color: #00e676; text-decoration: none; margin: 0 10px; transition: 0.2s; }
     footer .legal-links a:hover { color: #fff; }
@@ -136,12 +113,25 @@
     .social-links { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
     .social-links a { color: #a0a0b0; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 50%; background: #14171d; border: 1px solid #2a2e39; transition: all 0.3s; text-decoration: none; }
     .social-links a svg { width: 22px; height: 22px; fill: currentColor; }
-    
-    /* Kolory po najechaniu na ikonki */
     .social-links a.twitch:hover { color: #9146FF; border-color: #9146FF; box-shadow: 0 4px 12px rgba(145, 70, 255, 0.2); transform: translateY(-3px); }
     .social-links a.kick:hover { color: #53FC18; border-color: #53FC18; box-shadow: 0 4px 12px rgba(83, 252, 24, 0.2); transform: translateY(-3px); }
     .social-links a.youtube:hover { color: #FF0000; border-color: #FF0000; box-shadow: 0 4px 12px rgba(255, 0, 0, 0.2); transform: translateY(-3px); }
     .social-links a.discord:hover { color: #5865F2; border-color: #5865F2; box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2); transform: translateY(-3px); }
+
+    /* 🔥 STYL PŁYWAJĄCEGO CZATU GLOBALNEGO */
+    .chat-widget { position: fixed; bottom: 20px; right: 20px; width: 320px; background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; overflow: hidden; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: none; flex-direction: column; transition: height 0.3s; }
+    .chat-widget.minimized { height: 45px; }
+    .chat-widget:not(.minimized) { height: 420px; }
+    .chat-header { background: #1e1e26; border-bottom: 1px solid #2a2e39; color: #00e676; padding: 12px 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
+    .chat-header:hover { background: #252a34; }
+    .chat-body { flex: 1; padding: 10px; overflow-y: auto; background: #0f1115; display: flex; flex-direction: column; gap: 8px; }
+    .chat-msg { background: #1e1e26; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; color: #e0e0e0; word-wrap: break-word; line-height: 1.4; border-left: 3px solid #00e676; }
+    .chat-msg span.user { font-weight: bold; color: #ffb703; margin-right: 5px; }
+    .chat-input-area { display: flex; padding: 10px; background: #181b22; border-top: 1px solid #2a2e39; gap: 8px; }
+    .chat-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #33; background: #0f1115; color: #fff; outline: none; }
+    .chat-input-area input:focus { border-color: #00e676; }
+    .chat-input-area button { background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; color: #000; transition: 0.2s; }
+    .chat-input-area button:hover { background: #00c853; }
   </style>
 </head>
 <body>
@@ -154,6 +144,8 @@
             <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
             <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
             <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
+            <!-- 🔥 NOWA ZAKŁADKA SUPPORTU -->
+            <a id="nav-support" class="nav-item" onclick="switchTab('support')">🛠️ Support</a>
         </nav>
 
         <div class="adsense-sidebar">
@@ -230,7 +222,6 @@
           </div>
         </div>
 
-        <!-- Ostatnie prawdziwe wypłaty -->
         <div class="content-box" id="recentPayoutsBox" style="display: none;">
             <h3 style="color: #ffb703; margin-bottom: 15px;">💸 Recent Cashouts</h3>
             <table class="ref-table">
@@ -247,7 +238,6 @@
             </table>
         </div>
 
-        <!-- Sekcja FAQ -->
         <div class="content-box faq-section">
             <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;">FAQ - Frequently Asked Questions</h3>
             
@@ -271,7 +261,6 @@
       <!-- ZAKŁADKA 2: REFERRALS -->
       <main id="tab-referrals" style="display: none;">
         <h2 class="section-title">Invite Friends & Earn 15%</h2>
-
         <div class="content-box">
           <h3 style="color: #00e676; margin-bottom: 10px;">Your Referral Code</h3>
           <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to use your Roblox username as the code! You will earn a massive 15% of all Robux they make for life!</p>
@@ -279,7 +268,6 @@
               <span id="myRefCodeDisplay">Log in first</span>
           </div>
         </div>
-
         <div id="redeemCodeSection" class="content-box">
           <h3 style="color: #fff; margin-bottom: 10px;">Were you invited?</h3>
           <p style="color: #a0a0a0; margin-bottom: 15px;">Enter your friend's code below to support them!</p>
@@ -287,7 +275,6 @@
           <br>
           <button class="btn-action" onclick="submitReferralCode()">Activate Code</button>
         </div>
-
         <div id="referralStatsSection" class="content-box" style="display: none;">
           <h3 style="color: #fff; margin-bottom: 15px;">Your 15% Commission Stats</h3>
           <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
@@ -296,17 +283,9 @@
               <option value="7days" selected>Last 7 Days</option>
               <option value="30days">Last 30 Days</option>
           </select>
-
           <table class="ref-table">
-              <thead>
-                  <tr>
-                      <th>Friend's Username</th>
-                      <th>You Earned (15%)</th>
-                  </tr>
-              </thead>
-              <tbody id="refTableBody">
-                  <tr><td colspan="2" style="text-align: center; color: #888;">Loading stats...</td></tr>
-              </tbody>
+              <thead><tr><th>Friend's Username</th><th>You Earned (15%)</th></tr></thead>
+              <tbody id="refTableBody"><tr><td colspan="2" style="text-align: center; color: #888;">Loading stats...</td></tr></tbody>
           </table>
         </div>
       </main>
@@ -314,7 +293,6 @@
       <!-- ZAKŁADKA 3: PROMO CODES -->
       <main id="tab-promocodes" style="display: none;">
         <h2 class="section-title">Redeem Promo Codes</h2>
-        
         <div class="content-box">
           <h3 style="color: #00e676; margin-bottom: 10px;">Got a Code?</h3>
           <p style="color: #a0a0a0; margin-bottom: 15px;">Check our Discord server for limited promo codes!</p>
@@ -322,21 +300,24 @@
           <br>
           <button class="btn-action" onclick="submitPromoCode()">Redeem Code</button>
         </div>
-
         <div id="promoHistorySection" class="content-box" style="display: none;">
           <h3 style="color: #fff; margin-bottom: 15px;">Your Redeemed Codes</h3>
           <table class="ref-table">
-              <thead>
-                  <tr>
-                      <th>Date</th>
-                      <th>Code</th>
-                      <th>Earned</th>
-                  </tr>
-              </thead>
-              <tbody id="promoHistoryTableBody">
-                  <tr><td colspan="3" style="text-align: center; color: #888;">Loading history...</td></tr>
-              </tbody>
+              <thead><tr><th>Date</th><th>Code</th><th>Earned</th></tr></thead>
+              <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;">Loading history...</td></tr></tbody>
           </table>
+        </div>
+      </main>
+
+      <!-- 🔥 ZAKŁADKA 4: NOWA ZAKŁADKA SUPPORTU (TICKETY) -->
+      <main id="tab-support" style="display: none;">
+        <h2 class="section-title">Contact Support</h2>
+        <div class="content-box">
+          <h3 style="color: #fff; margin-bottom: 10px;">Need Help?</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">If you have any issues with withdrawing Robux or an offer didn't credit properly, describe your problem below. A ticket will be sent directly to our Admins on Discord!</p>
+          <textarea id="ticketMessageInput" rows="5" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
+          <br>
+          <button class="btn-action" onclick="submitSupportTicket()">Submit Ticket</button>
         </div>
       </main>
 
@@ -348,7 +329,6 @@
           </div>
           <p style="color: #666; margin-bottom: 5px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
           
-          <!-- 🔥 Ikonki Social Media -->
           <div class="social-links">
               <!-- Twitch -->
               <a href="https://www.twitch.tv/ttv_ytdoog3yt" target="_blank" class="twitch" title="Twitch">
@@ -370,6 +350,23 @@
       </footer>
 
     </div>
+  </div>
+
+  <!-- 🔥 PŁYWAJĄCY WIDŻET CZATU GLOBALNEGO -->
+  <div id="chatWidget" class="chat-widget minimized">
+      <div class="chat-header" onclick="toggleChat()">
+          <span>🌍 Global Chat</span>
+          <span id="chatToggleIcon">▲</span>
+      </div>
+      <div class="chat-body" id="chatMessages">
+          <div class="chat-msg" style="border-left-color: #ffb703;">
+              <span class="user" style="color: #ffb703;">SYSTEM:</span> Welcome to the Global Chat! Be respectful.
+          </div>
+      </div>
+      <div class="chat-input-area">
+          <input type="text" id="chatInput" placeholder="Say something..." maxlength="100">
+          <button onclick="sendChatMessage()">Send</button>
+      </div>
   </div>
 
   <!-- MODALS -->
@@ -410,6 +407,9 @@
     const jitscapePubId = "plc_xHHxjKbb5p5P";
     const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
 
+    // 🔥 INICJALIZACJA SOCKET.IO DLA CZATU
+    const socket = io();
+
     document.addEventListener("DOMContentLoaded", function() {
       checkLoginStatus();
       fetchLiveEarners();
@@ -423,6 +423,7 @@
         document.getElementById('tab-home').style.display = 'none';
         document.getElementById('tab-referrals').style.display = 'none';
         document.getElementById('tab-promocodes').style.display = 'none';
+        document.getElementById('tab-support').style.display = 'none'; // Ukryj zakładkę support
         
         document.getElementById('tab-' + tabId).style.display = 'block';
         
@@ -442,6 +443,87 @@
         } else {
             answer.style.display = 'block';
             icon.innerText = '▲';
+        }
+    }
+
+    // 🔥 FUNKCJE DO CZATU GLOBALNEGO
+    function toggleChat() {
+        const widget = document.getElementById('chatWidget');
+        const icon = document.getElementById('chatToggleIcon');
+        if (widget.classList.contains('minimized')) {
+            widget.classList.remove('minimized');
+            icon.innerText = '▼';
+            // Scroll na sam dół po otwarciu
+            const chatBody = document.getElementById('chatMessages');
+            chatBody.scrollTop = chatBody.scrollHeight;
+        } else {
+            widget.classList.add('minimized');
+            icon.innerText = '▲';
+        }
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        const username = localStorage.getItem("rbx_username");
+        
+        if (!username) {
+            alert("Musisz się zalogować, aby pisać na czacie!");
+            return;
+        }
+        if (msg) {
+            socket.emit('chatMessage', { username: username, text: msg });
+            input.value = ''; // Czyszczenie pola
+        }
+    }
+
+    // Enter do wysyłania wiadomości
+    document.getElementById('chatInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+
+    // Odbieranie wiadomości na żywo od serwera
+    socket.on('chatMessage', (data) => {
+        const chatBody = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-msg';
+        
+        // Zabezpieczenie przed atakami XSS (zamiana HTML na tekst)
+        const safeText = document.createTextNode(data.text);
+        
+        msgDiv.innerHTML = `<span class="user">${data.username}:</span> `;
+        msgDiv.appendChild(safeText);
+        
+        chatBody.appendChild(msgDiv);
+        chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll w dół
+    });
+
+    // 🔥 FUNKCJA WYSYŁANIA TICKETÓW
+    async function submitSupportTicket() {
+        const messageInput = document.getElementById("ticketMessageInput");
+        const message = messageInput.value.trim();
+        const username = localStorage.getItem("rbx_username");
+
+        if (!username) return alert("Musisz być zalogowany, aby wysłać zgłoszenie.");
+        if (!message || message.length < 10) return alert("Twoja wiadomość musi mieć co najmniej 10 znaków.");
+
+        try {
+            const response = await fetch('/api/support-ticket', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, message })
+            });
+            const data = await response.json();
+            
+            if (data.error) {
+                alert("❌ Błąd: " + data.error);
+            } else {
+                alert("✅ Sukces: " + data.message);
+                messageInput.value = ""; // Czyści pole
+                switchTab('home'); // Wraca na stronę główną
+            }
+        } catch (error) {
+            alert("Błąd połączenia z serwerem.");
         }
     }
 
@@ -628,6 +710,9 @@
         document.getElementById("myRefCodeDisplay").innerText = savedUser;
         document.getElementById("referralStatsSection").style.display = "block";
         document.getElementById("promoHistorySection").style.display = "block";
+        
+        // Pokaż widget czatu dla zalogowanych
+        document.getElementById("chatWidget").style.display = "flex";
 
         fetchUserPoints();
         
@@ -647,6 +732,9 @@
         document.getElementById("referralStatsSection").style.display = "none";
         document.getElementById("promoHistorySection").style.display = "none";
         document.getElementById("userPoints").innerText = "0";
+        
+        // Ukryj widget czatu dla niezalogowanych
+        document.getElementById("chatWidget").style.display = "none";
       }
     }
 
