@@ -220,7 +220,7 @@
           </div>
         </div>
 
-        <!-- 🔥 NOWE: Sekcja FAQ widoczna dla wszystkich -->
+        <!-- 🔥 ZAKTUALIZOWANE: Sekcja FAQ -->
         <div class="content-box faq-section">
             <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;">FAQ - Frequently Asked Questions</h3>
             
@@ -234,9 +234,10 @@
                 <div class="faq-answer">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly directly to your linked account.</div>
             </div>
             
+            <!-- POPRAWIONE PYTANIE O ANKIETY -->
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">Why are there no surveys for me? <span>▼</span></div>
-                <div class="faq-answer">Survey availability depends on your region, age, and profile. If surveys aren't working for you, we highly recommend using the <strong>Jitscape</strong> offerwall to play mobile games instead!</div>
+                <div class="faq-answer">Survey availability depends on your region, age, and profile. If you get screened out, keep trying different surveys! Remember to always provide <strong>honest and consistent answers</strong>, as survey networks verify real demographic data and will reject fake or inconsistent profiles.</div>
             </div>
         </div>
       </main>
@@ -313,7 +314,7 @@
         </div>
       </main>
 
-      <!-- 🔥 NOWE: Stopka z linkami do regulaminów -->
+      <!-- Stopka z linkami do regulaminów -->
       <footer>
           <p style="color: #666; margin-bottom: 10px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
           <div>
@@ -384,7 +385,6 @@
         if(tabId === 'promocodes') loadPromoHistory();
     }
 
-    // Funkcja do rozwijania FAQ
     function toggleFaq(element) {
         const answer = element.querySelector('.faq-answer');
         const icon = element.querySelector('.faq-question span');
