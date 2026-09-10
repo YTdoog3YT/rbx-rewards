@@ -7,11 +7,7 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-  <!-- 🔥 GŁÓWNY SKRYPT GOOGLE ADSENSE -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
-
-  <!-- 🔥 SKRYPT SOCKET.IO DO CZATU NA ŻYWO -->
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
@@ -27,13 +23,14 @@
     .nav-item:hover { background: #1f232e; color: #fff; }
     .nav-item.active { background: #00e676; color: #000; }
 
-    .adsense-sidebar { padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .adsense-banner { margin-bottom: 20px; padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .adsense-sidebar, .adsense-banner { padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .adsense-banner { margin-bottom: 20px; }
 
     .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; }
     
     header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
-    .user-info { display: flex; align-items: center; gap: 15px; width: 100%; justify-content: flex-end; }
+    .lang-selector select { background: #14171d; color: #fff; border: 1px solid #333947; padding: 8px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; }
+    .user-info { display: flex; align-items: center; gap: 15px; justify-content: flex-end; }
     .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; }
     .btn-login, .btn-withdraw { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; }
     .btn-login { background: #00e676; }
@@ -42,21 +39,10 @@
     .btn-withdraw:hover { background: #ff9e00; }
     
     .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
-    
     .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
     
-    .gradient-banner {
-        background: linear-gradient(135deg, #181b22 0%, #0f1115 100%);
-        border: 1px solid #2a2e39;
-        border-left: 4px solid #00e676;
-        border-radius: 12px;
-        padding: 35px 25px;
-        text-align: center;
-        margin-bottom: 25px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    }
-
-    .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s; display: inline-block; margin-top: 15px; }
+    .gradient-banner { background: linear-gradient(135deg, #181b22 0%, #0f1115 100%); border: 1px solid #2a2e39; border-left: 4px solid #00e676; border-radius: 12px; padding: 35px 25px; text-align: center; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-block; margin-top: 15px; }
     .btn-action:hover { background: #00c853; }
     
     .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
@@ -66,25 +52,23 @@
     .modal-content input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
     
     .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
-    .offer-card { position: relative; background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 1px solid #2a2e39; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; }
+    .offer-card { position: relative; background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 1px solid #2a2e39; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; }
     .offer-card .card-icon { font-size: 35px; margin-bottom: 10px; }
     .offer-card h3 { margin: 0; color: #fff; font-size: 1.1rem; }
     .offer-card p { color: #a0a0b0; font-size: 0.85rem; margin-top: 5px; }
     .offer-card:hover { transform: translateY(-8px) scale(1.02); border-color: #444c5e; box-shadow: 0 12px 25px rgba(0,0,0,0.4); }
     .offer-logo { max-width: 140px; max-height: 45px; margin-bottom: 10px; object-fit: contain; }
-    .badge { position: absolute; top: -12px; right: -10px; padding: 5px 12px; border-radius: 20px; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 2; }
+    .badge { position: absolute; top: -12px; right: -10px; padding: 5px 12px; border-radius: 20px; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.5px; z-index: 2; }
     .badge-hot { background: #ff0055; color: #fff; }
     .badge-new { background: #00e676; color: #000; }
 
     .offer-modal-box { background: #181b22; width: 95%; max-width: 1200px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8); border: 1px solid #2a2e39; }
     .offer-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #2a2e39; }
     .offer-modal-header h2 { margin: 0; color: #00e676; font-size: 1.3rem; }
-    .offer-close-btn { color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; line-height: 1; }
+    .offer-close-btn { color: #aaa; font-size: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .offer-close-btn:hover { color: #ff3333; }
     #iframeContainer { flex: 1; width: 100%; border-radius: 0 0 12px 12px; overflow: hidden; }
     #iframeContainer iframe { width: 100%; height: 100%; border: none; background: #fff; }
-    
-    @media (max-width: 900px) { .side-nav-container { display: none; } }
     
     .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; }
     .ticker-title { background: #00e676; color: #000; padding: 10px 15px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; z-index: 2; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
@@ -106,298 +90,270 @@
     .faq-question { font-weight: bold; color: #fff; font-size: 1.05rem; display: flex; justify-content: space-between; }
     .faq-answer { display: none; color: #a0a0a0; margin-top: 10px; font-size: 0.95rem; line-height: 1.5; }
     
-    footer { margin-top: 40px; padding: 20px; text-align: center; border-top: 1px solid #2a2e39; font-size: 0.9rem; }
+    /* 🔥 NAPRAWA ZASŁANIANIA FOOTERA (POGRUBIONY MARGINES Z DOŁU) */
+    footer { padding-bottom: 100px; padding-top: 20px; text-align: center; border-top: 1px solid #2a2e39; font-size: 0.9rem; }
     footer .legal-links a { color: #00e676; text-decoration: none; margin: 0 10px; transition: 0.2s; }
     footer .legal-links a:hover { color: #fff; }
     
     .social-links { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
     .social-links a { color: #a0a0b0; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 50%; background: #14171d; border: 1px solid #2a2e39; transition: all 0.3s; text-decoration: none; }
     .social-links a svg { width: 22px; height: 22px; fill: currentColor; }
-    .social-links a.twitch:hover { color: #9146FF; border-color: #9146FF; box-shadow: 0 4px 12px rgba(145, 70, 255, 0.2); transform: translateY(-3px); }
-    .social-links a.kick:hover { color: #53FC18; border-color: #53FC18; box-shadow: 0 4px 12px rgba(83, 252, 24, 0.2); transform: translateY(-3px); }
-    .social-links a.youtube:hover { color: #FF0000; border-color: #FF0000; box-shadow: 0 4px 12px rgba(255, 0, 0, 0.2); transform: translateY(-3px); }
-    .social-links a.discord:hover { color: #5865F2; border-color: #5865F2; box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2); transform: translateY(-3px); }
+    .social-links a.twitch:hover { color: #9146FF; border-color: #9146FF; transform: translateY(-3px); }
+    .social-links a.kick:hover { color: #53FC18; border-color: #53FC18; transform: translateY(-3px); }
+    .social-links a.youtube:hover { color: #FF0000; border-color: #FF0000; transform: translateY(-3px); }
+    .social-links a.discord:hover { color: #5865F2; border-color: #5865F2; transform: translateY(-3px); }
 
-    /* 🔥 STYL PŁYWAJĄCEGO CZATU GLOBALNEGO */
     .chat-widget { position: fixed; bottom: 20px; right: 20px; width: 320px; background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; overflow: hidden; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: none; flex-direction: column; transition: height 0.3s; }
     .chat-widget.minimized { height: 45px; }
     .chat-widget:not(.minimized) { height: 420px; }
-    .chat-header { background: #1e1e26; border-bottom: 1px solid #2a2e39; color: #00e676; padding: 12px 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
-    .chat-header:hover { background: #252a34; }
+    .chat-header { background: #1e1e26; border-bottom: 1px solid #2a2e39; color: #00e676; padding: 12px 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
     .chat-body { flex: 1; padding: 10px; overflow-y: auto; background: #0f1115; display: flex; flex-direction: column; gap: 8px; }
-    .chat-msg { background: #1e1e26; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; color: #e0e0e0; word-wrap: break-word; line-height: 1.4; border-left: 3px solid #00e676; }
-    .chat-msg span.user { font-weight: bold; color: #ffb703; margin-right: 5px; }
+    .chat-msg { background: #1e1e26; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; color: #e0e0e0; border-left: 3px solid #00e676; word-break: break-word;}
     .chat-input-area { display: flex; padding: 10px; background: #181b22; border-top: 1px solid #2a2e39; gap: 8px; }
-    .chat-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #33; background: #0f1115; color: #fff; outline: none; }
-    .chat-input-area input:focus { border-color: #00e676; }
-    .chat-input-area button { background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; color: #000; transition: 0.2s; }
-    .chat-input-area button:hover { background: #00c853; }
+    .chat-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; outline: none; }
+    .chat-input-area button { background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+    /* 🔥 NOWE: PASEK MOBILNY (BOTTOM NAV) DLA TELEFONÓW */
+    .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #14171d; border-top: 1px solid #2a2e39; z-index: 9999; justify-content: space-around; padding: 10px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+    .mobile-nav .nav-item { flex: 1; text-align: center; color: #a0a0a0; text-decoration: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .mobile-nav .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 3px; }
+    .mobile-nav .nav-item.active { color: #00e676; }
+
+    @media (max-width: 900px) { 
+        .side-nav-container { display: none; } 
+        .mobile-nav { display: flex; }
+        footer { padding-bottom: 140px; } /* Dodatkowe miejsce na pasek mobilny i czat */
+        .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } /* Podniesienie czatu nad pasek mobilny */
+        .chat-widget:not(.minimized) { height: 350px; }
+    }
   </style>
 </head>
 <body>
 
+  <!-- Pasek nawigacyjny TYLKO dla telefonów -->
+  <div class="mobile-nav">
+      <div class="nav-item active" id="mob-nav-home" onclick="switchTab('home')">
+          <span>🏠</span> <div data-lang="navHomeMob">Home</div>
+      </div>
+      <div class="nav-item" id="mob-nav-referrals" onclick="switchTab('referrals')">
+          <span>👥</span> <div data-lang="navRefMob">Referrals</div>
+      </div>
+      <div class="nav-item" id="mob-nav-promocodes" onclick="switchTab('promocodes')">
+          <span>🎫</span> <div data-lang="navPromoMob">Promo</div>
+      </div>
+      <div class="nav-item" id="mob-nav-support" onclick="switchTab('support')">
+          <span>🛠️</span> <div data-lang="navSupMob">Support</div>
+      </div>
+  </div>
+
   <div class="page-layout">
     
+    <!-- Pasek boczny dla komputerów -->
     <div class="side-nav-container">
         <nav class="side-nav">
             <div class="nav-logo">RBX Rewards 💎</div>
-            <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
-            <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
-            <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
-            <a id="nav-support" class="nav-item" onclick="switchTab('support')">🛠️ Support</a>
+            <a id="nav-home" class="nav-item active" onclick="switchTab('home')"><span data-lang="navHome">🏠 Home</span></a>
+            <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')"><span data-lang="navRef">👥 Referrals</span></a>
+            <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')"><span data-lang="navPromo">🎫 Promo Codes</span></a>
+            <a id="nav-support" class="nav-item" onclick="switchTab('support')"><span data-lang="navSupport">🛠️ Support</span></a>
         </nav>
-
-        <div class="adsense-sidebar">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-6665069359963275"
-                 data-ad-slot="3674362524"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-        </div>
+        <div class="adsense-sidebar"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="3674362524" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
     </div>
 
     <div class="main-content">
       <header>
+        <!-- 🔥 NOWE: Wybór Języka -->
+        <div class="lang-selector">
+            <select id="langSelect" onchange="changeLang(this.value)">
+                <option value="en">🇬🇧 English</option>
+                <option value="pl">🇵🇱 Polski</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="ru">🇷🇺 Русский</option>
+            </select>
+        </div>
         <div class="user-info">
           <div class="points-badge">Robux: <span id="userPoints">0</span> R$</div>
-          <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()">Withdraw</button>
-          <button class="btn-login" id="loginBtn" onclick="openLoginModal()">Login</button>
+          <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()" data-lang="btnWithdraw">Withdraw</button>
+          <button class="btn-login" id="loginBtn" onclick="openLoginModal()" data-lang="btnLogin">Login</button>
         </div>
       </header>
 
       <!-- ZAKŁADKA 1: HOME -->
       <main id="tab-home">
         <div class="ticker-wrap">
-          <div class="ticker-title">🔥 Live Earners</div>
-          <div class="ticker-container">
-            <div class="ticker-move" id="liveTicker">
-              <div class="ticker-item">Loading live stats...</div>
-            </div>
-          </div>
+          <div class="ticker-title" data-lang="liveEarners">🔥 Live Earners</div>
+          <div class="ticker-container"><div class="ticker-move" id="liveTicker"><div class="ticker-item" data-lang="loadingStats">Loading live stats...</div></div></div>
         </div>
 
-        <h2 class="section-title">Earn Robux</h2>
+        <h2 class="section-title" data-lang="earnTitle">Earn Robux</h2>
 
         <div id="loginPrompt" class="gradient-banner">
-          <h3 style="color: #fff; font-size: 1.6rem; letter-spacing: 1px;">Start Earning Free Robux! 💎</h3>
-          <p style="color: #b0b5c0; margin-top: 10px; font-size: 1.05rem;">Enter your Roblox username below so we know where to send your rewards. No passwords required.</p>
-          <button class="btn-action" style="padding: 15px 35px; font-size: 1.1rem; margin-top: 20px;" onclick="openLoginModal()">Connect Account</button>
+          <h3 style="color: #fff; font-size: 1.6rem; letter-spacing: 1px;" data-lang="startEarning">Start Earning Free Robux! 💎</h3>
+          <p style="color: #b0b5c0; margin-top: 10px; font-size: 1.05rem;" data-lang="startDesc">Enter your Roblox username below so we know where to send your rewards. No passwords required.</p>
+          <button class="btn-action" style="padding: 15px 35px; font-size: 1.1rem; margin-top: 20px;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
         </div>
 
         <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
-          <div class="adsense-banner">
-              <ins class="adsbygoogle"
-                   style="display:block"
-                   data-ad-client="ca-pub-6665069359963275"
-                   data-ad-slot="1438091742"
-                   data-ad-format="auto"
-                   data-full-width-responsive="true"></ins>
-              <script>
-                   (adsbygoogle = window.adsbygoogle || []).push({});
-              </script>
-          </div>
-
-          <h3 style="color: #00e676; margin-bottom: 5px;">🚀 Choose an Offerwall</h3>
-          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning Robux.</p>
-          
+          <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
+          <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose an Offerwall</h3>
+          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;" data-lang="offerDesc">Select a network below to start earning Robux.</p>
           <div class="offerwalls-grid">
               <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
                   <div class="badge badge-hot">HOT 🔥</div>
-                  <img src="cpx-logo.png" alt="CPX Research Logo" class="offer-logo">
-                  <h3>CPX Research</h3>
-                  <p>High paying surveys</p>
+                  <img src="cpx-logo.png" alt="CPX Research" class="offer-logo">
+                  <h3>CPX Research</h3><p data-lang="cpxDesc">High paying surveys</p>
               </div>
-              
               <div class="offer-card" onclick="openOfferwall('JITSCAPE', 'Jitscape')">
                   <div class="badge badge-new">NEW ✨</div>
                   <div class="card-icon">🕹️</div>
-                  <h3>Jitscape</h3>
-                  <p>Play Roblox games for Robux</p>
+                  <h3>Jitscape</h3><p data-lang="jitDesc">Play Roblox games</p>
               </div>
           </div>
         </div>
 
         <div class="content-box" id="recentPayoutsBox" style="display: none;">
-            <h3 style="color: #ffb703; margin-bottom: 15px;">💸 Recent Cashouts</h3>
+            <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">💸 Recent Cashouts</h3>
             <table class="ref-table">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Amount</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody id="recentPayoutsBody">
-                    <tr><td colspan="3" style="text-align: center; color: #888;">Loading real cashouts...</td></tr>
-                </tbody>
+                <thead><tr><th data-lang="tableUser">User</th><th data-lang="tableAmount">Amount</th><th data-lang="tableTime">Time</th></tr></thead>
+                <tbody id="recentPayoutsBody"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading real cashouts...</td></tr></tbody>
             </table>
         </div>
 
         <div class="content-box faq-section">
-            <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;">FAQ - Frequently Asked Questions</h3>
-            
+            <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;" data-lang="faqTitle">FAQ - Frequently Asked Questions</h3>
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-question">Do you need my Roblox password? <span>▼</span></div>
-                <div class="faq-answer">No! We will <strong>never</strong> ask for your Roblox password. We only need your username to know where to assign your earned Robux.</div>
+                <div class="faq-question"><span data-lang="q1">Do you need my Roblox password?</span> <b style="color:#00e676">▼</b></div>
+                <div class="faq-answer" data-lang="a1">No! We will never ask for your Roblox password. We only need your username to know where to assign your earned Robux.</div>
             </div>
-            
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-question">How long does it take to get my Robux? <span>▼</span></div>
-                <div class="faq-answer">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly directly to your linked account.</div>
+                <div class="faq-question"><span data-lang="q2">How long does it take to get my Robux?</span> <b style="color:#00e676">▼</b></div>
+                <div class="faq-answer" data-lang="a2">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly.</div>
             </div>
-            
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-question">Why are there no surveys for me? <span>▼</span></div>
-                <div class="faq-answer">Survey availability depends on your region, age, and profile. If you get screened out, keep trying different surveys! Remember to always provide <strong>honest and consistent answers</strong>, as survey networks verify real demographic data and will reject fake or inconsistent profiles.</div>
+                <div class="faq-question"><span data-lang="q3">Why are there no surveys for me?</span> <b style="color:#00e676">▼</b></div>
+                <div class="faq-answer" data-lang="a3">Survey availability depends on your region, age, and profile. Always provide honest and consistent answers!</div>
             </div>
         </div>
       </main>
 
-      <!-- 🔥 ZAKŁADKA 2: REFERRALS (KOD I LINK) -->
+      <!-- ZAKŁADKA 2: REFERRALS -->
       <main id="tab-referrals" style="display: none;">
-        <h2 class="section-title">Invite Friends & Earn 15%</h2>
-        
+        <h2 class="section-title" data-lang="refTitle">Invite Friends & Earn 15%</h2>
         <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;">Your Referral Info</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to enter your username below, or share your custom link! You will earn a massive 15% of all Robux they make for life!</p>
-          
-          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;">Your Code (Username):</h4>
-          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;">
+          <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="refInfo">Your Referral Info</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="refDesc">Tell your friends to enter your username below, or share your custom link! You will earn a massive 15% of all Robux they make for life!</p>
+          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;" data-lang="refCodeLabel">Your Code (Username):</h4>
+          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; margin-bottom: 15px;">
               <span id="myRefCodeDisplay">Log in first</span>
           </div>
-
-          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;">Your Custom Link:</h4>
-          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left;">
+          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;" data-lang="refLinkLabel">Your Custom Link:</h4>
+          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
               <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-all;">Log in first</span>
-              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem; flex-shrink: 0;" onclick="copyRefLink()">📋 Copy</button>
+              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
           </div>
         </div>
-
         <div id="redeemCodeSection" class="content-box">
-          <h3 style="color: #fff; margin-bottom: 10px;">Were you invited?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Enter your friend's code below to support them (if you didn't use their link)!</p>
-          <input type="text" id="friendCodeInput" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
-          <br>
-          <button class="btn-action" onclick="submitReferralCode()">Activate Code</button>
+          <h3 style="color: #fff; margin-bottom: 10px;" data-lang="invitedTitle">Were you invited?</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="invitedDesc">Enter your friend's code below to support them!</p>
+          <input type="text" id="friendCodeInput" data-lang-placeholder="phFriendCode" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
+          <br><button class="btn-action" onclick="submitReferralCode()" data-lang="btnActivate">Activate Code</button>
         </div>
-
         <div id="referralStatsSection" class="content-box" style="display: none;">
-          <h3 style="color: #fff; margin-bottom: 15px;">Your 15% Commission Stats</h3>
+          <h3 style="color: #fff; margin-bottom: 15px;" data-lang="statsTitle">Your 15% Commission Stats</h3>
           <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
               <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
               <option value="7days" selected>Last 7 Days</option>
               <option value="30days">Last 30 Days</option>
           </select>
           <table class="ref-table">
-              <thead><tr><th>Friend's Username</th><th>You Earned (15%)</th></tr></thead>
-              <tbody id="refTableBody"><tr><td colspan="2" style="text-align: center; color: #888;">Loading stats...</td></tr></tbody>
+              <thead><tr><th data-lang="tableFriend">Friend's Username</th><th data-lang="tableEarned">You Earned (15%)</th></tr></thead>
+              <tbody id="refTableBody"><tr><td colspan="2" style="text-align: center; color: #888;" data-lang="loadingStats">Loading stats...</td></tr></tbody>
           </table>
         </div>
       </main>
 
       <!-- ZAKŁADKA 3: PROMO CODES -->
       <main id="tab-promocodes" style="display: none;">
-        <h2 class="section-title">Redeem Promo Codes</h2>
+        <h2 class="section-title" data-lang="promoTitle">Redeem Promo Codes</h2>
         <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;">Got a Code?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Check our Discord server for limited promo codes!</p>
-          <input type="text" id="promoCodeInput" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; text-transform: uppercase;">
-          <br>
-          <button class="btn-action" onclick="submitPromoCode()">Redeem Code</button>
+          <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="gotCode">Got a Code?</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="promoDesc">Check our Discord server for limited promo codes!</p>
+          <input type="text" id="promoCodeInput" data-lang-placeholder="phPromoCode" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; text-transform: uppercase;">
+          <br><button class="btn-action" onclick="submitPromoCode()" data-lang="btnRedeem">Redeem Code</button>
         </div>
         <div id="promoHistorySection" class="content-box" style="display: none;">
-          <h3 style="color: #fff; margin-bottom: 15px;">Your Redeemed Codes</h3>
+          <h3 style="color: #fff; margin-bottom: 15px;" data-lang="promoHistoryTitle">Your Redeemed Codes</h3>
           <table class="ref-table">
-              <thead><tr><th>Date</th><th>Code</th><th>Earned</th></tr></thead>
-              <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;">Loading history...</td></tr></tbody>
+              <thead><tr><th data-lang="tableDate">Date</th><th data-lang="tableCode">Code</th><th data-lang="tableEarned">Earned</th></tr></thead>
+              <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading history...</td></tr></tbody>
           </table>
         </div>
       </main>
 
-      <!-- ZAKŁADKA 4: SUPPORT (TICKETY) -->
+      <!-- ZAKŁADKA 4: SUPPORT -->
       <main id="tab-support" style="display: none;">
-        <h2 class="section-title">Contact Support</h2>
+        <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
         <div class="content-box">
-          <h3 style="color: #fff; margin-bottom: 10px;">Need Help?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">If you have any issues with withdrawing Robux or an offer didn't credit properly, describe your problem below. A ticket will be sent directly to our Admins on Discord!</p>
-          <textarea id="ticketMessageInput" rows="5" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
-          <br>
-          <button class="btn-action" id="submitTicketBtn" onclick="submitSupportTicket()">Submit Ticket</button>
+          <h3 style="color: #fff; margin-bottom: 10px;" data-lang="needHelp">Need Help?</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="supportDesc">If you have any issues, describe your problem below. A ticket will be sent directly to our Admins on Discord!</p>
+          <textarea id="ticketMessageInput" rows="5" data-lang-placeholder="phSupport" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
+          <br><button class="btn-action" id="submitTicketBtn" onclick="submitSupportTicket()" data-lang="btnSubmitTicket">Submit Ticket</button>
         </div>
       </main>
 
-      <!-- Stopka z linkami do regulaminów i SOCIAL MEDIA -->
+      <!-- Stopka -->
       <footer>
           <div class="legal-links" style="margin-bottom: 15px;">
               <a href="terms.html" target="_blank">Terms of Service</a> | 
               <a href="privacy.html" target="_blank">Privacy Policy</a>
           </div>
           <p style="color: #666; margin-bottom: 5px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
-          
           <div class="social-links">
-              <!-- Twitch -->
-              <a href="https://www.twitch.tv/ttv_ytdoog3yt" target="_blank" class="twitch" title="Twitch">
-                  <svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-              </a>
-              <!-- Kick -->
-              <a href="https://kick.com/ytdoog3yt" target="_blank" class="kick" title="Kick">
-                  <svg viewBox="0 0 24 24"><path d="M2.666 0h5.333v24H2.666zM21.334 0h-5.334l-8 8.438v7.124l8 8.438h5.334l-8-8.438z"/></svg>
-              </a>
-              <!-- YouTube -->
-              <a href="https://www.youtube.com/@ttv_ytdoog3yt778" target="_blank" class="youtube" title="YouTube">
-                  <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-              </a>
-              <!-- Discord -->
-              <a href="https://discord.gg/nx8eKCFDwQ" target="_blank" class="discord" title="Discord">
-                  <svg viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-              </a>
+              <a href="https://www.twitch.tv/ttv_ytdoog3yt" target="_blank" class="twitch"><svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg></a>
+              <a href="https://kick.com/ytdoog3yt" target="_blank" class="kick"><svg viewBox="0 0 24 24"><path d="M2.666 0h5.333v24H2.666zM21.334 0h-5.334l-8 8.438v7.124l8 8.438h5.334l-8-8.438z"/></svg></a>
+              <a href="https://www.youtube.com/@ttv_ytdoog3yt778" target="_blank" class="youtube"><svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+              <a href="https://discord.gg/nx8eKCFDwQ" target="_blank" class="discord"><svg viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a>
           </div>
       </footer>
-
     </div>
   </div>
 
-  <!-- PŁYWAJĄCY WIDŻET CZATU GLOBALNEGO -->
+  <!-- PŁYWAJĄCY WIDŻET CZATU -->
   <div id="chatWidget" class="chat-widget minimized">
       <div class="chat-header" onclick="toggleChat()">
-          <span>🌍 Global Chat</span>
+          <span data-lang="globalChat">🌍 Global Chat</span>
           <span id="chatToggleIcon">▲</span>
       </div>
       <div class="chat-body" id="chatMessages">
           <div class="chat-msg" style="border-left-color: #ffb703;">
-              <span class="user" style="color: #ffb703;">SYSTEM:</span> Welcome to the Global Chat! Be respectful.
+              <span class="user" style="color: #ffb703;" data-lang="chatSystem">SYSTEM:</span> <span data-lang="chatWelcome">Welcome to the Global Chat! Be respectful.</span>
           </div>
       </div>
       <div class="chat-input-area">
-          <input type="text" id="chatInput" placeholder="Say something..." maxlength="100">
-          <button onclick="sendChatMessage()">Send</button>
+          <input type="text" id="chatInput" data-lang-placeholder="phChat" placeholder="Say something..." maxlength="100">
+          <button onclick="sendChatMessage()" data-lang="btnSend">Send</button>
       </div>
   </div>
 
   <!-- MODALS -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
-      <h3 style="color: #fff;">Connect Roblox Account</h3>
-      <input type="text" id="usernameInput" placeholder="e.g., YourUsername123">
-      <button class="btn-action" onclick="saveUsername()">Confirm & Login</button>
-      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeLoginModal()">Cancel</button>
+      <h3 style="color: #fff;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
+      <input type="text" id="usernameInput" placeholder="YourUsername123">
+      <button class="btn-action" onclick="saveUsername()" data-lang="btnConnectConfirm">Confirm & Login</button>
+      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeLoginModal()" data-lang="btnCancel">Cancel</button>
     </div>
   </div>
 
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
-      <h3 style="color: #fff;">Withdraw to PayPal</h3>
+      <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Withdraw to PayPal</h3>
       <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">80 Robux = $2.00 USD</p>
-      <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
-      <input type="number" id="withdrawPoints" placeholder="Amount of Robux" oninput="calculateUSD()">
-      <p style="margin: 15px 0; font-size: 1.1rem;">You will receive: <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
-      <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()">Request Payout</button>
-      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()">Cancel</button>
+      <input type="email" id="paypalEmail" placeholder="PayPal Email">
+      <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()">
+      <p style="margin: 15px 0; font-size: 1.1rem;"><span data-lang="youWillReceive">You will receive:</span> <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
+      <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()" data-lang="btnReqPayout">Request Payout</button>
+      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()" data-lang="btnCancel">Cancel</button>
     </div>
   </div>
 
@@ -411,22 +367,138 @@
     </div>
   </div>
 
+  <!-- 🔥 SŁOWNIK JĘZYKÓW & SKRYPTY -->
   <script>
-    let currentUserCpxUrl = "";
-    let currentUserJitscapeUrl = "";
-    const jitscapePubId = "plc_xHHxjKbb5p5P";
-    const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
-
-    let socket = null;
-    try {
-        if (typeof io !== 'undefined') {
-            socket = io();
+    const translations = {
+        en: {
+            navHome: "🏠 Home", navRef: "👥 Referrals", navPromo: "🎫 Promo Codes", navSupport: "🛠️ Support",
+            navHomeMob: "Home", navRefMob: "Ref", navPromoMob: "Promo", navSupMob: "Support",
+            btnWithdraw: "Withdraw", btnLogin: "Login", btnCancel: "Cancel",
+            liveEarners: "🔥 Live Earners", earnTitle: "Earn Robux", loadingStats: "Loading...",
+            startEarning: "Start Earning Free Robux! 💎", startDesc: "Enter your Roblox username below so we know where to send your rewards. No passwords required.",
+            btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose an Offerwall", offerDesc: "Select a network below to start earning Robux.",
+            cpxDesc: "High paying surveys", jitDesc: "Play Roblox games", recentCashouts: "💸 Recent Cashouts", loadingCashouts: "Loading real cashouts...",
+            tableUser: "User", tableAmount: "Amount", tableTime: "Time",
+            faqTitle: "FAQ - Frequently Asked Questions",
+            q1: "Do you need my Roblox password?", a1: "No! We will never ask for your Roblox password.",
+            q2: "How long does it take to get my Robux?", a2: "Points are usually added instantly. Withdrawals are processed very quickly.",
+            q3: "Why are there no surveys for me?", a3: "Survey availability depends on your profile. Always provide honest answers!",
+            refTitle: "Invite Friends & Earn 15%", refInfo: "Your Referral Info", refDesc: "Share your custom link! You will earn a massive 15% of all Robux they make for life!",
+            refCodeLabel: "Your Code:", refLinkLabel: "Your Link:", btnCopy: "📋 Copy",
+            invitedTitle: "Were you invited?", invitedDesc: "Enter your friend's code below to support them!", btnActivate: "Activate Code",
+            statsTitle: "Your 15% Commission Stats", tableFriend: "Friend", tableEarned: "Earned",
+            promoTitle: "Redeem Promo Codes", gotCode: "Got a Code?", promoDesc: "Check our Discord for limited promo codes!", btnRedeem: "Redeem",
+            promoHistoryTitle: "Your Redeemed Codes", tableDate: "Date", tableCode: "Code",
+            supportTitle: "Contact Support", needHelp: "Need Help?", supportDesc: "Describe your problem below. A ticket will be sent to Admins!", btnSubmitTicket: "Submit Ticket",
+            globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send",
+            modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login",
+            modalWithdrawTitle: "Withdraw to PayPal", youWillReceive: "You will receive:", btnReqPayout: "Request Payout",
+            phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something..."
+        },
+        pl: {
+            navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
+            navHomeMob: "Główna", navRefMob: "Zaproś", navPromoMob: "Kody", navSupMob: "Pomoc",
+            btnWithdraw: "Wypłać", btnLogin: "Zaloguj", btnCancel: "Anuluj",
+            liveEarners: "🔥 Na żywo", earnTitle: "Zarabiaj Robuxy", loadingStats: "Ładowanie...",
+            startEarning: "Zacznij Zarabiać Robuxy! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.",
+            btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ofertę", offerDesc: "Wybierz sieć poniżej, aby zacząć zarabiać.",
+            cpxDesc: "Wysoko płatne ankiety", jitDesc: "Graj w gry Roblox", recentCashouts: "💸 Ostatnie Wypłaty", loadingCashouts: "Ładowanie wypłat...",
+            tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas",
+            faqTitle: "FAQ - Często Zadawane Pytania",
+            q1: "Czy potrzebujecie mojego hasła?", a1: "Nie! Nigdy nie poprosimy o Twoje hasło do Robloxa.",
+            q2: "Jak długo trwa wypłata?", a2: "Zarobione punkty dodają się natychmiast po ukończeniu oferty.",
+            q3: "Dlaczego nie mam ankiet?", a3: "Dostępność zależy od profilu. Zawsze podawaj prawdziwe informacje!",
+            refTitle: "Zaproś Znajomych (15%)", refInfo: "Twój Panel Poleceń", refDesc: "Wyślij znajomym swój link! Otrzymasz 15% z ich zarobków na zawsze!",
+            refCodeLabel: "Twój Kod:", refLinkLabel: "Twój Link:", btnCopy: "📋 Kopiuj",
+            invitedTitle: "Ktoś Cię zaprosił?", invitedDesc: "Wpisz kod znajomego poniżej, aby go wesprzeć!", btnActivate: "Aktywuj",
+            statsTitle: "Twoje Zarobki (15%)", tableFriend: "Znajomy", tableEarned: "Zarobek",
+            promoTitle: "Kody Promocyjne", gotCode: "Masz Kod?", promoDesc: "Sprawdzaj nasz Discord w poszukiwaniu nowych kodów!", btnRedeem: "Odbierz",
+            promoHistoryTitle: "Użyte Kody", tableDate: "Data", tableCode: "Kod",
+            supportTitle: "Kontakt z Administracją", needHelp: "Potrzebujesz Pomocy?", supportDesc: "Opisz swój problem poniżej. Zgłoszenie trafi prosto do Adminów!", btnSubmitTicket: "Wyślij",
+            globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij",
+            modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się",
+            modalWithdrawTitle: "Wypłata PayPal", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę",
+            phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś..."
+        },
+        de: {
+            navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
+            navHomeMob: "Start", navRefMob: "Partner", navPromoMob: "Codes", navSupMob: "Support",
+            btnWithdraw: "Auszahlen", btnLogin: "Einloggen", btnCancel: "Abbrechen",
+            liveEarners: "🔥 Live-Verdiener", earnTitle: "Robux Verdienen", loadingStats: "Lädt...",
+            startEarning: "Verdiene kostenlose Robux! 💎", startDesc: "Gib unten deinen Roblox-Namen ein. Wir fragen nie nach deinem Passwort.",
+            btnConnect: "Konto Verbinden", chooseOfferwall: "🚀 Wähle eine Offerwall", offerDesc: "Wähle unten ein Netzwerk aus, um zu verdienen.",
+            cpxDesc: "Hochbezahlte Umfragen", jitDesc: "Roblox Spiele spielen", recentCashouts: "💸 Letzte Auszahlungen", loadingCashouts: "Lädt...",
+            tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit",
+            faqTitle: "FAQ - Häufig gestellte Fragen",
+            q1: "Braucht ihr mein Passwort?", a1: "Nein! Wir werden dich niemals nach deinem Passwort fragen.",
+            q2: "Wie lange dauert die Auszahlung?", a2: "Punkte werden meist sofort gutgeschrieben.",
+            q3: "Warum keine Umfragen?", a3: "Umfragen hängen vom Profil ab. Gib immer ehrliche Antworten!",
+            refTitle: "Freunde Einladen (15%)", refInfo: "Deine Partner-Infos", refDesc: "Teile deinen Link und verdiene 15% ihrer Robux ein Leben lang!",
+            refCodeLabel: "Dein Code:", refLinkLabel: "Dein Link:", btnCopy: "📋 Kopieren",
+            invitedTitle: "Eingeladen?", invitedDesc: "Gib den Code deines Freundes ein!", btnActivate: "Aktivieren",
+            statsTitle: "Deine Provisionen", tableFriend: "Freund", tableEarned: "Verdienst",
+            promoTitle: "Promo-Codes", gotCode: "Hast du einen Code?", promoDesc: "Überprüfe unseren Discord auf Promo-Codes!", btnRedeem: "Einlösen",
+            promoHistoryTitle: "Eingelöste Codes", tableDate: "Datum", tableCode: "Code",
+            supportTitle: "Support Kontaktieren", needHelp: "Brauchst du Hilfe?", supportDesc: "Beschreibe dein Problem unten. Ein Ticket wird an Admins gesendet!", btnSubmitTicket: "Senden",
+            globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen! Bitte sei respektvoll.", btnSend: "Senden",
+            modalLoginTitle: "Konto Verbinden", btnConnectConfirm: "Bestätigen",
+            modalWithdrawTitle: "PayPal Auszahlung", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen",
+            phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas..."
+        },
+        ru: {
+            navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
+            navHomeMob: "Главная", navRefMob: "Рефы", navPromoMob: "Коды", navSupMob: "Помощь",
+            btnWithdraw: "Вывод", btnLogin: "Войти", btnCancel: "Отмена",
+            liveEarners: "🔥 Прямой эфир", earnTitle: "Заработать Robux", loadingStats: "Загрузка...",
+            startEarning: "Начни зарабатывать Robux! 💎", startDesc: "Введи свой никнейм Roblox ниже. Пароль не требуется.",
+            btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери Оффер", offerDesc: "Выбери сеть ниже, чтобы начать.",
+            cpxDesc: "Опросы", jitDesc: "Игры Roblox", recentCashouts: "💸 Выплаты", loadingCashouts: "Загрузка...",
+            tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время",
+            faqTitle: "FAQ - Вопросы",
+            q1: "Нужен пароль?", a1: "Нет! Мы никогда не попросим твой пароль.",
+            q2: "Как долго идут Robux?", a2: "Баллы зачисляются мгновенно после заданий.",
+            q3: "Почему нет опросов?", a3: "Всегда давай честные ответы для получения опросов.",
+            refTitle: "Пригласи друзей (15%)", refInfo: "Твоя ссылка", refDesc: "Поделись ссылкой! Получай 15% от их заработка пожизненно!",
+            refCodeLabel: "Твой Код:", refLinkLabel: "Твоя Ссылка:", btnCopy: "📋 Копия",
+            invitedTitle: "Тебя пригласили?", invitedDesc: "Введи код друга ниже!", btnActivate: "Активировать",
+            statsTitle: "Твои доходы", tableFriend: "Друг", tableEarned: "Доход",
+            promoTitle: "Промокоды", gotCode: "Есть код?", promoDesc: "Ищи коды в нашем Discord!", btnRedeem: "Активировать",
+            promoHistoryTitle: "История", tableDate: "Дата", tableCode: "Код",
+            supportTitle: "Поддержка", needHelp: "Нужна помощь?", supportDesc: "Опиши проблему ниже. Мы поможем!", btnSubmitTicket: "Отправить",
+            globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать в чат!", btnSend: "Отправить",
+            modalLoginTitle: "Подключить аккаунт", btnConnectConfirm: "Войти",
+            modalWithdrawTitle: "Вывод PayPal", youWillReceive: "Вы получите:", btnReqPayout: "Вывести",
+            phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши..."
         }
-    } catch (e) {
-        console.log("Czat ładuje się w tle...");
+    };
+
+    function changeLang(lang) {
+        localStorage.setItem('rbx_lang', lang);
+        document.getElementById('langSelect').value = lang;
+        
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if (translations[lang][key]) {
+                el.innerText = translations[lang][key];
+            }
+        });
+
+        document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-lang-placeholder');
+            if (translations[lang][key]) {
+                el.placeholder = translations[lang][key];
+            }
+        });
     }
 
+    let socket = null;
+    try { if (typeof io !== 'undefined') socket = io(); } catch (e) {}
+
     document.addEventListener("DOMContentLoaded", function() {
+      // Przywracanie języka
+      const savedLang = localStorage.getItem('rbx_lang') || 'en';
+      changeLang(savedLang);
+
       const urlParams = new URLSearchParams(window.location.search);
       const refParam = urlParams.get('ref');
       if (refParam) {
@@ -451,7 +523,14 @@
         document.getElementById('tab-' + tabId).style.display = 'block';
         
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('nav-' + tabId).classList.add('active');
+        
+        // Aktywacja dla Desktopu
+        const deskNav = document.getElementById('nav-' + tabId);
+        if(deskNav) deskNav.classList.add('active');
+        
+        // Aktywacja dla Telefonów (Mobile Bottom Nav)
+        const mobNav = document.getElementById('mob-nav-' + tabId);
+        if(mobNav) mobNav.classList.add('active');
 
         if(tabId === 'referrals') loadReferralStats();
         if(tabId === 'promocodes') loadPromoHistory();
@@ -459,25 +538,18 @@
 
     function toggleFaq(element) {
         const answer = element.querySelector('.faq-answer');
-        const icon = element.querySelector('.faq-question span');
+        const icon = element.querySelector('.faq-question b');
         if (answer.style.display === 'block') {
-            answer.style.display = 'none';
-            icon.innerText = '▼';
+            answer.style.display = 'none'; icon.innerText = '▼';
         } else {
-            answer.style.display = 'block';
-            icon.innerText = '▲';
+            answer.style.display = 'block'; icon.innerText = '▲';
         }
     }
 
-    // Kopiowanie linku polecającego do schowka
     function copyRefLink() {
         const linkText = document.getElementById("myRefLinkDisplay").innerText;
         if (linkText !== "Log in first") {
-            navigator.clipboard.writeText(linkText).then(() => {
-                alert("✅ Link skopiowany do schowka! Podaj go znajomym.");
-            }).catch(err => {
-                console.error("Błąd kopiowania", err);
-            });
+            navigator.clipboard.writeText(linkText).then(() => { alert("✅ Copied to clipboard!"); }).catch(err => {});
         }
     }
 
@@ -485,13 +557,11 @@
         const widget = document.getElementById('chatWidget');
         const icon = document.getElementById('chatToggleIcon');
         if (widget.classList.contains('minimized')) {
-            widget.classList.remove('minimized');
-            icon.innerText = '▼';
+            widget.classList.remove('minimized'); icon.innerText = '▼';
             const chatBody = document.getElementById('chatMessages');
             chatBody.scrollTop = chatBody.scrollHeight;
         } else {
-            widget.classList.add('minimized');
-            icon.innerText = '▲';
+            widget.classList.add('minimized'); icon.innerText = '▲';
         }
     }
 
@@ -499,35 +569,23 @@
         const input = document.getElementById('chatInput');
         const msg = input.value.trim();
         const username = localStorage.getItem("rbx_username");
-        
-        if (!username) {
-            alert("Musisz się zalogować, aby pisać na czacie!");
-            return;
-        }
+        if (!username) return alert("Zaloguj się, aby pisać!");
         if (msg) {
-            if (socket) {
-                socket.emit('chatMessage', { username: username, text: msg });
-                input.value = '';
-            } else {
-                alert("Czat jest w tej chwili rozłączony. Spróbuj za chwilę.");
-            }
+            if (socket) { socket.emit('chatMessage', { username: username, text: msg }); input.value = ''; } 
+            else { alert("Chat offline."); }
         }
     }
 
-    document.getElementById('chatInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') sendChatMessage();
-    });
+    document.getElementById('chatInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') sendChatMessage(); });
 
     if (socket) {
         socket.on('chatMessage', (data) => {
             const chatBody = document.getElementById('chatMessages');
             const msgDiv = document.createElement('div');
             msgDiv.className = 'chat-msg';
-            
             const safeText = document.createTextNode(data.text);
             msgDiv.innerHTML = `<span class="user">${data.username}:</span> `;
             msgDiv.appendChild(safeText);
-            
             chatBody.appendChild(msgDiv);
             chatBody.scrollTop = chatBody.scrollHeight; 
         });
@@ -538,200 +596,106 @@
         const message = messageInput.value.trim();
         const username = localStorage.getItem("rbx_username");
         const btn = document.getElementById("submitTicketBtn");
+        if (!username) return alert("Log in first!");
+        if (!message || message.length < 10) return alert("Message too short!");
 
-        if (!username) return alert("Musisz być zalogowany, aby wysłać zgłoszenie.");
-        if (!message || message.length < 10) return alert("Twoja wiadomość musi mieć co najmniej 10 znaków.");
-
-        btn.innerText = "Wysyłanie...";
-        btn.disabled = true;
+        btn.innerText = "Wait..."; btn.disabled = true;
 
         try {
             const response = await fetch('/api/support-ticket', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, message })
             });
-            
-            if (!response.ok) {
-                const errText = await response.text();
-                try {
-                    const jsonErr = JSON.parse(errText);
-                    alert("❌ Błąd serwera: " + (jsonErr.error || response.status));
-                } catch(e) {
-                    alert("❌ KRYTYCZNY BŁĄD SERWERA (Kod: " + response.status + "). Endpoint prawdopodobnie nie istnieje. Sprawdź, czy wgrałeś socket.io do package.json!");
-                }
-                btn.innerText = "Submit Ticket";
-                btn.disabled = false;
-                return;
-            }
-
+            if (!response.ok) { alert("❌ Server Error!"); btn.innerText = "Submit"; btn.disabled = false; return; }
             const data = await response.json();
-            
-            if (data.error) {
-                alert("❌ Błąd: " + data.error);
-            } else {
-                alert("✅ Sukces: " + data.message);
-                messageInput.value = ""; 
-                switchTab('home'); 
-            }
-        } catch (error) {
-            alert("Błąd połączenia z serwerem: " + error.message);
-        }
-        
-        btn.innerText = "Submit Ticket";
-        btn.disabled = false;
+            if (data.error) alert("❌ " + data.error);
+            else { alert("✅ " + data.message); messageInput.value = ""; switchTab('home'); }
+        } catch (error) { alert("Connection Error"); }
+        btn.innerText = "Submit Ticket"; btn.disabled = false;
     }
 
     let previousPoints = null;
-
     async function fetchUserPoints() {
       const savedUser = localStorage.getItem("rbx_username");
       if (!savedUser) return;
       try {
         const response = await fetch(`/api/points/${savedUser}`);
         const data = await response.json();
-        
         if (previousPoints !== null && data.points > previousPoints) {
-            try {
-                let cashSound = new Audio('/cash.mp3'); 
-                cashSound.play();
-            } catch (error) {
-                console.log("Nie udało się odtworzyć dźwięku", error);
-            }
+            try { let cashSound = new Audio('/cash.mp3'); cashSound.play(); } catch (error) {}
         }
         previousPoints = data.points; 
-
         document.getElementById("userPoints").innerText = data.points.toFixed(2);
         localStorage.setItem("rbx_points", data.points);
-
-        if (data.referredBy) {
-            document.getElementById("redeemCodeSection").style.display = "none";
-        }
+        if (data.referredBy) document.getElementById("redeemCodeSection").style.display = "none";
       } catch (error) {}
     }
 
     async function autoApplyReferral(code) {
         const username = localStorage.getItem("rbx_username");
         if (!username || !code) return;
-
         try {
-            const response = await fetch('/api/redeem-code', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, code })
-            });
+            const response = await fetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, code }) });
             const data = await response.json();
-            
-            if (!data.error) {
-                alert(`🎁 Zostałeś zaproszony przez: ${code}! Kod polecający został automatycznie użyty.`);
-                document.getElementById("redeemCodeSection").style.display = "none";
-            }
-        } catch (error) { console.error("Błąd automatycznego refa", error); }
-        
+            if (!data.error) { alert(`🎁 Invited by: ${code}!`); document.getElementById("redeemCodeSection").style.display = "none"; }
+        } catch (error) {}
         localStorage.removeItem('pending_ref');
     }
 
     async function submitReferralCode() {
         const code = document.getElementById("friendCodeInput").value.trim();
         const username = localStorage.getItem("rbx_username");
-        if (!code) return alert("Enter a code first!");
-
+        if (!code) return alert("Enter code!");
         try {
-            const response = await fetch('/api/redeem-code', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, code })
-            });
+            const response = await fetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, code }) });
             const data = await response.json();
-            
-            if (data.error) alert(data.error);
-            else {
-                alert(data.message);
-                document.getElementById("redeemCodeSection").style.display = "none";
-            }
-        } catch (error) { alert("Connection error."); }
+            if (data.error) alert(data.error); else { alert(data.message); document.getElementById("redeemCodeSection").style.display = "none"; }
+        } catch (error) { alert("Error"); }
     }
 
     async function submitPromoCode() {
         const code = document.getElementById("promoCodeInput").value.trim();
         const username = localStorage.getItem("rbx_username");
-        if (!code) return alert("Enter a code first!");
-
+        if (!code) return alert("Enter code!");
         try {
-            const response = await fetch('/api/redeem-promo', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: username, promoCode: code })
-            });
+            const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, promoCode: code }) });
             const data = await response.json();
-            
             if (data.error) alert("❌ " + data.error);
-            else {
-                alert("✅ " + data.message);
-                document.getElementById("promoCodeInput").value = "";
-                fetchUserPoints(); 
-                loadPromoHistory(); 
-            }
-        } catch (error) { alert("Connection error."); }
+            else { alert("✅ " + data.message); document.getElementById("promoCodeInput").value = ""; fetchUserPoints(); loadPromoHistory(); }
+        } catch (error) { alert("Error"); }
     }
 
     async function loadReferralStats() {
         const username = localStorage.getItem("rbx_username");
         if (!username) return;
-
         const period = document.getElementById("refFilterSelect").value;
         const tableBody = document.getElementById("refTableBody");
-        tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #888;">Fetching stats from database...</td></tr>';
-
+        tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
             const response = await fetch(`/api/referral-stats/${username}?period=${period}`);
             const stats = await response.json();
-
-            if (stats.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #ffb703;">You have no active friends yet! Give someone your code.</td></tr>';
-            } else {
-                let rows = '';
-                stats.forEach(user => {
-                    rows += `<tr>
-                                <td style="font-weight: bold; color: #fff;">👤 ${user.username}</td>
-                                <td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} R$</td>
-                             </tr>`;
-                });
+            if (stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">Empty!</td></tr>`;
+            else {
+                let rows = ''; stats.forEach(user => { rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} R$</td></tr>`; });
                 tableBody.innerHTML = rows;
             }
-        } catch (error) {
-            tableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: red;">Error loading stats.</td></tr>';
-        }
+        } catch (error) { tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: red;">Error</td></tr>`; }
     }
 
     async function loadPromoHistory() {
         const username = localStorage.getItem("rbx_username");
         if (!username) return;
-
         const tableBody = document.getElementById("promoHistoryTableBody");
-        tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888;">Fetching history from database...</td></tr>';
-
+        tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
             const response = await fetch(`/api/promo-history/${username}`);
             const history = await response.json();
-
-            if (history.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #ffb703;">You haven\'t redeemed any codes yet!</td></tr>';
-            } else {
-                let rows = '';
-                history.forEach(item => {
-                    const codeName = item.code || item; 
-                    const reward = item.reward ? `+${item.reward.toFixed(2)} R$` : "??? R$";
-                    const date = item.date ? new Date(item.date).toLocaleDateString() : "Unknown Date";
-
-                    rows += `<tr>
-                                <td style="color: #a0a0b0;">📅 ${date}</td>
-                                <td style="font-weight: bold; color: #fff;">🎟️ ${codeName}</td>
-                                <td style="color: #00e676; font-weight: bold;">${reward}</td>
-                             </tr>`;
-                });
+            if (history.length === 0) tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Empty!</td></tr>`;
+            else {
+                let rows = ''; history.forEach(item => { const codeName = item.code || item; const reward = item.reward ? `+${item.reward.toFixed(2)} R$` : "??? R$"; const date = item.date ? new Date(item.date).toLocaleDateString() : "Unknown"; rows += `<tr><td style="color: #a0a0b0;">📅 ${date}</td><td style="font-weight: bold; color: #fff;">🎟️ ${codeName}</td><td style="color: #00e676; font-weight: bold;">${reward}</td></tr>`; });
                 tableBody.innerHTML = rows;
             }
-        } catch (error) {
-            tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">Error loading history.</td></tr>';
-        }
+        } catch (error) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; }
     }
 
     async function fetchLiveEarners() {
@@ -740,8 +704,8 @@
         const earners = await response.json();
         if (earners.length > 0) {
           let tickerHTML = '';
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} just earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
+          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
+          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
           document.getElementById('liveTicker').innerHTML = tickerHTML;
         }
       } catch (error) {}
@@ -752,23 +716,12 @@
             const response = await fetch('/api/latest-payouts');
             const payouts = await response.json();
             const tbody = document.getElementById('recentPayoutsBody');
-            
-            if (payouts.length === 0) {
-                document.getElementById('recentPayoutsBox').style.display = 'none'; 
-                return;
-            }
-            
+            if (payouts.length === 0) { document.getElementById('recentPayoutsBox').style.display = 'none'; return; }
             document.getElementById('recentPayoutsBox').style.display = 'block'; 
-
             let html = '';
             payouts.forEach(p => {
-                const date = new Date(p.createdAt);
-                const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                html += `<tr>
-                            <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
-                            <td style="color: #ffb703; font-weight: bold;">-${p.pointsWithdrawn.toFixed(2)} R$</td>
-                            <td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td>
-                         </tr>`;
+                const date = new Date(p.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${p.username}</td><td style="color: #ffb703; font-weight: bold;">-${p.pointsWithdrawn.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
             });
             tbody.innerHTML = html;
         } catch (error) {}
@@ -782,11 +735,9 @@
         document.getElementById("offerwallSection").style.display = "block";
         document.getElementById("withdrawBtn").style.display = "inline-block"; 
         
-        // 🔥 Wrzucamy KOD (Username)
         const codeDisplay = document.getElementById("myRefCodeDisplay");
         if(codeDisplay) codeDisplay.innerText = savedUser;
 
-        // 🔥 Wrzucamy LINK
         const fullLink = window.location.origin + "/?ref=" + savedUser;
         const refDisplay = document.getElementById("myRefLinkDisplay");
         if(refDisplay) refDisplay.innerText = fullLink;
@@ -806,16 +757,14 @@
         const message = jitscapePubId + savedUser;
         const signature = CryptoJS.HmacSHA256(message, jitscapeSecret).toString(CryptoJS.enc.Hex);
         currentUserJitscapeUrl = `https://wall.jitscape.com/?pubId=${jitscapePubId}&userId=${encodeURIComponent(savedUser)}&signature=${signature}`;
-        
       } else {
-        document.getElementById("loginBtn").innerText = "Login";
+        document.getElementById("loginBtn").innerText = translations[document.getElementById('langSelect').value || 'en'].btnLogin;
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("offerwallSection").style.display = "none";
         document.getElementById("withdrawBtn").style.display = "none";
         document.getElementById("referralStatsSection").style.display = "none";
         document.getElementById("promoHistorySection").style.display = "none";
         document.getElementById("userPoints").innerText = "0";
-        
         const chatWidget = document.getElementById("chatWidget");
         if (chatWidget) chatWidget.style.display = "none";
       }
@@ -824,10 +773,7 @@
     function openOfferwall(networkId, networkName) {
       document.getElementById('offerModalTitle').innerText = networkName;
       let finalUrl = networkId === 'CPX' ? currentUserCpxUrl : currentUserJitscapeUrl;
-      if (finalUrl) { 
-          document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
-          document.getElementById('offerModal').style.display = 'flex'; 
-      }
+      if (finalUrl) { document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; document.getElementById('offerModal').style.display = 'flex'; }
     }
     
     function closeOfferModal() { document.getElementById('offerModal').style.display = 'none'; document.getElementById('iframeContainer').innerHTML = ''; }
@@ -839,16 +785,10 @@
     function saveUsername() {
       const input = document.getElementById("usernameInput").value.trim();
       if (input) { 
-          localStorage.setItem("rbx_username", input); 
-          closeLoginModal(); 
-          checkLoginStatus(); 
-          
+          localStorage.setItem("rbx_username", input); closeLoginModal(); checkLoginStatus(); 
           const pendingRef = localStorage.getItem('pending_ref');
-          if (pendingRef) {
-              autoApplyReferral(pendingRef);
-          }
-      } 
-      else { alert("Please enter a valid username!"); }
+          if (pendingRef) autoApplyReferral(pendingRef);
+      } else { alert("Invalid username!"); }
     }
     
     function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
@@ -869,33 +809,21 @@
         const email = document.getElementById("paypalEmail").value.trim();
         const points = parseFloat(document.getElementById("withdrawPoints").value);
         const username = localStorage.getItem("rbx_username");
-        if (!email || !email.includes("@")) return alert("Please enter a valid PayPal email.");
-        if (!points || points <= 0) return alert("Please enter a valid amount of Robux.");
+        if (!email || !email.includes("@")) return alert("Invalid PayPal email.");
+        if (!points || points <= 0) return alert("Invalid amount of Robux.");
 
         try {
             const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
-            
-            if (!response.ok) {
-                const errText = await response.text();
-                try {
-                    const jsonErr = JSON.parse(errText);
-                    alert("❌ Błąd serwera: " + (jsonErr.error || response.status));
-                } catch(e) {
-                    alert("❌ KRYTYCZNY BŁĄD SERWERA (Kod: " + response.status + "). Podobnie jak przy ticketach – sprawdź Render!");
-                }
-                return;
-            }
-
+            if (!response.ok) { alert("❌ Server Error!"); return; }
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);
             else {
                 alert(`Success! Requested payout: $${data.usd.toFixed(2)}.`);
                 document.getElementById("userPoints").innerText = data.newBalance.toFixed(2);
                 localStorage.setItem("rbx_points", data.newBalance);
-                closeWithdrawModal();
-                fetchLatestPayouts(); 
+                closeWithdrawModal(); fetchLatestPayouts(); 
             }
-        } catch (error) { alert("Błąd połączenia z serwerem."); }
+        } catch (error) { alert("Connection Error"); }
     }
   </script>
 </body>
