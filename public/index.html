@@ -24,7 +24,6 @@
     .nav-item:hover { background: #1f232e; color: #fff; }
     .nav-item.active { background: #00e676; color: #000; }
 
-    /* Ukryte tło AdSense */
     .adsense-sidebar { padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .adsense-banner { margin-bottom: 20px; padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 
@@ -121,6 +120,18 @@
     .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; }
     .ref-table th { background: #1e1e26; color: #00e676; }
     .ref-table tr:hover { background: #14171d; }
+
+    /* FAQ Styles */
+    .faq-section { text-align: left; margin-top: 30px; }
+    .faq-item { background: #14171d; border: 1px solid #2a2e39; border-radius: 8px; margin-bottom: 10px; padding: 15px; cursor: pointer; transition: 0.2s; }
+    .faq-item:hover { border-color: #00e676; }
+    .faq-question { font-weight: bold; color: #fff; font-size: 1.05rem; display: flex; justify-content: space-between; }
+    .faq-answer { display: none; color: #a0a0a0; margin-top: 10px; font-size: 0.95rem; line-height: 1.5; }
+    
+    /* Footer Styles */
+    footer { margin-top: 40px; padding: 20px; text-align: center; border-top: 1px solid #2a2e39; font-size: 0.9rem; }
+    footer a { color: #00e676; text-decoration: none; margin: 0 10px; transition: 0.2s; }
+    footer a:hover { color: #fff; }
   </style>
 </head>
 <body>
@@ -177,7 +188,6 @@
         </div>
 
         <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
-
           <div class="adsense-banner">
               <ins class="adsbygoogle"
                    style="display:block"
@@ -194,7 +204,6 @@
           <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;">Select a network below to start earning Robux.</p>
           
           <div class="offerwalls-grid">
-              
               <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
                   <div class="badge badge-hot">HOT 🔥</div>
                   <img src="cpx-logo.png" alt="CPX Research Logo" class="offer-logo">
@@ -208,8 +217,27 @@
                   <h3>Jitscape</h3>
                   <p>Play Roblox games for Robux</p>
               </div>
-
           </div>
+        </div>
+
+        <!-- 🔥 NOWE: Sekcja FAQ widoczna dla wszystkich -->
+        <div class="content-box faq-section">
+            <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;">FAQ - Frequently Asked Questions</h3>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">Do you need my Roblox password? <span>▼</span></div>
+                <div class="faq-answer">No! We will <strong>never</strong> ask for your Roblox password. We only need your username to know where to assign your earned Robux.</div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">How long does it take to get my Robux? <span>▼</span></div>
+                <div class="faq-answer">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly directly to your linked account.</div>
+            </div>
+            
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">Why are there no surveys for me? <span>▼</span></div>
+                <div class="faq-answer">Survey availability depends on your region, age, and profile. If surveys aren't working for you, we highly recommend using the <strong>Jitscape</strong> offerwall to play mobile games instead!</div>
+            </div>
         </div>
       </main>
 
@@ -268,7 +296,6 @@
           <button class="btn-action" onclick="submitPromoCode()">Redeem Code</button>
         </div>
 
-        <!-- Sekcja z historią wpisanych kodów -->
         <div id="promoHistorySection" class="content-box" style="display: none;">
           <h3 style="color: #fff; margin-bottom: 15px;">Your Redeemed Codes</h3>
           <table class="ref-table">
@@ -285,6 +312,15 @@
           </table>
         </div>
       </main>
+
+      <!-- 🔥 NOWE: Stopka z linkami do regulaminów -->
+      <footer>
+          <p style="color: #666; margin-bottom: 10px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
+          <div>
+              <a href="terms.html" target="_blank">Terms of Service</a> | 
+              <a href="privacy.html" target="_blank">Privacy Policy</a>
+          </div>
+      </footer>
 
     </div>
   </div>
@@ -346,6 +382,19 @@
 
         if(tabId === 'referrals') loadReferralStats();
         if(tabId === 'promocodes') loadPromoHistory();
+    }
+
+    // Funkcja do rozwijania FAQ
+    function toggleFaq(element) {
+        const answer = element.querySelector('.faq-answer');
+        const icon = element.querySelector('.faq-question span');
+        if (answer.style.display === 'block') {
+            answer.style.display = 'none';
+            icon.innerText = '▼';
+        } else {
+            answer.style.display = 'block';
+            icon.innerText = '▲';
+        }
     }
 
     let previousPoints = null;
@@ -413,7 +462,7 @@
                 alert("✅ " + data.message);
                 document.getElementById("promoCodeInput").value = "";
                 fetchUserPoints(); 
-                loadPromoHistory(); // Odświeża tabelkę po udanym dodaniu kodu
+                loadPromoHistory(); 
             }
         } catch (error) { alert("Connection error."); }
     }
