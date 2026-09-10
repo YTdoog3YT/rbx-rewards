@@ -128,6 +128,7 @@
 </head>
 <body>
 
+  <!-- Pasek nawigacyjny TYLKO dla telefonów -->
   <div class="mobile-nav">
       <div class="nav-item active" id="mob-nav-home" onclick="switchTab('home')">
           <span>🏠</span> <div data-lang="navHomeMob">Home</div>
@@ -205,7 +206,6 @@
           </div>
         </div>
 
-        <!-- 🔥 NAPRAWIONE: POKAZUJE SIĘ ZAWSZE -->
         <div class="content-box" id="recentPayoutsBox">
             <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">💸 Recent Cashouts</h3>
             <table class="ref-table">
@@ -298,6 +298,7 @@
         </div>
       </main>
 
+      <!-- Stopka -->
       <footer>
           <div class="legal-links" style="margin-bottom: 15px;">
               <a href="terms.html" target="_blank">Terms of Service</a> | 
@@ -330,6 +331,7 @@
       </div>
   </div>
 
+  <!-- MODALS -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
@@ -342,7 +344,7 @@
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Withdraw to PayPal</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;">80 Robux = $2.00 USD</p>
+      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 Robux = $0.025 USD</p>
       <input type="email" id="paypalEmail" placeholder="PayPal Email">
       <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()">
       <p style="margin: 15px 0; font-size: 1.1rem;"><span data-lang="youWillReceive">You will receive:</span> <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
@@ -387,7 +389,7 @@
             supportTitle: "Contact Support", needHelp: "Need Help?", supportDesc: "Describe your problem below. A ticket will be sent to Admins!", btnSubmitTicket: "Submit Ticket",
             globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send",
             modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login",
-            modalWithdrawTitle: "Withdraw to PayPal", youWillReceive: "You will receive:", btnReqPayout: "Request Payout",
+            modalWithdrawTitle: "Withdraw to PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout",
             phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something..."
         },
         pl: {
@@ -414,7 +416,7 @@
             supportTitle: "Kontakt z Administracją", needHelp: "Potrzebujesz Pomocy?", supportDesc: "Opisz swój problem poniżej. Zgłoszenie trafi prosto do Adminów!", btnSubmitTicket: "Wyślij",
             globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij",
             modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się",
-            modalWithdrawTitle: "Wypłata PayPal", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę",
+            modalWithdrawTitle: "Wypłata PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę",
             phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś..."
         },
         de: {
@@ -441,7 +443,7 @@
             supportTitle: "Support Kontaktieren", needHelp: "Brauchst du Hilfe?", supportDesc: "Beschreibe dein Problem unten. Ein Ticket wird an Admins gesendet!", btnSubmitTicket: "Senden",
             globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen! Bitte sei respektvoll.", btnSend: "Senden",
             modalLoginTitle: "Konto Verbinden", btnConnectConfirm: "Bestätigen",
-            modalWithdrawTitle: "PayPal Auszahlung", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen",
+            modalWithdrawTitle: "PayPal Auszahlung", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen",
             phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas..."
         },
         ru: {
@@ -468,7 +470,7 @@
             supportTitle: "Поддержка", needHelp: "Нужна помощь?", supportDesc: "Опиши проблему ниже. Мы поможем!", btnSubmitTicket: "Отправить",
             globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать в чат!", btnSend: "Отправить",
             modalLoginTitle: "Подключить аккаунт", btnConnectConfirm: "Войти",
-            modalWithdrawTitle: "Вывод PayPal", youWillReceive: "Вы получите:", btnReqPayout: "Вывести",
+            modalWithdrawTitle: "Вывод PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Вы получите:", btnReqPayout: "Вывести",
             phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши..."
         }
     };
@@ -659,7 +661,7 @@
         const username = localStorage.getItem("rbx_username");
         if (!code) return alert("Enter code!");
         try {
-            const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, promoCode: code }) });
+            const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, promoCode: code }) });
             const data = await response.json();
             if (data.error) alert("❌ " + data.error);
             else { alert("✅ " + data.message); document.getElementById("promoCodeInput").value = ""; fetchUserPoints(); loadPromoHistory(); }
@@ -718,7 +720,6 @@
       } catch (error) {}
     }
 
-    // 🔥 NAPRAWIONE: ZAWSZE WYŚWIETLA TABELĘ
     async function fetchLatestPayouts() {
         try {
             const response = await fetch('/api/latest-payouts');
