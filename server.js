@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
-const { Client, GatewayIntentBits } = require('discord.js'); // Wyciągnięte na górę
+const { Client, GatewayIntentBits } = require('discord.js');
 
 // -----------------------------------------------------
 // 🤖 KONFIGURACJA BOTA DISCORD
@@ -137,7 +137,7 @@ app.get('/api/latest-payouts', async (req, res) => {
     }
 });
 
-// 🔥 PRZELICZNIK WYPŁAT I POWIADOMIENIA DISCORD
+// 🔥 PRZELICZNIK WYPŁAT I POWIADOMIENIA DISCORD (NA KANAŁ)
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -152,15 +152,17 @@ app.post('/api/withdraw', async (req, res) => {
         
         await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
 
-        // 🔥 WYSYŁANIE POWIADOMIENIA NA DISCORD DO CIEBIE
+        // 🔥 WYSYŁANIE POWIADOMIENIA NA KANAŁ DISCORD O NAZWIE "robux"
         if (discordClient && discordClient.isReady()) {
             try {
-                const adminUser = await discordClient.users.fetch(ADMIN_DISCORD_ID);
-                if (adminUser) {
-                    adminUser.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount})\n📧 E-mail (PayPal): **${paypalEmail}**`);
+                const targetChannel = discordClient.channels.cache.find(c => c.name === 'robux');
+                if (targetChannel && targetChannel.isTextBased()) {
+                    targetChannel.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount})\n📧 E-mail (PayPal): **${paypalEmail}**`);
+                } else {
+                    console.log("Nie znaleziono kanału tekstowego o nazwie 'robux'.");
                 }
             } catch (err) {
-                console.error("Błąd wysyłania powiadomienia o wypłacie na Discord:", err);
+                console.error("Błąd wysyłania powiadomienia o wypłacie na kanał Discord:", err);
             }
         }
 
@@ -400,7 +402,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
 // -----------------------------------------------------
-// LOGIKA BOTA DISCORD (Zintegrowana)
+// LOGIKA BOTA DISCORD
 // -----------------------------------------------------
 if (discordClient) {
     discordClient.on('messageCreate', async message => {
