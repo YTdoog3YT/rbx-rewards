@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const { Client, GatewayIntentBits } = require('discord.js'); // Wyciągnięte na górę
 
 // -----------------------------------------------------
 // 🤖 KONFIGURACJA BOTA DISCORD
@@ -11,6 +12,13 @@ const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
 console.log("🔥 Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
+
+let discordClient = null;
+if (DISCORD_BOT_TOKEN) {
+    discordClient = new Client({
+        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+    });
+}
 
 const app = express();
 app.use(cors());
@@ -121,7 +129,6 @@ app.get('/api/latest-earners', async (req, res) => {
     try { res.json(await Earning.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 NOWE: POBIERANIE 5 OSTATNICH WYPŁAT
 app.get('/api/latest-payouts', async (req, res) => {
     try { 
         res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); 
@@ -130,7 +137,7 @@ app.get('/api/latest-payouts', async (req, res) => {
     }
 });
 
-// 🔥 PRZELICZNIK WYPŁAT
+// 🔥 PRZELICZNIK WYPŁAT I POWIADOMIENIA DISCORD
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -144,6 +151,19 @@ app.post('/api/withdraw', async (req, res) => {
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
         
         await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
+
+        // 🔥 WYSYŁANIE POWIADOMIENIA NA DISCORD DO CIEBIE
+        if (discordClient && discordClient.isReady()) {
+            try {
+                const adminUser = await discordClient.users.fetch(ADMIN_DISCORD_ID);
+                if (adminUser) {
+                    adminUser.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount})\n📧 E-mail (PayPal): **${paypalEmail}**`);
+                }
+            } catch (err) {
+                console.error("Błąd wysyłania powiadomienia o wypłacie na Discord:", err);
+            }
+        }
+
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
@@ -323,7 +343,6 @@ app.get('/api/referral-stats/:username', async (req, res) => {
     }
 });
 
-// ODBIERANIE KODÓW PROMOCYJNYCH
 app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body;
     if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
@@ -358,7 +377,6 @@ app.post('/api/redeem-promo', async (req, res) => {
     }
 });
 
-// POBIERANIE HISTORII KODÓW DLA GRACZA
 app.get('/api/promo-history/:username', async (req, res) => {
     try {
         const username = req.params.username;
@@ -382,15 +400,10 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
 // -----------------------------------------------------
-// LOGIKA BOTA DISCORD
+// LOGIKA BOTA DISCORD (Zintegrowana)
 // -----------------------------------------------------
-if (DISCORD_BOT_TOKEN) {
-    const { Client, GatewayIntentBits } = require('discord.js');
-    const client = new Client({
-        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
-    });
-
-    client.on('messageCreate', async message => {
+if (discordClient) {
+    discordClient.on('messageCreate', async message => {
         if (message.author.bot) return;
 
         const cmd = message.content.split(' ')[0].toLowerCase();
@@ -525,9 +538,9 @@ if (DISCORD_BOT_TOKEN) {
         }
     });
 
-    client.once('ready', () => {
-        console.log(`🤖 Bot Discord (${client.user.tag}) połączony i zarządza kodami!`);
+    discordClient.once('ready', () => {
+        console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza kodami!`);
     });
 
-    client.login(DISCORD_BOT_TOKEN).catch(console.error);
+    discordClient.login(DISCORD_BOT_TOKEN).catch(console.error);
 }
