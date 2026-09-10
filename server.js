@@ -93,7 +93,6 @@ async function processReferralBonus(username, amountEarned) {
     } catch (err) { console.error("Błąd 15%:", err); }
 }
 
-// 📌 POSTBACK: CPX Research
 app.get('/postback', async (req, res) => {
     const userId = req.query.user_id; const amount = parseFloat(req.query.amount_local); const status = req.query.status;
     res.status(200).send('OK'); 
@@ -108,18 +107,27 @@ app.get('/postback', async (req, res) => {
     }
 });
 
-// 📌 POSTBACK: THEOREMREACH (🔥 NOWE!)
+// 🔥 POSTBACK: THEOREMREACH (Poprawiony wg nowej dokumentacji!)
 app.all('/api/theoremreach-postback', async (req, res) => {
-    // TR zazwyczaj wysyła zapytanie GET z parametrami
-    const uid = req.query.uid || req.body.uid;
+    // TR automatycznie dokleja parametry, głównie 'user_id' oraz 'reward'
+    const uid = req.query.user_id || req.body.user_id || req.query.uid || req.body.uid;
     const reward = parseFloat(req.query.reward || req.body.reward);
-    const status = req.query.status || req.body.status;
+    const isReversal = req.query.reversal === 'true' || req.query.reversal === true;
 
-    // TR wymaga zwrócenia tekstu '1' w odpowiedzi po udanym dopisaniu punktów
-    if (!uid || isNaN(reward)) return res.status(400).send('0');
+    // TR wymaga odpowiedzi 200 z tekstem "1" w przypadku sukcesu
+    if (!uid || isNaN(reward)) {
+        console.log("❌ Błąd Postbacku TR - brak nicku lub kwoty. Otrzymano:", req.query);
+        return res.status(400).send('0');
+    }
 
-    // Status 1 = kompletna ankieta, Status 2 = screenout (nagroda pocieszenia)
-    if (status === '1' || status === '2') {
+    // Jeśli wpadnie "reversal" (czyli TheoremReach wyczai, że gracz oszukiwał i cofa kasę), ignorujemy dodawanie punktów
+    if (isReversal) {
+        console.log(`⚠️ TR Reversal (Cofnięcie środków) dla gracza: ${uid}, Kwota: ${reward}`);
+        return res.status(200).send('1');
+    }
+
+    // Skoro 'status' jest zdeprecjonowany, polegamy na tym, czy nagroda jest większa od zera
+    if (reward > 0) {
         try {
             let user = await User.findOne({ username: uid });
             if (!user) user = new User({ username: uid, points: 0 });
@@ -127,16 +135,17 @@ app.all('/api/theoremreach-postback', async (req, res) => {
             await user.save();
             await new Earning({ username: uid, amount: reward }).save();
             await processReferralBonus(uid, reward);
+            console.log(`✅ Sukces TR: Dodano ${reward} R$ dla gracza ${uid}`);
             return res.status(200).send('1');
         } catch (error) {
+            console.log("❌ Błąd bazy danych przy TR:", error);
             return res.status(500).send('0');
         }
     }
-    // Jeśli status jest inny (np. chargeback), zwracamy 1 żeby ich serwer przestał wysyłać to samo zapytanie
+    
     res.status(200).send('1');
 });
 
-// 📌 POSTBACK: JITSCAPE
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
@@ -178,7 +187,6 @@ app.get('/api/latest-payouts', async (req, res) => {
     try { res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 SYSTEM TICKETÓW
 app.post('/api/support-ticket', async (req, res) => {
     try {
         const { username, message } = req.body;
@@ -199,7 +207,6 @@ app.post('/api/support-ticket', async (req, res) => {
     }
 });
 
-// 🔥 PRZELICZNIK WYPŁAT
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
