@@ -128,7 +128,6 @@
 </head>
 <body>
 
-  <!-- Pasek nawigacyjny TYLKO dla telefonów -->
   <div class="mobile-nav">
       <div class="nav-item active" id="mob-nav-home" onclick="switchTab('home')">
           <span>🏠</span> <div data-lang="navHomeMob">Home</div>
@@ -145,7 +144,6 @@
   </div>
 
   <div class="page-layout">
-    
     <div class="side-nav-container">
         <nav class="side-nav">
             <div class="nav-logo">RBX Rewards 💎</div>
@@ -207,12 +205,14 @@
           </div>
         </div>
 
-        <!-- Ukrywa się całkowicie, dopóki nie padnie pierwsza wypłata -->
-        <div class="content-box" id="recentPayoutsBox" style="display: none;">
+        <!-- 🔥 NAPRAWIONE: POKAZUJE SIĘ ZAWSZE -->
+        <div class="content-box" id="recentPayoutsBox">
             <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">💸 Recent Cashouts</h3>
             <table class="ref-table">
                 <thead><tr><th data-lang="tableUser">User</th><th data-lang="tableAmount">Amount</th><th data-lang="tableTime">Time</th></tr></thead>
-                <tbody id="recentPayoutsBody"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading real cashouts...</td></tr></tbody>
+                <tbody id="recentPayoutsBody">
+                    <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading real cashouts...</td></tr>
+                </tbody>
             </table>
         </div>
 
@@ -298,7 +298,6 @@
         </div>
       </main>
 
-      <!-- Stopka -->
       <footer>
           <div class="legal-links" style="margin-bottom: 15px;">
               <a href="terms.html" target="_blank">Terms of Service</a> | 
@@ -315,7 +314,6 @@
     </div>
   </div>
 
-  <!-- PŁYWAJĄCY WIDŻET CZATU -->
   <div id="chatWidget" class="chat-widget minimized">
       <div class="chat-header" onclick="toggleChat()">
           <span data-lang="globalChat">🌍 Global Chat</span>
@@ -332,7 +330,6 @@
       </div>
   </div>
 
-  <!-- MODALS -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
@@ -364,7 +361,6 @@
     </div>
   </div>
 
-  <!-- 🔥 SŁOWNIK JĘZYKÓW & SKRYPTY -->
   <script>
     const translations = {
         en: {
@@ -376,6 +372,7 @@
             startEarning: "Start Earning Free Robux! 💎", startDesc: "Enter your Roblox username below so we know where to send your rewards. No passwords required.",
             btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose an Offerwall", offerDesc: "Select a network below to start earning Robux.",
             cpxDesc: "High paying surveys", jitDesc: "Play Roblox games", recentCashouts: "💸 Recent Cashouts", loadingCashouts: "Loading real cashouts...",
+            emptyCashouts: "No cashouts yet! Be the first to cash out.",
             tableUser: "User", tableAmount: "Amount", tableTime: "Time",
             faqTitle: "FAQ - Frequently Asked Questions",
             q1: "Do you need my Roblox password?", a1: "No! We will never ask for your Roblox password.",
@@ -402,6 +399,7 @@
             startEarning: "Zacznij Zarabiać Robuxy! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.",
             btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ofertę", offerDesc: "Wybierz sieć poniżej, aby zacząć zarabiać.",
             cpxDesc: "Wysoko płatne ankiety", jitDesc: "Graj w gry Roblox", recentCashouts: "💸 Ostatnie Wypłaty", loadingCashouts: "Ładowanie wypłat...",
+            emptyCashouts: "Brak wypłat! Bądź pierwszym, który wypłaci.",
             tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas",
             faqTitle: "FAQ - Często Zadawane Pytania",
             q1: "Czy potrzebujecie mojego hasła?", a1: "Nie! Nigdy nie poprosimy o Twoje hasło do Robloxa.",
@@ -428,6 +426,7 @@
             startEarning: "Verdiene kostenlose Robux! 💎", startDesc: "Gib unten deinen Roblox-Namen ein. Wir fragen nie nach deinem Passwort.",
             btnConnect: "Konto Verbinden", chooseOfferwall: "🚀 Wähle eine Offerwall", offerDesc: "Wähle unten ein Netzwerk aus, um zu verdienen.",
             cpxDesc: "Hochbezahlte Umfragen", jitDesc: "Roblox Spiele spielen", recentCashouts: "💸 Letzte Auszahlungen", loadingCashouts: "Lädt...",
+            emptyCashouts: "Noch keine Auszahlungen! Sei der Erste.",
             tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit",
             faqTitle: "FAQ - Häufig gestellte Fragen",
             q1: "Braucht ihr mein Passwort?", a1: "Nein! Wir werden dich niemals nach deinem Passwort fragen.",
@@ -454,6 +453,7 @@
             startEarning: "Начни зарабатывать Robux! 💎", startDesc: "Введи свой никнейм Roblox ниже. Пароль не требуется.",
             btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери Оффер", offerDesc: "Выбери сеть ниже, чтобы начать.",
             cpxDesc: "Опросы", jitDesc: "Игры Roblox", recentCashouts: "💸 Выплаты", loadingCashouts: "Загрузка...",
+            emptyCashouts: "Выплат пока нет! Будь первым.",
             tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время",
             faqTitle: "FAQ - Вопросы",
             q1: "Нужен пароль?", a1: "Нет! Мы никогда не попросим твой пароль.",
@@ -491,8 +491,8 @@
             }
         });
         
-        // Zaktualizuj liveTicker jeśli baza pusta
         fetchLiveEarners();
+        fetchLatestPayouts();
     }
 
     let socket = null;
@@ -659,7 +659,7 @@
         const username = localStorage.getItem("rbx_username");
         if (!code) return alert("Enter code!");
         try {
-            const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, promoCode: code }) });
+            const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, promoCode: code }) });
             const data = await response.json();
             if (data.error) alert("❌ " + data.error);
             else { alert("✅ " + data.message); document.getElementById("promoCodeInput").value = ""; fetchUserPoints(); loadPromoHistory(); }
@@ -704,7 +704,6 @@
         const response = await fetch('/api/latest-earners');
         const earners = await response.json();
         
-        // Zabezpieczenie pustej bazy!
         if (earners.length === 0) {
             const lang = document.getElementById('langSelect').value || 'en';
             const emptyMsg = translations[lang].emptyEarners;
@@ -719,17 +718,33 @@
       } catch (error) {}
     }
 
+    // 🔥 NAPRAWIONE: ZAWSZE WYŚWIETLA TABELĘ
     async function fetchLatestPayouts() {
         try {
             const response = await fetch('/api/latest-payouts');
+            if (!response.ok) return;
             const payouts = await response.json();
             const tbody = document.getElementById('recentPayoutsBody');
-            if (payouts.length === 0) { document.getElementById('recentPayoutsBox').style.display = 'none'; return; }
-            document.getElementById('recentPayoutsBox').style.display = 'block'; 
+            if (!tbody) return;
+
+            const lang = document.getElementById('langSelect').value || 'en';
+            const emptyMsg = translations[lang].emptyCashouts || "No cashouts yet!";
+
+            if (!payouts || payouts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`;
+                return;
+            }
+
             let html = '';
             payouts.forEach(p => {
-                const date = new Date(p.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${p.username}</td><td style="color: #ffb703; font-weight: bold;">-${p.pointsWithdrawn.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
+                const date = new Date(p.createdAt); 
+                const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const pts = (typeof p.pointsWithdrawn === 'number') ? p.pointsWithdrawn.toFixed(2) : (p.points || 0);
+                html += `<tr>
+                            <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
+                            <td style="color: #ffb703; font-weight: bold;">-${pts} R$</td>
+                            <td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td>
+                         </tr>`;
             });
             tbody.innerHTML = html;
         } catch (error) {}
