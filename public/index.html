@@ -192,6 +192,7 @@
           <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
           <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose an Offerwall</h3>
           <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;" data-lang="offerDesc">Select a network below to start earning Robux.</p>
+          
           <div class="offerwalls-grid">
               <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
                   <div class="badge badge-hot">HOT 🔥</div>
@@ -202,6 +203,13 @@
                   <div class="badge badge-new">NEW ✨</div>
                   <div class="card-icon">🕹️</div>
                   <h3>Jitscape</h3><p data-lang="jitDesc">Play Roblox games</p>
+              </div>
+              
+              <!-- 🔥 NOWE THEOREMREACH -->
+              <div class="offer-card" onclick="openOfferwall('THEOREMREACH', 'TheoremReach')">
+                  <div class="badge badge-hot" style="background: #9d4edd;">EASY 🚀</div>
+                  <div class="card-icon">📋</div>
+                  <h3>TheoremReach</h3><p data-lang="trDesc">Fast & easy surveys</p>
               </div>
           </div>
         </div>
@@ -373,7 +381,8 @@
             emptyEarners: "Be the first to earn Robux!",
             startEarning: "Start Earning Free Robux! 💎", startDesc: "Enter your Roblox username below so we know where to send your rewards. No passwords required.",
             btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose an Offerwall", offerDesc: "Select a network below to start earning Robux.",
-            cpxDesc: "High paying surveys", jitDesc: "Play Roblox games", recentCashouts: "💸 Recent Cashouts", loadingCashouts: "Loading real cashouts...",
+            cpxDesc: "High paying surveys", jitDesc: "Play Roblox games", trDesc: "Fast & easy surveys",
+            recentCashouts: "💸 Recent Cashouts", loadingCashouts: "Loading real cashouts...",
             emptyCashouts: "No cashouts yet! Be the first to cash out.",
             tableUser: "User", tableAmount: "Amount", tableTime: "Time",
             faqTitle: "FAQ - Frequently Asked Questions",
@@ -400,7 +409,8 @@
             emptyEarners: "Bądź pierwszy, który zarobi Robuxy!",
             startEarning: "Zacznij Zarabiać Robuxy! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.",
             btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ofertę", offerDesc: "Wybierz sieć poniżej, aby zacząć zarabiać.",
-            cpxDesc: "Wysoko płatne ankiety", jitDesc: "Graj w gry Roblox", recentCashouts: "💸 Ostatnie Wypłaty", loadingCashouts: "Ładowanie wypłat...",
+            cpxDesc: "Wysoko płatne ankiety", jitDesc: "Graj w gry Roblox", trDesc: "Szybkie i proste ankiety",
+            recentCashouts: "💸 Ostatnie Wypłaty", loadingCashouts: "Ładowanie wypłat...",
             emptyCashouts: "Brak wypłat! Bądź pierwszym, który wypłaci.",
             tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas",
             faqTitle: "FAQ - Często Zadawane Pytania",
@@ -427,7 +437,8 @@
             emptyEarners: "Sei der Erste, der Robux verdient!",
             startEarning: "Verdiene kostenlose Robux! 💎", startDesc: "Gib unten deinen Roblox-Namen ein. Wir fragen nie nach deinem Passwort.",
             btnConnect: "Konto Verbinden", chooseOfferwall: "🚀 Wähle eine Offerwall", offerDesc: "Wähle unten ein Netzwerk aus, um zu verdienen.",
-            cpxDesc: "Hochbezahlte Umfragen", jitDesc: "Roblox Spiele spielen", recentCashouts: "💸 Letzte Auszahlungen", loadingCashouts: "Lädt...",
+            cpxDesc: "Hochbezahlte Umfragen", jitDesc: "Roblox Spiele spielen", trDesc: "Schnelle Umfragen",
+            recentCashouts: "💸 Letzte Auszahlungen", loadingCashouts: "Lädt...",
             emptyCashouts: "Noch keine Auszahlungen! Sei der Erste.",
             tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit",
             faqTitle: "FAQ - Häufig gestellte Fragen",
@@ -454,7 +465,8 @@
             emptyEarners: "Будь первым, кто заработает Robux!",
             startEarning: "Начни зарабатывать Robux! 💎", startDesc: "Введи свой никнейм Roblox ниже. Пароль не требуется.",
             btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери Оффер", offerDesc: "Выбери сеть ниже, чтобы начать.",
-            cpxDesc: "Опросы", jitDesc: "Игры Roblox", recentCashouts: "💸 Выплаты", loadingCashouts: "Загрузка...",
+            cpxDesc: "Опросы", jitDesc: "Игры Roblox", trDesc: "Быстрые опросы",
+            recentCashouts: "💸 Выплаты", loadingCashouts: "Загрузка...",
             emptyCashouts: "Выплат пока нет! Будь первым.",
             tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время",
             faqTitle: "FAQ - Вопросы",
@@ -751,6 +763,17 @@
         } catch (error) {}
     }
 
+    // 🔥 Zmienne globalne dla URL-i do ankiet
+    let currentUserCpxUrl = "";
+    let currentUserJitscapeUrl = "";
+    let currentUserTheoremReachUrl = "";
+
+    const jitscapePubId = "plc_xHHxjKbb5p5P";
+    const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
+    
+    // ⚠️ TUTAJ WPISZ KLUCZ API OD THEOREMREACH
+    const theoremReachApiKey = "23948d93f92a592c17bcff445d16";
+
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
@@ -774,13 +797,19 @@
 
         fetchUserPoints();
         
+        // --- Generowanie Linków ---
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
         const secureHashParam = md5(savedUser + "-" + appSecureHash);
+        
         currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
         
         const message = jitscapePubId + savedUser;
         const signature = CryptoJS.HmacSHA256(message, jitscapeSecret).toString(CryptoJS.enc.Hex);
         currentUserJitscapeUrl = `https://wall.jitscape.com/?pubId=${jitscapePubId}&userId=${encodeURIComponent(savedUser)}&signature=${signature}`;
+        
+        // 🔥 Link do TheoremReach
+        currentUserTheoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${theoremReachApiKey}&user_id=${encodeURIComponent(savedUser)}`;
+
       } else {
         document.getElementById("loginBtn").innerText = translations[document.getElementById('langSelect').value || 'en'].btnLogin;
         document.getElementById("loginPrompt").style.display = "block";
@@ -796,8 +825,16 @@
 
     function openOfferwall(networkId, networkName) {
       document.getElementById('offerModalTitle').innerText = networkName;
-      let finalUrl = networkId === 'CPX' ? currentUserCpxUrl : currentUserJitscapeUrl;
-      if (finalUrl) { document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; document.getElementById('offerModal').style.display = 'flex'; }
+      let finalUrl = "";
+      
+      if (networkId === 'CPX') finalUrl = currentUserCpxUrl;
+      else if (networkId === 'JITSCAPE') finalUrl = currentUserJitscapeUrl;
+      else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl;
+
+      if (finalUrl) { 
+          document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
+          document.getElementById('offerModal').style.display = 'flex'; 
+      }
     }
     
     function closeOfferModal() { document.getElementById('offerModal').style.display = 'none'; document.getElementById('iframeContainer').innerHTML = ''; }

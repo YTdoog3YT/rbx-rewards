@@ -93,6 +93,7 @@ async function processReferralBonus(username, amountEarned) {
     } catch (err) { console.error("Błąd 15%:", err); }
 }
 
+// 📌 POSTBACK: CPX Research
 app.get('/postback', async (req, res) => {
     const userId = req.query.user_id; const amount = parseFloat(req.query.amount_local); const status = req.query.status;
     res.status(200).send('OK'); 
@@ -105,6 +106,52 @@ app.get('/postback', async (req, res) => {
             await processReferralBonus(userId, amount);
         } catch (error) {}
     }
+});
+
+// 📌 POSTBACK: THEOREMREACH (🔥 NOWE!)
+app.all('/api/theoremreach-postback', async (req, res) => {
+    // TR zazwyczaj wysyła zapytanie GET z parametrami
+    const uid = req.query.uid || req.body.uid;
+    const reward = parseFloat(req.query.reward || req.body.reward);
+    const status = req.query.status || req.body.status;
+
+    // TR wymaga zwrócenia tekstu '1' w odpowiedzi po udanym dopisaniu punktów
+    if (!uid || isNaN(reward)) return res.status(400).send('0');
+
+    // Status 1 = kompletna ankieta, Status 2 = screenout (nagroda pocieszenia)
+    if (status === '1' || status === '2') {
+        try {
+            let user = await User.findOne({ username: uid });
+            if (!user) user = new User({ username: uid, points: 0 });
+            user.points += reward; 
+            await user.save();
+            await new Earning({ username: uid, amount: reward }).save();
+            await processReferralBonus(uid, reward);
+            return res.status(200).send('1');
+        } catch (error) {
+            return res.status(500).send('0');
+        }
+    }
+    // Jeśli status jest inny (np. chargeback), zwracamy 1 żeby ich serwer przestał wysyłać to samo zapytanie
+    res.status(200).send('1');
+});
+
+// 📌 POSTBACK: JITSCAPE
+app.all('/api/jitscape-postback', async (req, res) => {
+    const data = req.method === 'POST' ? req.body : req.query;
+    if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
+    const JITSCAPE_SECRET = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
+    if (data.signature !== crypto.createHmac('sha256', JITSCAPE_SECRET).update(`${data.txId}:${data.amountMilliCents}:${data.userId}`).digest('hex')) return res.status(400).send('Invalid sig');
+    if (data.amountMilliCents == 0) return res.status(200).send('Test OK');
+    res.status(200).send('OK');
+    const pointsToAward = parseFloat(((data.amountMilliCents / 100000) * 15).toFixed(2));
+    try {
+        let user = await User.findOne({ username: data.userId });
+        if (!user) user = new User({ username: data.userId, points: 0 });
+        user.points += pointsToAward; await user.save();
+        await new Earning({ username: data.userId, amount: pointsToAward }).save();
+        await processReferralBonus(data.userId, pointsToAward);
+    } catch (error) {}
 });
 
 app.get('/api/points/:username', async (req, res) => {
@@ -152,7 +199,7 @@ app.post('/api/support-ticket', async (req, res) => {
     }
 });
 
-// 🔥 PRZELICZNIK WYPŁAT (Z KURSEM WALUT NA ŻYWO)
+// 🔥 PRZELICZNIK WYPŁAT
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -167,50 +214,29 @@ app.post('/api/withdraw', async (req, res) => {
 
         if (discordClient && discordClient.isReady()) {
             try {
-                // Pobieranie aktualnego kursu dolara i szacowanie stawki PayPal
                 let plnText = "";
                 try {
                     const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
                     const rateData = await rateRes.json();
                     if (rateData && rateData.rates && rateData.rates.PLN) {
                         const marketRate = rateData.rates.PLN;
-                        const paypalEstimatedRate = marketRate * 0.965; // Odejmowanie ~3.5% złodziejskiej prowizji PayPala
+                        const paypalEstimatedRate = marketRate * 0.965; 
                         const plnAmount = (usdAmount * paypalEstimatedRate).toFixed(2);
                         plnText = ` - ~${plnAmount} zł`;
                     }
                 } catch (apiErr) {
-                    console.log("Brak połączenia z API walutowym, wysyłam same dolary na Discorda.");
+                    console.log("Brak API walutowego.");
                 }
 
                 const targetChannel = discordClient.channels.cache.find(c => c.name === 'robux');
                 if (targetChannel && targetChannel.isTextBased()) {
                     await targetChannel.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount}${plnText})\n📧 E-mail (PayPal): **${paypalEmail}**`);
                 }
-            } catch (err) { console.error("Błąd powiadomienia Discord (Wypłata):", err); }
+            } catch (err) { console.error("Błąd powiadomienia:", err); }
         }
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
-
-app.all('/api/jitscape-postback', async (req, res) => {
-    const data = req.method === 'POST' ? req.body : req.query;
-    if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
-    const JITSCAPE_SECRET = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
-    if (data.signature !== crypto.createHmac('sha256', JITSCAPE_SECRET).update(`${data.txId}:${data.amountMilliCents}:${data.userId}`).digest('hex')) return res.status(400).send('Invalid sig');
-    if (data.amountMilliCents == 0) return res.status(200).send('Test OK');
-    res.status(200).send('OK');
-    const pointsToAward = parseFloat(((data.amountMilliCents / 100000) * 15).toFixed(2));
-    try {
-        let user = await User.findOne({ username: data.userId });
-        if (!user) user = new User({ username: data.userId, points: 0 });
-        user.points += pointsToAward; await user.save();
-        await new Earning({ username: data.userId, amount: pointsToAward }).save();
-        await processReferralBonus(data.userId, pointsToAward);
-    } catch (error) {}
-});
-
-app.post('/api/daily-reward', async (req, res) => { /* wyłączone */ });
-app.post('/api/bonus-click', async (req, res) => { /* wyłączone */ });
 
 app.post('/api/redeem-code', async (req, res) => {
     const { username, code } = req.body;
