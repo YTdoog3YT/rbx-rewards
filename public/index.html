@@ -81,7 +81,6 @@
         box-shadow: 0 12px 25px rgba(0,0,0,0.4); 
     }
     
-    /* Poprawione logo CPX - bez psujących się filtrów */
     .offer-logo { max-width: 140px; max-height: 45px; margin-bottom: 10px; object-fit: contain; }
     
     .badge {
@@ -117,18 +116,11 @@
     .ticker-item span { color: #ffb703; font-weight: bold; }
     @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-    .daily-btn { background: linear-gradient(45deg, #ff0055, #ffb703); color: #fff; border: none; padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 10px; width: 100%; box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4); transition: all 0.3s ease; }
-    .daily-btn:hover { transform: scale(1.02); }
-    .daily-btn:disabled { background: #333947 !important; color: #888 !important; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
-
     .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
     .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
     .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; }
     .ref-table th { background: #1e1e26; color: #00e676; }
     .ref-table tr:hover { background: #14171d; }
-
-    .streak-box { background: #14171d; border: 1px dashed #ffb703; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: inline-block; width: 100%; }
-    .streak-text { color: #ffb703; font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; }
   </style>
 </head>
 <body>
@@ -165,6 +157,7 @@
         </div>
       </header>
 
+      <!-- ZAKŁADKA 1: HOME -->
       <main id="tab-home">
         <div class="ticker-wrap">
           <div class="ticker-title">🔥 Live Earners</div>
@@ -202,16 +195,13 @@
           
           <div class="offerwalls-grid">
               
-              <!-- KAFELEK CPX RESEARCH -->
               <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
                   <div class="badge badge-hot">HOT 🔥</div>
-                  <!-- Używamy teraz oficjalnego białego logo CPX z ich własnego serwera -->
                   <img src="cpx-logo.png" alt="CPX Research Logo" class="offer-logo">
                   <h3>CPX Research</h3>
                   <p>High paying surveys</p>
               </div>
               
-              <!-- KAFELEK JITSCAPE -->
               <div class="offer-card" onclick="openOfferwall('JITSCAPE', 'Jitscape')">
                   <div class="badge badge-new">NEW ✨</div>
                   <div class="card-icon">🕹️</div>
@@ -221,9 +211,9 @@
 
           </div>
         </div>
-
       </main>
 
+      <!-- ZAKŁADKA 2: REFERRALS -->
       <main id="tab-referrals" style="display: none;">
         <h2 class="section-title">Invite Friends & Earn 15%</h2>
 
@@ -266,8 +256,10 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA 3: PROMO CODES -->
       <main id="tab-promocodes" style="display: none;">
         <h2 class="section-title">Redeem Promo Codes</h2>
+        
         <div class="content-box">
           <h3 style="color: #00e676; margin-bottom: 10px;">Got a Code?</h3>
           <p style="color: #a0a0a0; margin-bottom: 15px;">Check our Discord server for limited promo codes!</p>
@@ -275,11 +267,29 @@
           <br>
           <button class="btn-action" onclick="submitPromoCode()">Redeem Code</button>
         </div>
+
+        <!-- Sekcja z historią wpisanych kodów -->
+        <div id="promoHistorySection" class="content-box" style="display: none;">
+          <h3 style="color: #fff; margin-bottom: 15px;">Your Redeemed Codes</h3>
+          <table class="ref-table">
+              <thead>
+                  <tr>
+                      <th>Date</th>
+                      <th>Code</th>
+                      <th>Earned</th>
+                  </tr>
+              </thead>
+              <tbody id="promoHistoryTableBody">
+                  <tr><td colspan="3" style="text-align: center; color: #888;">Loading history...</td></tr>
+              </tbody>
+          </table>
+        </div>
       </main>
 
     </div>
   </div>
 
+  <!-- MODALS -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <h3 style="color: #fff;">Connect Roblox Account</h3>
@@ -335,10 +345,10 @@
         document.getElementById('nav-' + tabId).classList.add('active');
 
         if(tabId === 'referrals') loadReferralStats();
+        if(tabId === 'promocodes') loadPromoHistory();
     }
 
-    let previousPoints = null; // Zmienna potrzebna do dźwięku
-    let cooldownInterval = null; 
+    let previousPoints = null;
 
     async function fetchUserPoints() {
       const savedUser = localStorage.getItem("rbx_username");
@@ -347,16 +357,15 @@
         const response = await fetch(`/api/points/${savedUser}`);
         const data = await response.json();
         
-        // ✨ Logika odtwarzania dźwięku przy wzroście punktów
         if (previousPoints !== null && data.points > previousPoints) {
             try {
-                let cashSound = new Audio('/cash.mp3'); // Pamiętaj o dodaniu tego pliku!
+                let cashSound = new Audio('/cash.mp3'); 
                 cashSound.play();
             } catch (error) {
                 console.log("Nie udało się odtworzyć dźwięku", error);
             }
         }
-        previousPoints = data.points; // Aktualizacja starych punktów
+        previousPoints = data.points; 
 
         document.getElementById("userPoints").innerText = data.points.toFixed(2);
         localStorage.setItem("rbx_points", data.points);
@@ -366,11 +375,6 @@
         }
       } catch (error) {}
     }
-
-    // Pozostałe, nieużywane obecnie funkcje do Daily Rewards itp. 
-    function checkDailyCooldown(lastRewardDateStr) { /* ... ukryte ... */ }
-    function handleDailyRewardClick() { /* ... ukryte ... */ }
-    async function claimDailyFromServer(username) { /* ... ukryte ... */ }
 
     async function submitReferralCode() {
         const code = document.getElementById("friendCodeInput").value.trim();
@@ -409,6 +413,7 @@
                 alert("✅ " + data.message);
                 document.getElementById("promoCodeInput").value = "";
                 fetchUserPoints(); 
+                loadPromoHistory(); // Odświeża tabelkę po udanym dodaniu kodu
             }
         } catch (error) { alert("Connection error."); }
     }
@@ -442,6 +447,39 @@
         }
     }
 
+    async function loadPromoHistory() {
+        const username = localStorage.getItem("rbx_username");
+        if (!username) return;
+
+        const tableBody = document.getElementById("promoHistoryTableBody");
+        tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888;">Fetching history from database...</td></tr>';
+
+        try {
+            const response = await fetch(`/api/promo-history/${username}`);
+            const history = await response.json();
+
+            if (history.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #ffb703;">You haven\'t redeemed any codes yet!</td></tr>';
+            } else {
+                let rows = '';
+                history.forEach(item => {
+                    const codeName = item.code || item; 
+                    const reward = item.reward ? `+${item.reward.toFixed(2)} R$` : "??? R$";
+                    const date = item.date ? new Date(item.date).toLocaleDateString() : "Unknown Date";
+
+                    rows += `<tr>
+                                <td style="color: #a0a0b0;">📅 ${date}</td>
+                                <td style="font-weight: bold; color: #fff;">🎟️ ${codeName}</td>
+                                <td style="color: #00e676; font-weight: bold;">${reward}</td>
+                             </tr>`;
+                });
+                tableBody.innerHTML = rows;
+            }
+        } catch (error) {
+            tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">Error loading history.</td></tr>';
+        }
+    }
+
     async function fetchLiveEarners() {
       try {
         const response = await fetch('/api/latest-earners');
@@ -465,6 +503,7 @@
         
         document.getElementById("myRefCodeDisplay").innerText = savedUser;
         document.getElementById("referralStatsSection").style.display = "block";
+        document.getElementById("promoHistorySection").style.display = "block";
 
         fetchUserPoints();
         
@@ -482,11 +521,11 @@
         document.getElementById("offerwallSection").style.display = "none";
         document.getElementById("withdrawBtn").style.display = "none";
         document.getElementById("referralStatsSection").style.display = "none";
+        document.getElementById("promoHistorySection").style.display = "none";
         document.getElementById("userPoints").innerText = "0";
       }
     }
 
-    // ✨ Przywrócone: Wszystkie sieci otwierają się w iframe
     function openOfferwall(networkId, networkName) {
       document.getElementById('offerModalTitle').innerText = networkName;
       let finalUrl = networkId === 'CPX' ? currentUserCpxUrl : currentUserJitscapeUrl;

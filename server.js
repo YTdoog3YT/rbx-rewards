@@ -33,7 +33,12 @@ const UserSchema = new mongoose.Schema({
     streak: { type: Number, default: 0 },
     referredUsers: { type: [String], default: [] },
     bonusClicksToday: { type: Number, default: 0 },
-    lastBonusClickDate: { type: Date, default: null }
+    lastBonusClickDate: { type: Date, default: null },
+    // 🔥 NOWE: Tablica trzymająca historię użytych kodów
+    redeemedPromoCodes: { 
+        type: [{ code: String, reward: Number, date: { type: Date, default: Date.now } }], 
+        default: [] 
+    }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -310,6 +315,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
     }
 });
 
+// 🔥 ZAKTUALIZOWANE ODBIERANIE KODÓW (Zapisuje do bazy historię)
 app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body;
     if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
@@ -325,6 +331,11 @@ app.post('/api/redeem-promo', async (req, res) => {
         if (!user) user = new User({ username, points: 0, streak: 0 });
 
         user.points += promo.reward;
+        
+        // Zapis do historii użytkownika
+        if (!user.redeemedPromoCodes) user.redeemedPromoCodes = [];
+        user.redeemedPromoCodes.push({ code: promo.code, reward: promo.reward, date: new Date() });
+
         await user.save();
 
         promo.currentUses += 1;
@@ -337,6 +348,28 @@ app.post('/api/redeem-promo', async (req, res) => {
         res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} Robuxów z kodu!` });
     } catch (error) {
         res.status(500).json({ error: 'Błąd serwera.' });
+    }
+});
+
+// 🔥 NOWY ENDPOINT: POBIERANIE HISTORII KODÓW DLA GRACZA
+app.get('/api/promo-history/:username', async (req, res) => {
+    try {
+        const username = req.params.username;
+        const user = await User.findOne({ username: username });
+        
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const history = user.redeemedPromoCodes || [];
+        
+        // Sortujemy od najnowszych wpisów do najstarszych
+        history.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        res.json(history);
+    } catch (error) {
+        console.error("Error fetching promo history:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
