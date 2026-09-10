@@ -144,7 +144,6 @@
             <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
             <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
             <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
-            <!-- 🔥 ZAKŁADKA SUPPORTU -->
             <a id="nav-support" class="nav-item" onclick="switchTab('support')">🛠️ Support</a>
         </nav>
 
@@ -240,17 +239,14 @@
 
         <div class="content-box faq-section">
             <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;">FAQ - Frequently Asked Questions</h3>
-            
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">Do you need my Roblox password? <span>▼</span></div>
                 <div class="faq-answer">No! We will <strong>never</strong> ask for your Roblox password. We only need your username to know where to assign your earned Robux.</div>
             </div>
-            
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">How long does it take to get my Robux? <span>▼</span></div>
                 <div class="faq-answer">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly directly to your linked account.</div>
             </div>
-            
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">Why are there no surveys for me? <span>▼</span></div>
                 <div class="faq-answer">Survey availability depends on your region, age, and profile. If you get screened out, keep trying different surveys! Remember to always provide <strong>honest and consistent answers</strong>, as survey networks verify real demographic data and will reject fake or inconsistent profiles.</div>
@@ -258,23 +254,27 @@
         </div>
       </main>
 
-      <!-- ZAKŁADKA 2: REFERRALS -->
+      <!-- 🔥 ZAKŁADKA 2: REFERRALS (ZAKTUALIZOWANA) -->
       <main id="tab-referrals" style="display: none;">
         <h2 class="section-title">Invite Friends & Earn 15%</h2>
+        
         <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;">Your Referral Code</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to use your Roblox username as the code! You will earn a massive 15% of all Robux they make for life!</p>
-          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;">
-              <span id="myRefCodeDisplay">Log in first</span>
+          <h3 style="color: #00e676; margin-bottom: 10px;">Your Custom Referral Link</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Share this link with your friends! When they connect their account through your link, you will automatically earn a massive 15% of all Robux they make for life!</p>
+          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left;">
+              <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-all;">Log in first</span>
+              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem; flex-shrink: 0;" onclick="copyRefLink()">📋 Copy</button>
           </div>
         </div>
+
         <div id="redeemCodeSection" class="content-box">
           <h3 style="color: #fff; margin-bottom: 10px;">Were you invited?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Enter your friend's code below to support them!</p>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Enter your friend's code below to support them (if you didn't use their link)!</p>
           <input type="text" id="friendCodeInput" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
           <br>
           <button class="btn-action" onclick="submitReferralCode()">Activate Code</button>
         </div>
+
         <div id="referralStatsSection" class="content-box" style="display: none;">
           <h3 style="color: #fff; margin-bottom: 15px;">Your 15% Commission Stats</h3>
           <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
@@ -309,7 +309,7 @@
         </div>
       </main>
 
-      <!-- 🔥 ZAKŁADKA 4: SUPPORT (TICKETY) -->
+      <!-- ZAKŁADKA 4: SUPPORT (TICKETY) -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title">Contact Support</h2>
         <div class="content-box">
@@ -352,7 +352,7 @@
     </div>
   </div>
 
-  <!-- 🔥 PŁYWAJĄCY WIDŻET CZATU GLOBALNEGO -->
+  <!-- PŁYWAJĄCY WIDŻET CZATU GLOBALNEGO -->
   <div id="chatWidget" class="chat-widget minimized">
       <div class="chat-header" onclick="toggleChat()">
           <span>🌍 Global Chat</span>
@@ -407,7 +407,6 @@
     const jitscapePubId = "plc_xHHxjKbb5p5P";
     const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
 
-    // 🔥 BEZPIECZNA INICJALIZACJA SOCKET.IO (Nie zablokuje reszty strony!)
     let socket = null;
     try {
         if (typeof io !== 'undefined') {
@@ -417,7 +416,16 @@
         console.log("Czat ładuje się w tle...");
     }
 
+    // 🔥 NOWOŚĆ: Przechwytywanie linku polecającego z URL
     document.addEventListener("DOMContentLoaded", function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const refParam = urlParams.get('ref');
+      if (refParam) {
+          localStorage.setItem('pending_ref', refParam);
+          // Ukrywamy link z parametrem po załadowaniu, żeby strona wyglądała czysto
+          window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       checkLoginStatus(); 
       fetchLiveEarners();
       fetchLatestPayouts(); 
@@ -453,7 +461,18 @@
         }
     }
 
-    // 🔥 FUNKCJE DO CZATU GLOBALNEGO
+    // 🔥 Kopiowanie linku polecającego do schowka
+    function copyRefLink() {
+        const linkText = document.getElementById("myRefLinkDisplay").innerText;
+        if (linkText !== "Log in first") {
+            navigator.clipboard.writeText(linkText).then(() => {
+                alert("✅ Link skopiowany do schowka! Podaj go znajomym.");
+            }).catch(err => {
+                console.error("Błąd kopiowania", err);
+            });
+        }
+    }
+
     function toggleChat() {
         const widget = document.getElementById('chatWidget');
         const icon = document.getElementById('chatToggleIcon');
@@ -506,7 +525,6 @@
         });
     }
 
-    // 🔥 NAPRAWIONA FUNKCJA WYSYŁANIA TICKETÓW (Pokaże Ci DOKŁADNIE gdzie leży błąd)
     async function submitSupportTicket() {
         const messageInput = document.getElementById("ticketMessageInput");
         const message = messageInput.value.trim();
@@ -526,10 +544,8 @@
                 body: JSON.stringify({ username, message })
             });
             
-            // Zabezpieczenie przed błędem 404 lub 502 od Rendera!
             if (!response.ok) {
                 const errText = await response.text();
-                console.error("Szczegóły błędu serwera:", errText);
                 try {
                     const jsonErr = JSON.parse(errText);
                     alert("❌ Błąd serwera: " + (jsonErr.error || response.status));
@@ -584,6 +600,29 @@
             document.getElementById("redeemCodeSection").style.display = "none";
         }
       } catch (error) {}
+    }
+
+    // 🔥 NOWOŚĆ: Automatyczne aplikowanie kodu w tle po zalogowaniu z linku
+    async function autoApplyReferral(code) {
+        const username = localStorage.getItem("rbx_username");
+        if (!username || !code) return;
+
+        try {
+            const response = await fetch('/api/redeem-code', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, code })
+            });
+            const data = await response.json();
+            
+            if (!data.error) {
+                // Pokazujemy ładne info nowemu graczowi
+                alert(`🎁 Zostałeś zaproszony przez: ${code}! Kod polecający został automatycznie użyty.`);
+                document.getElementById("redeemCodeSection").style.display = "none";
+            }
+        } catch (error) { console.error("Błąd automatycznego refa", error); }
+        
+        // Czyścimy pamięć, żeby nie dodawało go w kółko
+        localStorage.removeItem('pending_ref');
     }
 
     async function submitReferralCode() {
@@ -738,7 +777,11 @@
         document.getElementById("offerwallSection").style.display = "block";
         document.getElementById("withdrawBtn").style.display = "inline-block"; 
         
-        document.getElementById("myRefCodeDisplay").innerText = savedUser;
+        // 🔥 Aktualizacja wyświetlania LINKU zamiast kodu
+        const fullLink = window.location.origin + "/?ref=" + savedUser;
+        const refDisplay = document.getElementById("myRefLinkDisplay");
+        if(refDisplay) refDisplay.innerText = fullLink;
+
         document.getElementById("referralStatsSection").style.display = "block";
         document.getElementById("promoHistorySection").style.display = "block";
         
@@ -783,9 +826,20 @@
 
     function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
     function closeLoginModal() { document.getElementById("loginModal").style.display = "none"; }
+    
     function saveUsername() {
       const input = document.getElementById("usernameInput").value.trim();
-      if (input) { localStorage.setItem("rbx_username", input); closeLoginModal(); checkLoginStatus(); } 
+      if (input) { 
+          localStorage.setItem("rbx_username", input); 
+          closeLoginModal(); 
+          checkLoginStatus(); 
+          
+          // 🔥 Sprawdzanie przy logowaniu, czy gracz wszedł z linku reflinkowego
+          const pendingRef = localStorage.getItem('pending_ref');
+          if (pendingRef) {
+              autoApplyReferral(pendingRef);
+          }
+      } 
       else { alert("Please enter a valid username!"); }
     }
     
@@ -803,7 +857,6 @@
         document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
     }
     
-    // 🔥 Usprawnione błędy wypłaty (To samo zabezpieczenie co przy ticketach)
     async function submitWithdraw() {
         const email = document.getElementById("paypalEmail").value.trim();
         const points = parseFloat(document.getElementById("withdrawPoints").value);
