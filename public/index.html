@@ -239,14 +239,17 @@
 
         <div class="content-box faq-section">
             <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;">FAQ - Frequently Asked Questions</h3>
+            
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">Do you need my Roblox password? <span>▼</span></div>
                 <div class="faq-answer">No! We will <strong>never</strong> ask for your Roblox password. We only need your username to know where to assign your earned Robux.</div>
             </div>
+            
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">How long does it take to get my Robux? <span>▼</span></div>
                 <div class="faq-answer">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly directly to your linked account.</div>
             </div>
+            
             <div class="faq-item" onclick="toggleFaq(this)">
                 <div class="faq-question">Why are there no surveys for me? <span>▼</span></div>
                 <div class="faq-answer">Survey availability depends on your region, age, and profile. If you get screened out, keep trying different surveys! Remember to always provide <strong>honest and consistent answers</strong>, as survey networks verify real demographic data and will reject fake or inconsistent profiles.</div>
@@ -254,13 +257,20 @@
         </div>
       </main>
 
-      <!-- 🔥 ZAKŁADKA 2: REFERRALS (ZAKTUALIZOWANA) -->
+      <!-- 🔥 ZAKŁADKA 2: REFERRALS (KOD I LINK) -->
       <main id="tab-referrals" style="display: none;">
         <h2 class="section-title">Invite Friends & Earn 15%</h2>
         
         <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;">Your Custom Referral Link</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;">Share this link with your friends! When they connect their account through your link, you will automatically earn a massive 15% of all Robux they make for life!</p>
+          <h3 style="color: #00e676; margin-bottom: 10px;">Your Referral Info</h3>
+          <p style="color: #a0a0a0; margin-bottom: 15px;">Tell your friends to enter your username below, or share your custom link! You will earn a massive 15% of all Robux they make for life!</p>
+          
+          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;">Your Code (Username):</h4>
+          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;">
+              <span id="myRefCodeDisplay">Log in first</span>
+          </div>
+
+          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;">Your Custom Link:</h4>
           <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left;">
               <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-all;">Log in first</span>
               <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem; flex-shrink: 0;" onclick="copyRefLink()">📋 Copy</button>
@@ -416,13 +426,11 @@
         console.log("Czat ładuje się w tle...");
     }
 
-    // 🔥 NOWOŚĆ: Przechwytywanie linku polecającego z URL
     document.addEventListener("DOMContentLoaded", function() {
       const urlParams = new URLSearchParams(window.location.search);
       const refParam = urlParams.get('ref');
       if (refParam) {
           localStorage.setItem('pending_ref', refParam);
-          // Ukrywamy link z parametrem po załadowaniu, żeby strona wyglądała czysto
           window.history.replaceState({}, document.title, window.location.pathname);
       }
 
@@ -461,7 +469,7 @@
         }
     }
 
-    // 🔥 Kopiowanie linku polecającego do schowka
+    // Kopiowanie linku polecającego do schowka
     function copyRefLink() {
         const linkText = document.getElementById("myRefLinkDisplay").innerText;
         if (linkText !== "Log in first") {
@@ -602,7 +610,6 @@
       } catch (error) {}
     }
 
-    // 🔥 NOWOŚĆ: Automatyczne aplikowanie kodu w tle po zalogowaniu z linku
     async function autoApplyReferral(code) {
         const username = localStorage.getItem("rbx_username");
         if (!username || !code) return;
@@ -615,13 +622,11 @@
             const data = await response.json();
             
             if (!data.error) {
-                // Pokazujemy ładne info nowemu graczowi
                 alert(`🎁 Zostałeś zaproszony przez: ${code}! Kod polecający został automatycznie użyty.`);
                 document.getElementById("redeemCodeSection").style.display = "none";
             }
         } catch (error) { console.error("Błąd automatycznego refa", error); }
         
-        // Czyścimy pamięć, żeby nie dodawało go w kółko
         localStorage.removeItem('pending_ref');
     }
 
@@ -777,7 +782,11 @@
         document.getElementById("offerwallSection").style.display = "block";
         document.getElementById("withdrawBtn").style.display = "inline-block"; 
         
-        // 🔥 Aktualizacja wyświetlania LINKU zamiast kodu
+        // 🔥 Wrzucamy KOD (Username)
+        const codeDisplay = document.getElementById("myRefCodeDisplay");
+        if(codeDisplay) codeDisplay.innerText = savedUser;
+
+        // 🔥 Wrzucamy LINK
         const fullLink = window.location.origin + "/?ref=" + savedUser;
         const refDisplay = document.getElementById("myRefLinkDisplay");
         if(refDisplay) refDisplay.innerText = fullLink;
@@ -834,7 +843,6 @@
           closeLoginModal(); 
           checkLoginStatus(); 
           
-          // 🔥 Sprawdzanie przy logowaniu, czy gracz wszedł z linku reflinkowego
           const pendingRef = localStorage.getItem('pending_ref');
           if (pendingRef) {
               autoApplyReferral(pendingRef);
