@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
     referredUsers: { type: [String], default: [] },
     bonusClicksToday: { type: Number, default: 0 },
     lastBonusClickDate: { type: Date, default: null },
-    // 🔥 NOWE: Tablica trzymająca historię użytych kodów
+    // Tablica trzymająca historię użytych kodów
     redeemedPromoCodes: { 
         type: [{ code: String, reward: Number, date: { type: Date, default: Date.now } }], 
         default: [] 
@@ -176,7 +176,7 @@ app.post('/api/daily-reward', async (req, res) => {
             else currentStreak = 1;
         } else { currentStreak = 1; }
         
-        const rewardPoints = 0.1; // Ucięte z 0.5 na 0.1 R$
+        const rewardPoints = 0.1; 
         
         user.points += rewardPoints; user.lastDailyReward = now; user.streak = currentStreak;
         await user.save();
@@ -315,7 +315,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
     }
 });
 
-// 🔥 ZAKTUALIZOWANE ODBIERANIE KODÓW (Zapisuje do bazy historię)
+// ODBIERANIE KODÓW (Zapisuje do bazy historię)
 app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body;
     if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
@@ -332,7 +332,6 @@ app.post('/api/redeem-promo', async (req, res) => {
 
         user.points += promo.reward;
         
-        // Zapis do historii użytkownika
         if (!user.redeemedPromoCodes) user.redeemedPromoCodes = [];
         user.redeemedPromoCodes.push({ code: promo.code, reward: promo.reward, date: new Date() });
 
@@ -351,7 +350,7 @@ app.post('/api/redeem-promo', async (req, res) => {
     }
 });
 
-// 🔥 NOWY ENDPOINT: POBIERANIE HISTORII KODÓW DLA GRACZA
+// POBIERANIE HISTORII KODÓW DLA GRACZA
 app.get('/api/promo-history/:username', async (req, res) => {
     try {
         const username = req.params.username;
@@ -363,7 +362,6 @@ app.get('/api/promo-history/:username', async (req, res) => {
 
         const history = user.redeemedPromoCodes || [];
         
-        // Sortujemy od najnowszych wpisów do najstarszych
         history.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         res.json(history);
@@ -435,9 +433,24 @@ if (DISCORD_BOT_TOKEN) {
             if (isNaN(reward) || isNaN(maxUses)) return message.reply('❌ Robuxy i max użyć muszą być liczbą!');
 
             try {
-                const existing = await PromoCode.findOne({ code: codeName });
-                if (existing) return message.reply('❌ Taki kod już istnieje w bazie!');
+                let existing = await PromoCode.findOne({ code: codeName });
+                
+                if (existing) {
+                    // 🔥 Jeśli kod istnieje, sprawdzamy czy został całkowicie wyczerpany
+                    if (existing.currentUses >= existing.maxUses) {
+                        existing.reward = reward;
+                        existing.maxUses = maxUses;
+                        existing.currentUses = 0;
+                        existing.usedBy = []; // Czyścimy listę, by gracze mogli ponownie go użyć
+                        await existing.save();
+                        return message.reply(`♻️ **Wyczerpany kod został odnowiony!**\n🎫 Nazwa kodu: **${codeName}**\n💰 Nowa wartość: **${reward} R$**\n👥 Nowy limit osób: **${maxUses}**`);
+                    } else {
+                        // Jeśli wciąż są wolne miejsca, blokujemy nadpisanie, żeby nie psuć aktywnego dropu
+                        return message.reply(`❌ Ten kod wciąż jest aktywny (${existing.currentUses}/${existing.maxUses} użyć)! Jeśli koniecznie chcesz go nadpisać, usuń go najpierw komendą \`!usunkod ${codeName}\`.`);
+                    }
+                }
 
+                // Jeśli kodu wcześniej nie było, tworzymy nowy (standardowe działanie)
                 const newPromo = new PromoCode({ code: codeName, reward: reward, maxUses: maxUses });
                 await newPromo.save();
 
