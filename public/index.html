@@ -149,12 +149,14 @@
 
         <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
           
+          <!-- UKRYTE NA CZAS WERYFIKACJI: Dzienne nagrody i logowanie
           <div class="streak-box">
               <span class="streak-text">🔥 Daily Streak: <span id="userStreakDisplay">0</span> Days</span>
           </div>
 
           <button id="dailyRewardBtn" class="daily-btn" onclick="handleDailyRewardClick()">🎁 Claim 0.1 R$ Daily Reward!</button>
           <p id="dailyTimerText" style="color: #ffb703; font-size: 0.95rem; text-align: center; margin-bottom: 25px; font-weight: bold; display: none;"></p>
+          -->
 
           <!-- 🔥 GŁÓWNY BOKS REKLAMOWY ADSENSE NAD OFERTÓWKAMI (TWÓJ NOWY KOD) -->
           <div class="adsense-banner">
@@ -315,9 +317,9 @@
         document.getElementById("userPoints").innerText = data.points.toFixed(2);
         localStorage.setItem("rbx_points", data.points);
         
-        document.getElementById("userStreakDisplay").innerText = data.streak;
-
-        checkDailyCooldown(data.lastDailyReward);
+        // ZAKOMENTOWANE NA CZAS WERYFIKACJI
+        // document.getElementById("userStreakDisplay").innerText = data.streak;
+        // checkDailyCooldown(data.lastDailyReward);
 
         if (data.referredBy) {
             document.getElementById("redeemCodeSection").style.display = "none";
@@ -329,6 +331,8 @@
         clearInterval(cooldownInterval); 
         const btn = document.getElementById("dailyRewardBtn");
         const timerText = document.getElementById("dailyTimerText");
+        
+        if(!btn || !timerText) return; // Zabezpieczenie przed brakiem elementu
 
         if (!lastRewardDateStr) { enableDailyButton(btn, timerText); return; }
         const lastRewardTime = new Date(lastRewardDateStr).getTime();
