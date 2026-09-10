@@ -131,7 +131,7 @@ app.get('/api/latest-payouts', async (req, res) => {
     try { res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 SYSTEM TICKETÓW (Teraz bezpieczniejszy!)
+// 🔥 SYSTEM TICKETÓW
 app.post('/api/support-ticket', async (req, res) => {
     try {
         const { username, message } = req.body;
@@ -143,18 +143,16 @@ app.post('/api/support-ticket', async (req, res) => {
                 await targetChannel.send(`🚨 **NOWY TICKET ZGŁOSZENIOWY** 🚨\n👤 **Od Gracza:** \`${username}\`\n📝 **Wiadomość:**\n> ${message}`);
                 return res.json({ success: true, message: 'Ticket pomyślnie wysłany do Administracji!' });
             } else {
-                console.log("BŁĄD: Bot nie widzi kanału o nazwie 'support-tickets'. Sprawdź wielkość liter i uprawnienia bota!");
                 return res.status(500).json({ error: 'Błąd konfiguracji: Bot Discord nie widzi kanału "support-tickets".' });
             }
         }
         return res.status(500).json({ error: 'Bot Discord jest obecnie offline.' });
     } catch (error) {
-        console.error("Błąd wewnętrzny serwera przy ticketach:", error);
         return res.status(500).json({ error: 'Wewnętrzny błąd serwera. Spróbuj ponownie później.' });
     }
 });
 
-// PRZELICZNIK WYPŁAT
+// 🔥 PRZELICZNIK WYPŁAT (Z KURSEM WALUT NA ŻYWO)
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
@@ -169,9 +167,24 @@ app.post('/api/withdraw', async (req, res) => {
 
         if (discordClient && discordClient.isReady()) {
             try {
+                // Pobieranie aktualnego kursu dolara i szacowanie stawki PayPal
+                let plnText = "";
+                try {
+                    const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
+                    const rateData = await rateRes.json();
+                    if (rateData && rateData.rates && rateData.rates.PLN) {
+                        const marketRate = rateData.rates.PLN;
+                        const paypalEstimatedRate = marketRate * 0.965; // Odejmowanie ~3.5% złodziejskiej prowizji PayPala
+                        const plnAmount = (usdAmount * paypalEstimatedRate).toFixed(2);
+                        plnText = ` - ~${plnAmount} zł`;
+                    }
+                } catch (apiErr) {
+                    console.log("Brak połączenia z API walutowym, wysyłam same dolary na Discorda.");
+                }
+
                 const targetChannel = discordClient.channels.cache.find(c => c.name === 'robux');
                 if (targetChannel && targetChannel.isTextBased()) {
-                    await targetChannel.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount})\n📧 E-mail (PayPal): **${paypalEmail}**`);
+                    await targetChannel.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount}${plnText})\n📧 E-mail (PayPal): **${paypalEmail}**`);
                 }
             } catch (err) { console.error("Błąd powiadomienia Discord (Wypłata):", err); }
         }
