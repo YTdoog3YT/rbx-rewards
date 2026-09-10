@@ -90,7 +90,6 @@
     .faq-question { font-weight: bold; color: #fff; font-size: 1.05rem; display: flex; justify-content: space-between; }
     .faq-answer { display: none; color: #a0a0a0; margin-top: 10px; font-size: 0.95rem; line-height: 1.5; }
     
-    /* 🔥 NAPRAWA ZASŁANIANIA FOOTERA (POGRUBIONY MARGINES Z DOŁU) */
     footer { padding-bottom: 100px; padding-top: 20px; text-align: center; border-top: 1px solid #2a2e39; font-size: 0.9rem; }
     footer .legal-links a { color: #00e676; text-decoration: none; margin: 0 10px; transition: 0.2s; }
     footer .legal-links a:hover { color: #fff; }
@@ -113,7 +112,6 @@
     .chat-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; outline: none; }
     .chat-input-area button { background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-    /* 🔥 NOWE: PASEK MOBILNY (BOTTOM NAV) DLA TELEFONÓW */
     .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #14171d; border-top: 1px solid #2a2e39; z-index: 9999; justify-content: space-around; padding: 10px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
     .mobile-nav .nav-item { flex: 1; text-align: center; color: #a0a0a0; text-decoration: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .mobile-nav .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 3px; }
@@ -122,8 +120,8 @@
     @media (max-width: 900px) { 
         .side-nav-container { display: none; } 
         .mobile-nav { display: flex; }
-        footer { padding-bottom: 140px; } /* Dodatkowe miejsce na pasek mobilny i czat */
-        .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } /* Podniesienie czatu nad pasek mobilny */
+        footer { padding-bottom: 140px; } 
+        .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } 
         .chat-widget:not(.minimized) { height: 350px; }
     }
   </style>
@@ -148,7 +146,6 @@
 
   <div class="page-layout">
     
-    <!-- Pasek boczny dla komputerów -->
     <div class="side-nav-container">
         <nav class="side-nav">
             <div class="nav-logo">RBX Rewards 💎</div>
@@ -162,7 +159,6 @@
 
     <div class="main-content">
       <header>
-        <!-- 🔥 NOWE: Wybór Języka -->
         <div class="lang-selector">
             <select id="langSelect" onchange="changeLang(this.value)">
                 <option value="en">🇬🇧 English</option>
@@ -211,6 +207,7 @@
           </div>
         </div>
 
+        <!-- Ukrywa się całkowicie, dopóki nie padnie pierwsza wypłata -->
         <div class="content-box" id="recentPayoutsBox" style="display: none;">
             <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">💸 Recent Cashouts</h3>
             <table class="ref-table">
@@ -375,6 +372,7 @@
             navHomeMob: "Home", navRefMob: "Ref", navPromoMob: "Promo", navSupMob: "Support",
             btnWithdraw: "Withdraw", btnLogin: "Login", btnCancel: "Cancel",
             liveEarners: "🔥 Live Earners", earnTitle: "Earn Robux", loadingStats: "Loading...",
+            emptyEarners: "Be the first to earn Robux!",
             startEarning: "Start Earning Free Robux! 💎", startDesc: "Enter your Roblox username below so we know where to send your rewards. No passwords required.",
             btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose an Offerwall", offerDesc: "Select a network below to start earning Robux.",
             cpxDesc: "High paying surveys", jitDesc: "Play Roblox games", recentCashouts: "💸 Recent Cashouts", loadingCashouts: "Loading real cashouts...",
@@ -400,6 +398,7 @@
             navHomeMob: "Główna", navRefMob: "Zaproś", navPromoMob: "Kody", navSupMob: "Pomoc",
             btnWithdraw: "Wypłać", btnLogin: "Zaloguj", btnCancel: "Anuluj",
             liveEarners: "🔥 Na żywo", earnTitle: "Zarabiaj Robuxy", loadingStats: "Ładowanie...",
+            emptyEarners: "Bądź pierwszy, który zarobi Robuxy!",
             startEarning: "Zacznij Zarabiać Robuxy! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.",
             btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ofertę", offerDesc: "Wybierz sieć poniżej, aby zacząć zarabiać.",
             cpxDesc: "Wysoko płatne ankiety", jitDesc: "Graj w gry Roblox", recentCashouts: "💸 Ostatnie Wypłaty", loadingCashouts: "Ładowanie wypłat...",
@@ -425,6 +424,7 @@
             navHomeMob: "Start", navRefMob: "Partner", navPromoMob: "Codes", navSupMob: "Support",
             btnWithdraw: "Auszahlen", btnLogin: "Einloggen", btnCancel: "Abbrechen",
             liveEarners: "🔥 Live-Verdiener", earnTitle: "Robux Verdienen", loadingStats: "Lädt...",
+            emptyEarners: "Sei der Erste, der Robux verdient!",
             startEarning: "Verdiene kostenlose Robux! 💎", startDesc: "Gib unten deinen Roblox-Namen ein. Wir fragen nie nach deinem Passwort.",
             btnConnect: "Konto Verbinden", chooseOfferwall: "🚀 Wähle eine Offerwall", offerDesc: "Wähle unten ein Netzwerk aus, um zu verdienen.",
             cpxDesc: "Hochbezahlte Umfragen", jitDesc: "Roblox Spiele spielen", recentCashouts: "💸 Letzte Auszahlungen", loadingCashouts: "Lädt...",
@@ -450,6 +450,7 @@
             navHomeMob: "Главная", navRefMob: "Рефы", navPromoMob: "Коды", navSupMob: "Помощь",
             btnWithdraw: "Вывод", btnLogin: "Войти", btnCancel: "Отмена",
             liveEarners: "🔥 Прямой эфир", earnTitle: "Заработать Robux", loadingStats: "Загрузка...",
+            emptyEarners: "Будь первым, кто заработает Robux!",
             startEarning: "Начни зарабатывать Robux! 💎", startDesc: "Введи свой никнейм Roblox ниже. Пароль не требуется.",
             btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери Оффер", offerDesc: "Выбери сеть ниже, чтобы начать.",
             cpxDesc: "Опросы", jitDesc: "Игры Roblox", recentCashouts: "💸 Выплаты", loadingCashouts: "Загрузка...",
@@ -489,13 +490,15 @@
                 el.placeholder = translations[lang][key];
             }
         });
+        
+        // Zaktualizuj liveTicker jeśli baza pusta
+        fetchLiveEarners();
     }
 
     let socket = null;
     try { if (typeof io !== 'undefined') socket = io(); } catch (e) {}
 
     document.addEventListener("DOMContentLoaded", function() {
-      // Przywracanie języka
       const savedLang = localStorage.getItem('rbx_lang') || 'en';
       changeLang(savedLang);
 
@@ -524,11 +527,9 @@
         
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         
-        // Aktywacja dla Desktopu
         const deskNav = document.getElementById('nav-' + tabId);
         if(deskNav) deskNav.classList.add('active');
         
-        // Aktywacja dla Telefonów (Mobile Bottom Nav)
         const mobNav = document.getElementById('mob-nav-' + tabId);
         if(mobNav) mobNav.classList.add('active');
 
@@ -702,12 +703,19 @@
       try {
         const response = await fetch('/api/latest-earners');
         const earners = await response.json();
-        if (earners.length > 0) {
-          let tickerHTML = '';
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
-          earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
-          document.getElementById('liveTicker').innerHTML = tickerHTML;
+        
+        // Zabezpieczenie pustej bazy!
+        if (earners.length === 0) {
+            const lang = document.getElementById('langSelect').value || 'en';
+            const emptyMsg = translations[lang].emptyEarners;
+            document.getElementById('liveTicker').innerHTML = `<div class="ticker-item" style="color:#ffb703;">${emptyMsg}</div>`;
+            return;
         }
+
+        let tickerHTML = '';
+        earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
+        earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
+        document.getElementById('liveTicker').innerHTML = tickerHTML;
       } catch (error) {}
     }
 
