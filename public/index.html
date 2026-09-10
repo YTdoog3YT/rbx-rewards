@@ -144,7 +144,7 @@
             <a id="nav-home" class="nav-item active" onclick="switchTab('home')">🏠 Home</a>
             <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')">👥 Referrals</a>
             <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')">🎫 Promo Codes</a>
-            <!-- 🔥 NOWA ZAKŁADKA SUPPORTU -->
+            <!-- 🔥 ZAKŁADKA SUPPORTU -->
             <a id="nav-support" class="nav-item" onclick="switchTab('support')">🛠️ Support</a>
         </nav>
 
@@ -309,7 +309,7 @@
         </div>
       </main>
 
-      <!-- 🔥 ZAKŁADKA 4: NOWA ZAKŁADKA SUPPORTU (TICKETY) -->
+      <!-- 🔥 ZAKŁADKA 4: SUPPORT (TICKETY) -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title">Contact Support</h2>
         <div class="content-box">
@@ -407,11 +407,18 @@
     const jitscapePubId = "plc_xHHxjKbb5p5P";
     const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
 
-    // 🔥 INICJALIZACJA SOCKET.IO DLA CZATU
-    const socket = io();
+    // 🔥 BEZPIECZNA INICJALIZACJA SOCKET.IO (Nie zablokuje reszty strony!)
+    let socket = null;
+    try {
+        if (typeof io !== 'undefined') {
+            socket = io();
+        }
+    } catch (e) {
+        console.log("Czat ładuje się w tle...");
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
-      checkLoginStatus();
+      checkLoginStatus(); // Teraz to uruchomi się ZAWSZE, logując Cię z automatu
       fetchLiveEarners();
       fetchLatestPayouts(); 
       setInterval(fetchUserPoints, 5000);
@@ -423,7 +430,7 @@
         document.getElementById('tab-home').style.display = 'none';
         document.getElementById('tab-referrals').style.display = 'none';
         document.getElementById('tab-promocodes').style.display = 'none';
-        document.getElementById('tab-support').style.display = 'none'; // Ukryj zakładkę support
+        document.getElementById('tab-support').style.display = 'none'; 
         
         document.getElementById('tab-' + tabId).style.display = 'block';
         
@@ -453,7 +460,6 @@
         if (widget.classList.contains('minimized')) {
             widget.classList.remove('minimized');
             icon.innerText = '▼';
-            // Scroll na sam dół po otwarciu
             const chatBody = document.getElementById('chatMessages');
             chatBody.scrollTop = chatBody.scrollHeight;
         } else {
@@ -472,31 +478,33 @@
             return;
         }
         if (msg) {
-            socket.emit('chatMessage', { username: username, text: msg });
-            input.value = ''; // Czyszczenie pola
+            if (socket) {
+                socket.emit('chatMessage', { username: username, text: msg });
+                input.value = '';
+            } else {
+                alert("Czat jest w tej chwili rozłączony. Spróbuj za chwilę.");
+            }
         }
     }
 
-    // Enter do wysyłania wiadomości
     document.getElementById('chatInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') sendChatMessage();
     });
 
-    // Odbieranie wiadomości na żywo od serwera
-    socket.on('chatMessage', (data) => {
-        const chatBody = document.getElementById('chatMessages');
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'chat-msg';
-        
-        // Zabezpieczenie przed atakami XSS (zamiana HTML na tekst)
-        const safeText = document.createTextNode(data.text);
-        
-        msgDiv.innerHTML = `<span class="user">${data.username}:</span> `;
-        msgDiv.appendChild(safeText);
-        
-        chatBody.appendChild(msgDiv);
-        chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll w dół
-    });
+    if (socket) {
+        socket.on('chatMessage', (data) => {
+            const chatBody = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-msg';
+            
+            const safeText = document.createTextNode(data.text);
+            msgDiv.innerHTML = `<span class="user">${data.username}:</span> `;
+            msgDiv.appendChild(safeText);
+            
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight; 
+        });
+    }
 
     // 🔥 FUNKCJA WYSYŁANIA TICKETÓW
     async function submitSupportTicket() {
@@ -519,8 +527,8 @@
                 alert("❌ Błąd: " + data.error);
             } else {
                 alert("✅ Sukces: " + data.message);
-                messageInput.value = ""; // Czyści pole
-                switchTab('home'); // Wraca na stronę główną
+                messageInput.value = ""; 
+                switchTab('home'); 
             }
         } catch (error) {
             alert("Błąd połączenia z serwerem.");
@@ -711,8 +719,8 @@
         document.getElementById("referralStatsSection").style.display = "block";
         document.getElementById("promoHistorySection").style.display = "block";
         
-        // Pokaż widget czatu dla zalogowanych
-        document.getElementById("chatWidget").style.display = "flex";
+        const chatWidget = document.getElementById("chatWidget");
+        if (chatWidget) chatWidget.style.display = "flex";
 
         fetchUserPoints();
         
@@ -733,8 +741,8 @@
         document.getElementById("promoHistorySection").style.display = "none";
         document.getElementById("userPoints").innerText = "0";
         
-        // Ukryj widget czatu dla niezalogowanych
-        document.getElementById("chatWidget").style.display = "none";
+        const chatWidget = document.getElementById("chatWidget");
+        if (chatWidget) chatWidget.style.display = "none";
       }
     }
 
