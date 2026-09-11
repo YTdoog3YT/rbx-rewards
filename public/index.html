@@ -33,7 +33,6 @@
     
     .user-info { display: flex; align-items: center; gap: 15px; justify-content: flex-end; }
     
-    /* 🔥 Klikalny licznik Robuxów */
     .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; cursor: pointer; transition: 0.2s; }
     .points-badge:hover { background: #323846; box-shadow: 0 0 10px rgba(255, 183, 3, 0.4); transform: scale(1.05); }
     
@@ -50,9 +49,12 @@
     .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-block; margin-top: 15px; }
     .btn-action:hover { background: #00c853; }
     
+    /* 🔥 NAPRAWA LAGÓW - usunięto backdrop-filter: blur(5px) */
     .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
-    .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
-    .offer-modal-overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; }
+    .modal { background: rgba(0,0,0,0.95); } 
+    .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 2000; } 
+    /* 🔥 Koniec naprawy */
+
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
     .modal-content input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
     
@@ -797,7 +799,6 @@
         } catch (error) {}
     }
 
-    // 🔥 LOGIKA HISTORII ZAROBKÓW
     function openHistoryModal() {
         const username = localStorage.getItem("rbx_username");
         if (!username) return alert("You must log in first!");
@@ -829,7 +830,6 @@
                 const date = new Date(item.createdAt);
                 const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                // Sprytna detekcja: jak zarobek to grosze (< 1 Robuxa), to pocieszenie/dyskwalifikacja
                 let actionText = item.amount < 1.0 ? translations[lang].historyPartial : translations[lang].historySurvey;
 
                 rows += `<tr style="border-bottom: 1px solid #2a2e39;">
