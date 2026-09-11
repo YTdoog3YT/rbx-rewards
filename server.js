@@ -13,6 +13,8 @@ const { Server } = require('socket.io');
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
+console.log("🔥 Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
+
 let discordClient = null;
 if (DISCORD_BOT_TOKEN) {
     discordClient = new Client({
@@ -32,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log('✅ Baza MongoDB podłączona!'))
+    .then(() => console.log('✅ Baza MongoDB podłączona pancernie!'))
     .catch(err => console.error('❌ Błąd bazy:', err));
 
 const UserSchema = new mongoose.Schema({
@@ -51,9 +53,11 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
+// 🔥 NOWE: Dodano pole 'source' (Źródło zarobku) do schematu
 const EarningSchema = new mongoose.Schema({
     username: String,
     amount: Number,
+    source: { type: String, default: 'Survey' }, // 'Survey', 'Promo', 'Referral'
     createdAt: { type: Date, default: Date.now }
 });
 const Earning = mongoose.model('Earning', EarningSchema);
@@ -86,6 +90,8 @@ async function processReferralBonus(username, amountEarned) {
             if (referrer) {
                 referrer.points += bonus;
                 await referrer.save();
+                // 🔥 NOWE: Zapisujemy zysk polecającego do historii!
+                await new Earning({ username: referrer.username, amount: bonus, source: 'Referral' }).save();
             }
         }
     } catch (err) { console.error("Błąd 15%:", err); }
@@ -99,13 +105,12 @@ app.get('/postback', async (req, res) => {
             let user = await User.findOne({ username: userId });
             if (!user) user = new User({ username: userId, points: 0 });
             user.points += amount; await user.save();
-            await new Earning({ username: userId, amount: amount }).save();
+            await new Earning({ username: userId, amount: amount, source: 'Survey' }).save();
             await processReferralBonus(userId, amount);
         } catch (error) {}
     }
 });
 
-// 🔥 POSTBACK: THEOREMREACH
 app.all('/api/theoremreach-postback', async (req, res) => {
     const uid = req.query.user_id || req.body.user_id || req.query.uid || req.body.uid;
     const reward = parseFloat(req.query.reward || req.body.reward);
@@ -120,7 +125,7 @@ app.all('/api/theoremreach-postback', async (req, res) => {
             if (!user) user = new User({ username: uid, points: 0 });
             user.points += reward; 
             await user.save();
-            await new Earning({ username: uid, amount: reward }).save();
+            await new Earning({ username: uid, amount: reward, source: 'Survey' }).save();
             await processReferralBonus(uid, reward);
             return res.status(200).send('1');
         } catch (error) {
@@ -130,7 +135,6 @@ app.all('/api/theoremreach-postback', async (req, res) => {
     res.status(200).send('1');
 });
 
-// POSTBACK: JITSCAPE
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
@@ -143,7 +147,7 @@ app.all('/api/jitscape-postback', async (req, res) => {
         let user = await User.findOne({ username: data.userId });
         if (!user) user = new User({ username: data.userId, points: 0 });
         user.points += pointsToAward; await user.save();
-        await new Earning({ username: data.userId, amount: pointsToAward }).save();
+        await new Earning({ username: data.userId, amount: pointsToAward, source: 'Survey' }).save();
         await processReferralBonus(data.userId, pointsToAward);
     } catch (error) {}
 });
@@ -172,11 +176,9 @@ app.get('/api/latest-payouts', async (req, res) => {
     try { res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 NOWE: Endpoint historii zarobków gracza
 app.get('/api/earning-history/:username', async (req, res) => {
     try {
         const username = req.params.username;
-        // Pobiera 50 ostatnich zarobków danego gracza
         const history = await Earning.find({ username: new RegExp(`^${username}$`, 'i') })
             .sort({ createdAt: -1 })
             .limit(50);
@@ -304,7 +306,8 @@ app.post('/api/redeem-promo', async (req, res) => {
         await user.save();
 
         promo.currentUses += 1; promo.usedBy.push(username); await promo.save();
-        await new Earning({ username, amount: promo.reward }).save();
+        // 🔥 NOWE: Zapisujemy kod promo do historii zarobków
+        await new Earning({ username, amount: promo.reward, source: 'Promo' }).save();
         await processReferralBonus(username, promo.reward);
 
         res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} Robuxów z kodu!` });
