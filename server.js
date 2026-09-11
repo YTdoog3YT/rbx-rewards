@@ -13,8 +13,6 @@ const { Server } = require('socket.io');
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
-console.log("🔥 Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
-
 let discordClient = null;
 if (DISCORD_BOT_TOKEN) {
     discordClient = new Client({
@@ -34,7 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log('✅ Baza MongoDB podłączona pancernie!'))
+    .then(() => console.log('✅ Baza MongoDB podłączona!'))
     .catch(err => console.error('❌ Błąd bazy:', err));
 
 const UserSchema = new mongoose.Schema({
@@ -107,26 +105,15 @@ app.get('/postback', async (req, res) => {
     }
 });
 
-// 🔥 POSTBACK: THEOREMREACH (Poprawiony wg nowej dokumentacji!)
+// 🔥 POSTBACK: THEOREMREACH
 app.all('/api/theoremreach-postback', async (req, res) => {
-    // TR automatycznie dokleja parametry, głównie 'user_id' oraz 'reward'
     const uid = req.query.user_id || req.body.user_id || req.query.uid || req.body.uid;
     const reward = parseFloat(req.query.reward || req.body.reward);
     const isReversal = req.query.reversal === 'true' || req.query.reversal === true;
 
-    // TR wymaga odpowiedzi 200 z tekstem "1" w przypadku sukcesu
-    if (!uid || isNaN(reward)) {
-        console.log("❌ Błąd Postbacku TR - brak nicku lub kwoty. Otrzymano:", req.query);
-        return res.status(400).send('0');
-    }
+    if (!uid || isNaN(reward)) return res.status(400).send('0');
+    if (isReversal) return res.status(200).send('1');
 
-    // Jeśli wpadnie "reversal" (czyli TheoremReach wyczai, że gracz oszukiwał i cofa kasę), ignorujemy dodawanie punktów
-    if (isReversal) {
-        console.log(`⚠️ TR Reversal (Cofnięcie środków) dla gracza: ${uid}, Kwota: ${reward}`);
-        return res.status(200).send('1');
-    }
-
-    // Skoro 'status' jest zdeprecjonowany, polegamy na tym, czy nagroda jest większa od zera
     if (reward > 0) {
         try {
             let user = await User.findOne({ username: uid });
@@ -135,17 +122,15 @@ app.all('/api/theoremreach-postback', async (req, res) => {
             await user.save();
             await new Earning({ username: uid, amount: reward }).save();
             await processReferralBonus(uid, reward);
-            console.log(`✅ Sukces TR: Dodano ${reward} R$ dla gracza ${uid}`);
             return res.status(200).send('1');
         } catch (error) {
-            console.log("❌ Błąd bazy danych przy TR:", error);
             return res.status(500).send('0');
         }
     }
-    
     res.status(200).send('1');
 });
 
+// POSTBACK: JITSCAPE
 app.all('/api/jitscape-postback', async (req, res) => {
     const data = req.method === 'POST' ? req.body : req.query;
     if (!data.txId || data.amountMilliCents === undefined || !data.userId || !data.signature) return res.status(400).send('Missing data');
@@ -185,6 +170,20 @@ app.get('/api/latest-earners', async (req, res) => {
 
 app.get('/api/latest-payouts', async (req, res) => {
     try { res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
+});
+
+// 🔥 NOWE: Endpoint historii zarobków gracza
+app.get('/api/earning-history/:username', async (req, res) => {
+    try {
+        const username = req.params.username;
+        // Pobiera 50 ostatnich zarobków danego gracza
+        const history = await Earning.find({ username: new RegExp(`^${username}$`, 'i') })
+            .sort({ createdAt: -1 })
+            .limit(50);
+        res.json(history);
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
 app.post('/api/support-ticket', async (req, res) => {

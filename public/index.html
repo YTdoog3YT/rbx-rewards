@@ -30,8 +30,13 @@
     
     header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
     .lang-selector select { background: #14171d; color: #fff; border: 1px solid #333947; padding: 8px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; }
+    
     .user-info { display: flex; align-items: center; gap: 15px; justify-content: flex-end; }
-    .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; }
+    
+    /* 🔥 Klikalny licznik Robuxów */
+    .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; cursor: pointer; transition: 0.2s; }
+    .points-badge:hover { background: #323846; box-shadow: 0 0 10px rgba(255, 183, 3, 0.4); transform: scale(1.05); }
+    
     .btn-login, .btn-withdraw { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; }
     .btn-login { background: #00e676; }
     .btn-login:hover { background: #00c853; }
@@ -128,7 +133,6 @@
 </head>
 <body>
 
-  <!-- Pasek nawigacyjny TYLKO dla telefonów -->
   <div class="mobile-nav">
       <div class="nav-item active" id="mob-nav-home" onclick="switchTab('home')">
           <span>🏠</span> <div data-lang="navHomeMob">Home</div>
@@ -167,7 +171,8 @@
             </select>
         </div>
         <div class="user-info">
-          <div class="points-badge">Robux: <span id="userPoints">0</span> R$</div>
+          <!-- 🔥 Tu jest klikalny licznik! -->
+          <div class="points-badge" onclick="openHistoryModal()" title="Click to view history">Robux: <span id="userPoints">0</span> R$</div>
           <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()" data-lang="btnWithdraw">Withdraw</button>
           <button class="btn-login" id="loginBtn" onclick="openLoginModal()" data-lang="btnLogin">Login</button>
         </div>
@@ -205,7 +210,6 @@
                   <h3>Jitscape</h3><p data-lang="jitDesc">Play Roblox games</p>
               </div>
               
-              <!-- 🔥 NOWE THEOREMREACH -->
               <div class="offer-card" onclick="openOfferwall('THEOREMREACH', 'TheoremReach')">
                   <div class="badge badge-hot" style="background: #9d4edd;">EASY 🚀</div>
                   <div class="card-icon">📋</div>
@@ -361,6 +365,28 @@
     </div>
   </div>
 
+  <!-- 🔥 NOWE: Okienko z historią zarobków -->
+  <div class="modal" id="historyModal">
+      <div class="modal-content" style="max-width: 500px;">
+          <h3 style="color: #00e676; margin-bottom: 15px;" data-lang="historyTitle">Earning History</h3>
+          <div style="max-height: 300px; overflow-y: auto; text-align: left; background: #0f1115; border-radius: 8px; border: 1px solid #333; padding: 10px;">
+              <table class="ref-table" style="width: 100%; font-size: 0.9rem;">
+                  <thead>
+                      <tr>
+                          <th data-lang="tableDate">Date</th>
+                          <th data-lang="historyAction">Action</th>
+                          <th data-lang="tableAmount">Amount</th>
+                      </tr>
+                  </thead>
+                  <tbody id="historyTableBody">
+                      <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading...</td></tr>
+                  </tbody>
+              </table>
+          </div>
+          <button style="background: #14171d; color: #888; border: 1px solid #333; padding: 10px; margin-top: 15px; cursor: pointer; width: 100%; border-radius: 6px; font-weight: bold;" onclick="closeHistoryModal()" data-lang="btnCancel">Close</button>
+      </div>
+  </div>
+
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
       <div class="offer-modal-header">
@@ -399,12 +425,13 @@
             globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send",
             modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login",
             modalWithdrawTitle: "Withdraw to PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout",
-            phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something..."
+            phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...",
+            historyTitle: "Earning History", historyEmpty: "No earnings yet!", historyAction: "Action", historySurvey: "Offer Completion", historyPartial: "Screenout (Partial)"
         },
         pl: {
             navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
             navHomeMob: "Główna", navRefMob: "Zaproś", navPromoMob: "Kody", navSupMob: "Pomoc",
-            btnWithdraw: "Wypłać", btnLogin: "Zaloguj", btnCancel: "Anuluj",
+            btnWithdraw: "Wypłać", btnLogin: "Zaloguj", btnCancel: "Zamknij",
             liveEarners: "🔥 Na żywo", earnTitle: "Zarabiaj Robuxy", loadingStats: "Ładowanie...",
             emptyEarners: "Bądź pierwszy, który zarobi Robuxy!",
             startEarning: "Zacznij Zarabiać Robuxy! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.",
@@ -427,7 +454,8 @@
             globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij",
             modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się",
             modalWithdrawTitle: "Wypłata PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę",
-            phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś..."
+            phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...",
+            historyTitle: "Historia Zarobków", historyEmpty: "Brak zarobków na ten moment!", historyAction: "Akcja", historySurvey: "Wypełnienie ankiety", historyPartial: "Dyskwalifikacja (Pocieszenie)"
         },
         de: {
             navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
@@ -455,7 +483,8 @@
             globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen! Bitte sei respektvoll.", btnSend: "Senden",
             modalLoginTitle: "Konto Verbinden", btnConnectConfirm: "Bestätigen",
             modalWithdrawTitle: "PayPal Auszahlung", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen",
-            phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas..."
+            phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas...",
+            historyTitle: "Verdienstverlauf", historyEmpty: "Noch keine Einnahmen!", historyAction: "Aktion", historySurvey: "Umfrage abgeschlossen", historyPartial: "Disqualifikation (Teilweise)"
         },
         ru: {
             navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
@@ -483,7 +512,8 @@
             globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать в чат!", btnSend: "Отправить",
             modalLoginTitle: "Подключить аккаунт", btnConnectConfirm: "Войти",
             modalWithdrawTitle: "Вывод PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Вы получите:", btnReqPayout: "Вывести",
-            phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши..."
+            phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши...",
+            historyTitle: "История доходов", historyEmpty: "Пока нет доходов!", historyAction: "Действие", historySurvey: "Опрос пройден", historyPartial: "Дисквалификация"
         }
     };
 
@@ -689,7 +719,9 @@
         try {
             const response = await fetch(`/api/referral-stats/${username}?period=${period}`);
             const stats = await response.json();
-            if (stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">Empty!</td></tr>`;
+            const lang = document.getElementById('langSelect').value || 'en';
+
+            if (stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">${translations[lang].historyEmpty}</td></tr>`;
             else {
                 let rows = ''; stats.forEach(user => { rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} R$</td></tr>`; });
                 tableBody.innerHTML = rows;
@@ -705,7 +737,9 @@
         try {
             const response = await fetch(`/api/promo-history/${username}`);
             const history = await response.json();
-            if (history.length === 0) tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Empty!</td></tr>`;
+            const lang = document.getElementById('langSelect').value || 'en';
+
+            if (history.length === 0) tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${translations[lang].historyEmpty}</td></tr>`;
             else {
                 let rows = ''; history.forEach(item => { const codeName = item.code || item; const reward = item.reward ? `+${item.reward.toFixed(2)} R$` : "??? R$"; const date = item.date ? new Date(item.date).toLocaleDateString() : "Unknown"; rows += `<tr><td style="color: #a0a0b0;">📅 ${date}</td><td style="font-weight: bold; color: #fff;">🎟️ ${codeName}</td><td style="color: #00e676; font-weight: bold;">${reward}</td></tr>`; });
                 tableBody.innerHTML = rows;
@@ -763,15 +797,59 @@
         } catch (error) {}
     }
 
-    // 🔥 Zmienne globalne dla URL-i do ankiet
+    // 🔥 LOGIKA HISTORII ZAROBKÓW
+    function openHistoryModal() {
+        const username = localStorage.getItem("rbx_username");
+        if (!username) return alert("You must log in first!");
+        document.getElementById('historyModal').style.display = 'flex';
+        loadEarningHistory(username);
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('historyModal').style.display = 'none';
+    }
+
+    async function loadEarningHistory(username) {
+        const tableBody = document.getElementById("historyTableBody");
+        tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        try {
+            const response = await fetch(`/api/earning-history/${username}`);
+            if (!response.ok) throw new Error("Błąd serwera");
+            const history = await response.json();
+            
+            const lang = document.getElementById('langSelect').value || 'en';
+
+            if (!history || history.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703; padding: 20px;">${translations[lang].historyEmpty}</td></tr>`;
+                return;
+            }
+
+            let rows = '';
+            history.forEach(item => {
+                const date = new Date(item.createdAt);
+                const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                // Sprytna detekcja: jak zarobek to grosze (< 1 Robuxa), to pocieszenie/dyskwalifikacja
+                let actionText = item.amount < 1.0 ? translations[lang].historyPartial : translations[lang].historySurvey;
+
+                rows += `<tr style="border-bottom: 1px solid #2a2e39;">
+                            <td style="color: #a0a0b0; font-size: 0.85rem; padding: 10px 5px;">📅 ${timeString}</td>
+                            <td style="color: #fff; padding: 10px 5px;">📋 ${actionText}</td>
+                            <td style="color: #00e676; font-weight: bold; padding: 10px 5px;">+${item.amount.toFixed(2)} R$</td>
+                         </tr>`;
+            });
+            tableBody.innerHTML = rows;
+        } catch (error) {
+            tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Wystąpił błąd ładowania historii.</td></tr>`;
+        }
+    }
+
     let currentUserCpxUrl = "";
     let currentUserJitscapeUrl = "";
     let currentUserTheoremReachUrl = "";
 
     const jitscapePubId = "plc_xHHxjKbb5p5P";
     const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
-    
-    // ⚠️ TUTAJ WPISZ KLUCZ API OD THEOREMREACH
     const theoremReachApiKey = "23948d93f92a592c17bcff445d16";
 
     function checkLoginStatus() {
@@ -797,19 +875,15 @@
 
         fetchUserPoints();
         
-        // --- Generowanie Linków ---
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
         const secureHashParam = md5(savedUser + "-" + appSecureHash);
-        
         currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
         
         const message = jitscapePubId + savedUser;
         const signature = CryptoJS.HmacSHA256(message, jitscapeSecret).toString(CryptoJS.enc.Hex);
         currentUserJitscapeUrl = `https://wall.jitscape.com/?pubId=${jitscapePubId}&userId=${encodeURIComponent(savedUser)}&signature=${signature}`;
         
-        // 🔥 Link do TheoremReach
         currentUserTheoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${theoremReachApiKey}&user_id=${encodeURIComponent(savedUser)}`;
-
       } else {
         document.getElementById("loginBtn").innerText = translations[document.getElementById('langSelect').value || 'en'].btnLogin;
         document.getElementById("loginPrompt").style.display = "block";
