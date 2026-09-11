@@ -54,7 +54,7 @@
     .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 2000; } 
 
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
-    .modal-content input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
+    .modal-content input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
     
     .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
     .offer-card { position: relative; background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 1px solid #2a2e39; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; }
@@ -347,25 +347,37 @@
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
-      <input type="text" id="usernameInput" placeholder="YourUsername123">
+      <input type="text" id="usernameInput" placeholder="YourUsername123" style="margin-bottom: 5px;">
       <button class="btn-action" onclick="saveUsername()" data-lang="btnConnectConfirm">Confirm & Login</button>
       <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeLoginModal()" data-lang="btnCancel">Cancel</button>
     </div>
   </div>
 
+  <!-- 🔥 ZAKTUALIZOWANY MODAL WYPŁATY -->
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Withdraw to PayPal</h3>
       <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 Robux = $0.025 USD</p>
-      <input type="email" id="paypalEmail" placeholder="PayPal Email">
-      <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()">
+      
+      <!-- Dokładny licznik -->
+      <p style="color: #00e676; font-size: 1.05rem; font-weight: bold; margin-top: 15px; margin-bottom: 10px;">
+          <span data-lang="currentBalance">Current Balance:</span> <span id="modalCurrentPoints">0 R$</span>
+      </p>
+
+      <input type="email" id="paypalEmail" placeholder="PayPal Email" style="margin-bottom: 10px;">
+      
+      <!-- Pole wpisywania z przyciskiem MAX obok -->
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.000001" style="margin: 0; flex: 1;">
+          <button style="background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 0 15px; font-weight: bold; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
+      </div>
+      
       <p style="margin: 15px 0; font-size: 1.1rem;"><span data-lang="youWillReceive">You will receive:</span> <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
       <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()" data-lang="btnReqPayout">Request Payout</button>
       <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()" data-lang="btnCancel">Cancel</button>
     </div>
   </div>
 
-  <!-- 🔥 Okienko z historią zarobków -->
   <div class="modal" id="historyModal">
       <div class="modal-content" style="max-width: 500px;">
           <h3 style="color: #00e676; margin-bottom: 15px;" data-lang="historyTitle">Earning History</h3>
@@ -427,7 +439,8 @@
             modalWithdrawTitle: "Withdraw to PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout",
             phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...",
             historyTitle: "Earning History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Offer Completion", historyPartial: "Screenout (Partial)",
-            historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Withdrawal (PayPal)", historyFrom: "from:"
+            historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Withdrawal (PayPal)", historyFrom: "from:",
+            currentBalance: "Current Balance:" 
         },
         pl: {
             navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
@@ -457,7 +470,8 @@
             modalWithdrawTitle: "Wypłata PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę",
             phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...",
             historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Wypełnienie ankiety", historyPartial: "Dyskwalifikacja (Pocieszenie)",
-            historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata (PayPal)", historyFrom: "od:"
+            historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata (PayPal)", historyFrom: "od:",
+            currentBalance: "Aktualny Stan Konta:" 
         },
         de: {
             navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
@@ -487,7 +501,8 @@
             modalWithdrawTitle: "PayPal Auszahlung", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen",
             phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas...",
             historyTitle: "Kontoverlauf", historyEmpty: "Noch keine Aktionen!", historyAction: "Aktion", historySurvey: "Umfrage abgeschlossen", historyPartial: "Disqualifikation (Teilweise)",
-            historyPromo: "Promo-Code", historyRef: "Empfehlungsbonus", historyPayout: "Auszahlung (PayPal)", historyFrom: "von:"
+            historyPromo: "Promo-Code", historyRef: "Empfehlungsbonus", historyPayout: "Auszahlung (PayPal)", historyFrom: "von:",
+            currentBalance: "Aktueller Kontostand:" 
         },
         ru: {
             navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
@@ -506,7 +521,7 @@
             q2: "Как долго идут Robux?", a2: "Баллы зачисляются мгновенно после заданий.",
             q3: "Почему нет опросов?", a3: "Всегда давай честные ответы для получения опросов.",
             refTitle: "Пригласи друзей (15%)", refInfo: "Твоя ссылка", refDesc: "Поделись ссылкой! Получай 15% от их заработка пожизненно!",
-            refCodeLabel: "Твой Код:", refLinkLabel: "Твоя Ссылка:", btnCopy: "📋 Копия",
+            refCodeLabel: "Твой Code:", refLinkLabel: "Твоя Ссылка:", btnCopy: "📋 Копия",
             invitedTitle: "Тебя пригласили?", invitedDesc: "Введи код друга ниже!", btnActivate: "Активировать",
             statsTitle: "Твои доходы", tableFriend: "Друг", tableEarned: "Доход",
             promoTitle: "Промокоды", gotCode: "Есть код?", promoDesc: "Ищи коды в нашем Discord!", btnRedeem: "Активировать",
@@ -517,7 +532,8 @@
             modalWithdrawTitle: "Вывод PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Вы получите:", btnReqPayout: "Вывести",
             phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши...",
             historyTitle: "История аккаунта", historyEmpty: "Пока нет действий!", historyAction: "Действие", historySurvey: "Опрос пройден", historyPartial: "Дисквалификация",
-            historyPromo: "Промокод", historyRef: "Реферальный бонус", historyPayout: "Вывод (PayPal)", historyFrom: "от:"
+            historyPromo: "Промокод", historyRef: "Реферальный бонус", historyPayout: "Вывод (PayPal)", historyFrom: "от:",
+            currentBalance: "Текущий баланс:"
         }
     };
 
@@ -812,7 +828,6 @@
         document.getElementById('historyModal').style.display = 'none';
     }
 
-    // 🔥 ZAKTUALIZOWANA LOGIKA HISTORII (WYPŁATY + SZCZEGÓŁY ZAROBKÓW)
     async function loadEarningHistory(username) {
         const tableBody = document.getElementById("historyTableBody");
         tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
@@ -836,13 +851,11 @@
                 let actionText = "";
                 let amountHtml = "";
 
-                // 🔥 Sprawdzamy czy to WYPŁATA (Payout) czy ZAROBEK (Earning)
                 if (item.recordType === 'payout') {
                     actionText = translations[lang].historyPayout || "Wypłata (PayPal)";
                     const pts = item.pointsWithdrawn || 0;
                     amountHtml = `<td style="color: #ff3333; font-weight: bold; padding: 10px 5px;">-${pts.toFixed(2)} R$</td>`;
                 } else {
-                    // Generowanie tekstu ZAROBKU
                     if (item.source === 'Promo') {
                         actionText = translations[lang].historyPromo;
                         if (item.details) actionText += ` (${item.details})`;
@@ -853,7 +866,6 @@
                             actionText += ` (${fromText} ${item.details})`;
                         }
                     } else {
-                        // Jak jest Survey (albo stary wpis w bazie bez source)
                         actionText = item.amount < 1.0 ? translations[lang].historyPartial : translations[lang].historySurvey;
                     }
                     amountHtml = `<td style="color: #00e676; font-weight: bold; padding: 10px 5px;">+${item.amount.toFixed(2)} R$</td>`;
@@ -953,7 +965,20 @@
       } else { alert("Invalid username!"); }
     }
     
-    function openWithdrawModal() { document.getElementById("withdrawModal").style.display = "flex"; }
+    // 🔥 NOWE ODCZYTANIE BALANSU (DOKŁADNA WARTOŚĆ)
+    function openWithdrawModal() { 
+        document.getElementById("withdrawModal").style.display = "flex"; 
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
+        document.getElementById("modalCurrentPoints").innerText = currentPoints + " R$"; // Brak toFixed, czysta wartość!
+    }
+
+    // 🔥 NOWA FUNKCJA PRZYCISKU "MAX"
+    function setMaxPoints() {
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
+        document.getElementById("withdrawPoints").value = currentPoints;
+        calculateUSD();
+    }
+    
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
         document.getElementById("paypalEmail").value = ""; 
