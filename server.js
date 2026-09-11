@@ -53,11 +53,12 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// 🔥 NOWE: Dodano pole 'source' (Źródło zarobku) do schematu
+// 🔥 NOWE: Pole 'details', żeby trzymać nick poleconego albo nazwę kodu!
 const EarningSchema = new mongoose.Schema({
     username: String,
     amount: Number,
-    source: { type: String, default: 'Survey' }, // 'Survey', 'Promo', 'Referral'
+    source: { type: String, default: 'Survey' }, 
+    details: { type: String, default: '' }, 
     createdAt: { type: Date, default: Date.now }
 });
 const Earning = mongoose.model('Earning', EarningSchema);
@@ -90,8 +91,8 @@ async function processReferralBonus(username, amountEarned) {
             if (referrer) {
                 referrer.points += bonus;
                 await referrer.save();
-                // 🔥 NOWE: Zapisujemy zysk polecającego do historii!
-                await new Earning({ username: referrer.username, amount: bonus, source: 'Referral' }).save();
+                // Zapisuje zysk z nickiem gracza, który wypełnił ankietę!
+                await new Earning({ username: referrer.username, amount: bonus, source: 'Referral', details: username }).save();
             }
         }
     } catch (err) { console.error("Błąd 15%:", err); }
@@ -176,13 +177,27 @@ app.get('/api/latest-payouts', async (req, res) => {
     try { res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
+// 🔥 NOWE: Endpoint scalający zarobki i wypłaty gracza w jedno!
 app.get('/api/earning-history/:username', async (req, res) => {
     try {
         const username = req.params.username;
-        const history = await Earning.find({ username: new RegExp(`^${username}$`, 'i') })
-            .sort({ createdAt: -1 })
-            .limit(50);
-        res.json(history);
+        const regex = new RegExp(`^${username}$`, 'i');
+        
+        // Pobieramy obie historie jako czyste obiekty JS
+        const earnings = await Earning.find({ username: regex }).lean();
+        const payouts = await Payout.find({ username: regex }).lean();
+
+        // Oznaczamy który jest który i sklejamy w jedną tablicę
+        const combined = [
+            ...earnings.map(e => ({ ...e, recordType: 'earning' })),
+            ...payouts.map(p => ({ ...p, recordType: 'payout' }))
+        ];
+
+        // Sortujemy po dacie od najnowszych
+        combined.sort((a, b) => b.createdAt - a.createdAt);
+        
+        // Zwracamy maksymalnie 100 ostatnich akcji
+        res.json(combined.slice(0, 100));
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
     }
@@ -306,8 +321,8 @@ app.post('/api/redeem-promo', async (req, res) => {
         await user.save();
 
         promo.currentUses += 1; promo.usedBy.push(username); await promo.save();
-        // 🔥 NOWE: Zapisujemy kod promo do historii zarobków
-        await new Earning({ username, amount: promo.reward, source: 'Promo' }).save();
+        // Zapisuje info o nazwie użytego kodu!
+        await new Earning({ username, amount: promo.reward, source: 'Promo', details: promo.code }).save();
         await processReferralBonus(username, promo.reward);
 
         res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} Robuxów z kodu!` });

@@ -426,8 +426,8 @@
             modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login",
             modalWithdrawTitle: "Withdraw to PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout",
             phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...",
-            historyTitle: "Earning History", historyEmpty: "No earnings yet!", historyAction: "Action", historySurvey: "Offer Completion", historyPartial: "Screenout (Partial)",
-            historyPromo: "Promo Code", historyRef: "Referral Bonus" // 🔥 NOWE
+            historyTitle: "Earning History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Offer Completion", historyPartial: "Screenout (Partial)",
+            historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Withdrawal (PayPal)", historyFrom: "from:"
         },
         pl: {
             navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
@@ -456,8 +456,8 @@
             modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się",
             modalWithdrawTitle: "Wypłata PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę",
             phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...",
-            historyTitle: "Historia Zarobków", historyEmpty: "Brak zarobków na ten moment!", historyAction: "Akcja", historySurvey: "Wypełnienie ankiety", historyPartial: "Dyskwalifikacja (Pocieszenie)",
-            historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia" // 🔥 NOWE
+            historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Wypełnienie ankiety", historyPartial: "Dyskwalifikacja (Pocieszenie)",
+            historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata (PayPal)", historyFrom: "od:"
         },
         de: {
             navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
@@ -486,8 +486,8 @@
             modalLoginTitle: "Konto Verbinden", btnConnectConfirm: "Bestätigen",
             modalWithdrawTitle: "PayPal Auszahlung", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen",
             phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas...",
-            historyTitle: "Verdienstverlauf", historyEmpty: "Noch keine Einnahmen!", historyAction: "Aktion", historySurvey: "Umfrage abgeschlossen", historyPartial: "Disqualifikation (Teilweise)",
-            historyPromo: "Promo-Code", historyRef: "Empfehlungsbonus" // 🔥 NOWE
+            historyTitle: "Kontoverlauf", historyEmpty: "Noch keine Aktionen!", historyAction: "Aktion", historySurvey: "Umfrage abgeschlossen", historyPartial: "Disqualifikation (Teilweise)",
+            historyPromo: "Promo-Code", historyRef: "Empfehlungsbonus", historyPayout: "Auszahlung (PayPal)", historyFrom: "von:"
         },
         ru: {
             navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
@@ -516,8 +516,8 @@
             modalLoginTitle: "Подключить аккаунт", btnConnectConfirm: "Войти",
             modalWithdrawTitle: "Вывод PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Вы получите:", btnReqPayout: "Вывести",
             phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши...",
-            historyTitle: "История доходов", historyEmpty: "Пока нет доходов!", historyAction: "Действие", historySurvey: "Опрос пройден", historyPartial: "Дисквалификация",
-            historyPromo: "Промокод", historyRef: "Реферальный бонус" // 🔥 NOWE
+            historyTitle: "История аккаунта", historyEmpty: "Пока нет действий!", historyAction: "Действие", historySurvey: "Опрос пройден", historyPartial: "Дисквалификация",
+            historyPromo: "Промокод", historyRef: "Реферальный бонус", historyPayout: "Вывод (PayPal)", historyFrom: "от:"
         }
     };
 
@@ -812,7 +812,7 @@
         document.getElementById('historyModal').style.display = 'none';
     }
 
-    // 🔥 NOWE: System rozpoznający źródło zarobku!
+    // 🔥 ZAKTUALIZOWANA LOGIKA HISTORII (WYPŁATY + SZCZEGÓŁY ZAROBKÓW)
     async function loadEarningHistory(username) {
         const tableBody = document.getElementById("historyTableBody");
         tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
@@ -834,20 +834,35 @@
                 const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
                 let actionText = "";
-                
-                if (item.source === 'Promo') {
-                    actionText = translations[lang].historyPromo;
-                } else if (item.source === 'Referral') {
-                    actionText = translations[lang].historyRef;
+                let amountHtml = "";
+
+                // 🔥 Sprawdzamy czy to WYPŁATA (Payout) czy ZAROBEK (Earning)
+                if (item.recordType === 'payout') {
+                    actionText = translations[lang].historyPayout || "Wypłata (PayPal)";
+                    const pts = item.pointsWithdrawn || 0;
+                    amountHtml = `<td style="color: #ff3333; font-weight: bold; padding: 10px 5px;">-${pts.toFixed(2)} R$</td>`;
                 } else {
-                    // Jak jest Survey, to sprawdzamy czy to grosze za odrzucenie
-                    actionText = item.amount < 1.0 ? translations[lang].historyPartial : translations[lang].historySurvey;
+                    // Generowanie tekstu ZAROBKU
+                    if (item.source === 'Promo') {
+                        actionText = translations[lang].historyPromo;
+                        if (item.details) actionText += ` (${item.details})`;
+                    } else if (item.source === 'Referral') {
+                        actionText = translations[lang].historyRef;
+                        if (item.details) {
+                            const fromText = translations[lang].historyFrom || "od:";
+                            actionText += ` (${fromText} ${item.details})`;
+                        }
+                    } else {
+                        // Jak jest Survey (albo stary wpis w bazie bez source)
+                        actionText = item.amount < 1.0 ? translations[lang].historyPartial : translations[lang].historySurvey;
+                    }
+                    amountHtml = `<td style="color: #00e676; font-weight: bold; padding: 10px 5px;">+${item.amount.toFixed(2)} R$</td>`;
                 }
 
                 rows += `<tr style="border-bottom: 1px solid #2a2e39;">
                             <td style="color: #a0a0b0; font-size: 0.85rem; padding: 10px 5px;">📅 ${timeString}</td>
                             <td style="color: #fff; padding: 10px 5px;">📋 ${actionText}</td>
-                            <td style="color: #00e676; font-weight: bold; padding: 10px 5px;">+${item.amount.toFixed(2)} R$</td>
+                            ${amountHtml}
                          </tr>`;
             });
             tableBody.innerHTML = rows;
