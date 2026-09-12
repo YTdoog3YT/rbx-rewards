@@ -8,12 +8,19 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 // -----------------------------------------------------
+// 🔑 KLUCZE PAYPAL API (Live)
+// -----------------------------------------------------
+const PAYPAL_CLIENT_ID = "BAA6sPp3pOFgvRUdsDG_40QltBUQhkbVPSyCOZ0-S2wTUsBBPfdWE67Gb0aDgzOC73zpYSuOo45ayzdJ_I";
+const PAYPAL_SECRET = "EBl6BIaucpcYWrzMYXHQUEU23Vqdg-CZy9HLUQew0XhYGoLPTLmye1Hd9JNavcyHWAiz8CveAkOzLUgv";
+const PAYPAL_API_BASE = "https://api-m.paypal.com";
+
+// -----------------------------------------------------
 // 🤖 KONFIGURACJA BOTA DISCORD
 // -----------------------------------------------------
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
-console.log("🔥 Czy serwer widzi token?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
+console.log("🔥 Czy serwer widzi token Discorda?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
 
 let discordClient = null;
 if (DISCORD_BOT_TOKEN) {
@@ -53,7 +60,6 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// 🔥 NOWE: Pole 'details', żeby trzymać nick poleconego albo nazwę kodu!
 const EarningSchema = new mongoose.Schema({
     username: String,
     amount: Number,
@@ -68,7 +74,7 @@ const PayoutSchema = new mongoose.Schema({
     paypalEmail: String,
     pointsWithdrawn: Number,
     usdAmount: Number,
-    status: { type: String, default: 'Pending' },
+    status: { type: String, default: 'Completed' }, // Od teraz lecą z automatu!
     createdAt: { type: Date, default: Date.now }
 });
 const Payout = mongoose.model('Payout', PayoutSchema);
@@ -91,11 +97,63 @@ async function processReferralBonus(username, amountEarned) {
             if (referrer) {
                 referrer.points += bonus;
                 await referrer.save();
-                // Zapisuje zysk z nickiem gracza, który wypełnił ankietę!
                 await new Earning({ username: referrer.username, amount: bonus, source: 'Referral', details: username }).save();
             }
         }
     } catch (err) { console.error("Błąd 15%:", err); }
+}
+
+// -----------------------------------------------------
+// 💸 FUNKCJA: AUTOMATYCZNA WYPŁATA PAYPAL
+// -----------------------------------------------------
+async function sendPayPalPayout(email, amountUSD) {
+    // 1. Autoryzacja - pobieranie tokenu z PayPala
+    const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
+    const tokenRes = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials'
+    });
+
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) {
+        console.error("❌ Błąd Tokenu PayPal:", tokenData);
+        throw new Error("Błąd autoryzacji serwera PayPal.");
+    }
+
+    // 2. Wysłanie zlecenia przelewu na podanego maila
+    const payoutBody = {
+        sender_batch_header: {
+            sender_batch_id: `RBX_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+            email_subject: "Wypłata gotowa! Dzięki za korzystanie z RBX Rewards!"
+        },
+        items: [{
+            recipient_type: "EMAIL",
+            amount: { value: amountUSD.toFixed(2), currency: "USD" },
+            note: "Twoja wypłata za Robuxy została zrealizowana automatycznie. Poleć nas znajomym!",
+            receiver: email
+        }]
+    };
+
+    const payoutRes = await fetch(`${PAYPAL_API_BASE}/v1/payments/payouts`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenData.access_token}`
+        },
+        body: JSON.stringify(payoutBody)
+    });
+
+    const payoutData = await payoutRes.json();
+    if (payoutRes.ok || payoutRes.status === 201) {
+        return payoutData; // Przelew zlecony!
+    } else {
+        console.error("❌ Odrzucono Wypłatę:", JSON.stringify(payoutData));
+        throw new Error(payoutData.message || "Odrzucono przez PayPal (Brak środków lub zablokowane API).");
+    }
 }
 
 app.get('/postback', async (req, res) => {
@@ -177,26 +235,18 @@ app.get('/api/latest-payouts', async (req, res) => {
     try { res.json(await Payout.find().sort({ createdAt: -1 }).limit(5)); } catch (error) { res.json([]); }
 });
 
-// 🔥 NOWE: Endpoint scalający zarobki i wypłaty gracza w jedno!
 app.get('/api/earning-history/:username', async (req, res) => {
     try {
         const username = req.params.username;
         const regex = new RegExp(`^${username}$`, 'i');
-        
-        // Pobieramy obie historie jako czyste obiekty JS
         const earnings = await Earning.find({ username: regex }).lean();
         const payouts = await Payout.find({ username: regex }).lean();
 
-        // Oznaczamy który jest który i sklejamy w jedną tablicę
         const combined = [
             ...earnings.map(e => ({ ...e, recordType: 'earning' })),
             ...payouts.map(p => ({ ...p, recordType: 'payout' }))
         ];
-
-        // Sortujemy po dacie od najnowszych
         combined.sort((a, b) => b.createdAt - a.createdAt);
-        
-        // Zwracamy maksymalnie 100 ostatnich akcji
         res.json(combined.slice(0, 100));
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
@@ -206,35 +256,46 @@ app.get('/api/earning-history/:username', async (req, res) => {
 app.post('/api/support-ticket', async (req, res) => {
     try {
         const { username, message } = req.body;
-        if (!username || !message) return res.status(400).json({ error: 'Brak wymaganych danych w formularzu.' });
-        
+        if (!username || !message) return res.status(400).json({ error: 'Brak wymaganych danych.' });
         if (discordClient && discordClient.isReady()) {
             const targetChannel = discordClient.channels.cache.find(c => c.name === 'support-tickets');
             if (targetChannel && targetChannel.isTextBased()) {
-                await targetChannel.send(`🚨 **NOWY TICKET ZGŁOSZENIOWY** 🚨\n👤 **Od Gracza:** \`${username}\`\n📝 **Wiadomość:**\n> ${message}`);
-                return res.json({ success: true, message: 'Ticket pomyślnie wysłany do Administracji!' });
-            } else {
-                return res.status(500).json({ error: 'Błąd konfiguracji: Bot Discord nie widzi kanału "support-tickets".' });
+                await targetChannel.send(`🚨 **NOWY TICKET** 🚨\n👤 **Od:** \`${username}\`\n📝 **Wiadomość:**\n> ${message}`);
+                return res.json({ success: true, message: 'Ticket pomyślnie wysłany!' });
             }
         }
-        return res.status(500).json({ error: 'Bot Discord jest obecnie offline.' });
-    } catch (error) {
-        return res.status(500).json({ error: 'Wewnętrzny błąd serwera. Spróbuj ponownie później.' });
-    }
+        return res.status(500).json({ error: 'Bot Discord jest offline.' });
+    } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
+// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY Z AUTOMATEM PAYPAL
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
-    if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Invalid data.' });
+    if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Błędne dane.' });
+    
     try {
         const user = await User.findOne({ username: username });
-        if (!user || user.points < points) return res.status(400).json({ error: 'Not enough Robux!' });
+        if (!user || user.points < points) return res.status(400).json({ error: 'Nie masz tylu Robuxów!' });
         
+        const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
+
+        // 1. Zanim odejmiemy Robuxy z bazy, odpalamy API PayPala żeby wysłało hajs!
+        try {
+            await sendPayPalPayout(paypalEmail, usdAmount);
+        } catch (paypalError) {
+            console.error("Wypłata zatrzymana przed odjęciem punktów:", paypalError.message);
+            // Jeśli Paypal zablokuje, zwracamy graczowi info i zatrzymujemy proces!
+            return res.status(500).json({ error: "Błąd serwera płatności (Możliwy brak środków lub blokada API na koncie firmy). Zgłoś to na Discordzie!" });
+        }
+
+        // 2. Hajs wysłany! Odejmujemy graczowi punkty z konta
         user.points -= points; 
         await user.save();
-        const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
-        await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount }).save();
+        
+        // 3. Zapisujemy w historii jako Completed
+        await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount, status: 'Completed' }).save();
 
+        // 4. Powiadomienie na Discordzie o pełnym automacie
         if (discordClient && discordClient.isReady()) {
             try {
                 let plnText = "";
@@ -247,18 +308,16 @@ app.post('/api/withdraw', async (req, res) => {
                         const plnAmount = (usdAmount * paypalEstimatedRate).toFixed(2);
                         plnText = ` - ~${plnAmount} zł`;
                     }
-                } catch (apiErr) {
-                    console.log("Brak API walutowego.");
-                }
+                } catch (e) {}
 
                 const targetChannel = discordClient.channels.cache.find(c => c.name === 'robux');
                 if (targetChannel && targetChannel.isTextBased()) {
-                    await targetChannel.send(`💸 **NOWA WYPŁATA ZLECONA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount}${plnText})\n📧 E-mail (PayPal): **${paypalEmail}**`);
+                    await targetChannel.send(`💸 **AUTOMATYCZNA WYPŁATA ZREALIZOWANA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount}${plnText})\n📧 PayPal: **${paypalEmail}**\n✅ *Pieniądze zostały wysłane z PayPala.*`);
                 }
             } catch (err) { console.error("Błąd powiadomienia:", err); }
         }
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
-    } catch (error) { res.status(500).json({ error: 'Server error.' }); }
+    } catch (error) { res.status(500).json({ error: 'Błąd głównego serwera.' }); }
 });
 
 app.post('/api/redeem-code', async (req, res) => {
@@ -321,7 +380,6 @@ app.post('/api/redeem-promo', async (req, res) => {
         await user.save();
 
         promo.currentUses += 1; promo.usedBy.push(username); await promo.save();
-        // Zapisuje info o nazwie użytego kodu!
         await new Earning({ username, amount: promo.reward, source: 'Promo', details: promo.code }).save();
         await processReferralBonus(username, promo.reward);
 
@@ -363,7 +421,6 @@ if (discordClient) {
 🔹 \`!kod <NAZWA> <PUNKTY> <MAX_OSÓB>\`
 🔹 \`!kody\`
 🔹 \`!usunkod <NAZWA_KODU>\`
-🔹 \`!resetdaily <NICK_ROBLOX>\`
 🔹 \`!komendy\`
             `;
             return message.reply(helpText);
