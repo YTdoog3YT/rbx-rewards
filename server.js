@@ -74,7 +74,7 @@ const PayoutSchema = new mongoose.Schema({
     paypalEmail: String,
     pointsWithdrawn: Number,
     usdAmount: Number,
-    status: { type: String, default: 'Completed' }, // Od teraz lecą z automatu!
+    status: { type: String, default: 'Completed' },
     createdAt: { type: Date, default: Date.now }
 });
 const Payout = mongoose.model('Payout', PayoutSchema);
@@ -107,7 +107,6 @@ async function processReferralBonus(username, amountEarned) {
 // 💸 FUNKCJA: AUTOMATYCZNA WYPŁATA PAYPAL
 // -----------------------------------------------------
 async function sendPayPalPayout(email, amountUSD) {
-    // 1. Autoryzacja - pobieranie tokenu z PayPala
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
     const tokenRes = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
         method: 'POST',
@@ -124,7 +123,6 @@ async function sendPayPalPayout(email, amountUSD) {
         throw new Error("Błąd autoryzacji serwera PayPal.");
     }
 
-    // 2. Wysłanie zlecenia przelewu na podanego maila
     const payoutBody = {
         sender_batch_header: {
             sender_batch_id: `RBX_${Date.now()}_${Math.floor(Math.random()*1000)}`,
@@ -149,7 +147,7 @@ async function sendPayPalPayout(email, amountUSD) {
 
     const payoutData = await payoutRes.json();
     if (payoutRes.ok || payoutRes.status === 201) {
-        return payoutData; // Przelew zlecony!
+        return payoutData;
     } else {
         console.error("❌ Odrzucono Wypłatę:", JSON.stringify(payoutData));
         throw new Error(payoutData.message || "Odrzucono przez PayPal (Brak środków lub zablokowane API).");
@@ -268,7 +266,7 @@ app.post('/api/support-ticket', async (req, res) => {
     } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY Z AUTOMATEM PAYPAL
+// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY Z NOWYM LOGO W EMBEDZIE DISCORDA
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Błędne dane.' });
@@ -279,23 +277,18 @@ app.post('/api/withdraw', async (req, res) => {
         
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
 
-        // 1. Zanim odejmiemy Robuxy z bazy, odpalamy API PayPala żeby wysłało hajs!
         try {
             await sendPayPalPayout(paypalEmail, usdAmount);
         } catch (paypalError) {
             console.error("Wypłata zatrzymana przed odjęciem punktów:", paypalError.message);
-            // Jeśli Paypal zablokuje, zwracamy graczowi info i zatrzymujemy proces!
             return res.status(500).json({ error: "Błąd serwera płatności (Możliwy brak środków lub blokada API na koncie firmy). Zgłoś to na Discordzie!" });
         }
 
-        // 2. Hajs wysłany! Odejmujemy graczowi punkty z konta
         user.points -= points; 
         await user.save();
         
-        // 3. Zapisujemy w historii jako Completed
         await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount, status: 'Completed' }).save();
 
-        // 4. Powiadomienie na Discordzie o pełnym automacie
         if (discordClient && discordClient.isReady()) {
             try {
                 let plnText = "";
@@ -312,7 +305,20 @@ app.post('/api/withdraw', async (req, res) => {
 
                 const targetChannel = discordClient.channels.cache.find(c => c.name === 'robux');
                 if (targetChannel && targetChannel.isTextBased()) {
-                    await targetChannel.send(`💸 **AUTOMATYCZNA WYPŁATA ZREALIZOWANA!**\n👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount}${plnText})\n📧 PayPal: **${paypalEmail}**\n✅ *Pieniądze zostały wysłane z PayPala.*`);
+                    await targetChannel.send({
+                        embeds: [{
+                            title: "💸 AUTOMATYCZNA WYPŁATA ZREALIZOWANA!",
+                            description: `👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount}${plnText})\n📧 PayPal: **${paypalEmail}**\n\n✅ *Pieniądze zostały automatycznie wysłane z PayPala.*`,
+                            color: 0x00FFAA,
+                            thumbnail: {
+                                url: "https://rbx-rewards.onrender.com/logo.png"
+                            },
+                            timestamp: new Date().toISOString(),
+                            footer: {
+                                text: "RBX-Rewards System"
+                            }
+                        }]
+                    });
                 }
             } catch (err) { console.error("Błąd powiadomienia:", err); }
         }
