@@ -15,8 +15,10 @@
 }
 
 .nav-logo {
-    height: 50px; 
-    width: auto;
+    width: 130px; /* Większa szerokość, żeby ładnie wypełniło pasek */
+    height: auto;
+    display: block;
+    margin: 10px auto 25px auto; /* Automatyczne wyśrodkowanie i ładny odstęp od przycisku Home */
     object-fit: contain;
     transition: transform 0.2s ease-in-out;
 }
