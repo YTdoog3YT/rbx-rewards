@@ -47,7 +47,6 @@
     .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
     .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
     
-    .gradient-banner { background: linear-gradient(135deg, #181b22 0%, #0f1115 100%); border: 1px solid #2a2e39; border-left: 4px solid #00e676; border-radius: 12px; padding: 35px 25px; text-align: center; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
     .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-block; margin-top: 15px; }
     .btn-action:hover { background: #00c853; }
     
@@ -175,7 +174,6 @@
             </select>
         </div>
         <div class="user-info">
-          <!-- 🔥 Tu jest klikalny licznik! -->
           <div class="points-badge" onclick="openHistoryModal()" title="Click to view history">Robux: <span id="userPoints">0</span> R$</div>
           <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()" data-lang="btnWithdraw">Withdraw</button>
           <button class="btn-login" id="loginBtn" onclick="openLoginModal()" data-lang="btnLogin">Login</button>
@@ -191,10 +189,16 @@
 
         <h2 class="section-title" data-lang="earnTitle">Earn Robux</h2>
 
-        <div id="loginPrompt" class="gradient-banner">
-          <h3 style="color: #fff; font-size: 1.6rem; letter-spacing: 1px;" data-lang="startEarning">Start Earning Free Robux! 💎</h3>
-          <p style="color: #b0b5c0; margin-top: 10px; font-size: 1.05rem;" data-lang="startDesc">Enter your Roblox username below so we know where to send your rewards. No passwords required.</p>
-          <button class="btn-action" style="padding: 15px 35px; font-size: 1.1rem; margin-top: 20px;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
+        <!-- 🔥 TUTAJ WJEŻDŻA NOWY BANER LOGOWANIA ZE STYLEM Z CSSa -->
+        <div id="loginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 30px 0;">
+            <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
+                <div class="logo-container" style="margin-bottom: 25px;">
+                    <img src="/logo.png" alt="RBX Rewards Logo" class="login-banner-logo" style="max-width: 180px; filter: drop-shadow(0px 0px 15px rgba(0, 230, 118, 0.6));">
+                </div>
+                <h3 style="color: #fff; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 12px;" data-lang="startEarning">Start Earning Free Robux! 💎</h3>
+                <p style="color: #b0b5c0; font-size: 1.05rem; margin-bottom: 25px; line-height: 1.5;" data-lang="startDesc">Enter your Roblox username below so we know where to send your rewards. No passwords required.</p>
+                <button class="btn-action" style="padding: 15px; font-size: 1.1rem; width: 100%; border-radius: 8px;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
+            </div>
         </div>
 
         <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
@@ -357,20 +361,17 @@
     </div>
   </div>
 
-  <!-- 🔥 ZAKTUALIZOWANY MODAL WYPŁATY -->
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Withdraw to PayPal</h3>
       <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 Robux = $0.025 USD</p>
       
-      <!-- Dokładny licznik -->
       <p style="color: #00e676; font-size: 1.05rem; font-weight: bold; margin-top: 15px; margin-bottom: 10px;">
           <span data-lang="currentBalance">Current Balance:</span> <span id="modalCurrentPoints">0 R$</span>
       </p>
 
       <input type="email" id="paypalEmail" placeholder="PayPal Email" style="margin-bottom: 10px;">
       
-      <!-- Pole wpisywania z przyciskiem MAX obok -->
       <div style="display: flex; gap: 10px; margin-bottom: 15px;">
           <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.000001" style="margin: 0; flex: 1;">
           <button style="background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 0 15px; font-weight: bold; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
@@ -969,14 +970,12 @@
       } else { alert("Invalid username!"); }
     }
     
-    // 🔥 NOWE ODCZYTANIE BALANSU (DOKŁADNA WARTOŚĆ)
     function openWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "flex"; 
         const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
-        document.getElementById("modalCurrentPoints").innerText = currentPoints + " R$"; // Brak toFixed, czysta wartość!
+        document.getElementById("modalCurrentPoints").innerText = currentPoints + " R$";
     }
 
-    // 🔥 NOWA FUNKCJA PRZYCISKU "MAX"
     function setMaxPoints() {
         const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
         document.getElementById("withdrawPoints").value = currentPoints;

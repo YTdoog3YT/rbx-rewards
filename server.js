@@ -20,7 +20,6 @@ const PAYPAL_API_BASE = "https://api-m.paypal.com";
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
-// ID KANAŁÓW OD CIEBIE:
 const KANAL_PUBLICZNY_ID = "1547480985506029639";
 const KANAL_ADMIN_ID = "1548618275083264060";
 const KANAL_ALARMOWY_ID = "1548618577567809666";
@@ -109,9 +108,6 @@ async function processReferralBonus(username, amountEarned) {
     } catch (err) { console.error("Błąd 15%:", err); }
 }
 
-// -----------------------------------------------------
-// 💸 FUNKCJA: AUTOMATYCZNA WYPŁATA PAYPAL
-// -----------------------------------------------------
 async function sendPayPalPayout(email, amountUSD) {
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
     const tokenRes = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
@@ -272,7 +268,6 @@ app.post('/api/support-ticket', async (req, res) => {
     } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY Z ROZDZIELENIEM KANAŁÓW I OBLICZENIEM ZYSKU
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Błędne dane.' });
@@ -287,8 +282,6 @@ app.post('/api/withdraw', async (req, res) => {
             await sendPayPalPayout(paypalEmail, usdAmount);
         } catch (paypalError) {
             console.error("Wypłata zatrzymana przed odjęciem punktów:", paypalError.message);
-            
-            // WYSYŁKA ALARMU NA DISCORD (OZNACZA @here)
             if (discordClient && discordClient.isReady()) {
                 const alarmChannel = discordClient.channels.cache.get(KANAL_ALARMOWY_ID);
                 if (alarmChannel && alarmChannel.isTextBased()) {
@@ -317,11 +310,9 @@ app.post('/api/withdraw', async (req, res) => {
                     }
                 } catch (e) {}
 
-                // OBLICZANIE ZYSKU NA CZYSTO 
                 const estimatedRevenue = points / 15;
                 const netProfit = estimatedRevenue - usdAmount;
 
-                // 1. KANAŁ PUBLICZNY (Tylko czyste info dla graczy)
                 const publicChannel = discordClient.channels.cache.get(KANAL_PUBLICZNY_ID);
                 if (publicChannel && publicChannel.isTextBased()) {
                     await publicChannel.send({
@@ -336,7 +327,6 @@ app.post('/api/withdraw', async (req, res) => {
                     });
                 }
 
-                // 2. KANAŁ DLA ADMINISTRACJI (Pełne logi z zyskiem na czysto i mailem)
                 const adminChannel = discordClient.channels.cache.get(KANAL_ADMIN_ID);
                 if (adminChannel && adminChannel.isTextBased()) {
                     await adminChannel.send({
@@ -442,7 +432,7 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
 // -----------------------------------------------------
-// 💰 FUNKCJA: AKTUALIZACJA SALDA CO 15 MINUT NA KANALE
+// 💰 FUNKCJA: AKTUALIZACJA SALDA NA KANALE (CO 3 GODZINY)
 // -----------------------------------------------------
 async function updateBalanceMessage() {
     try {
@@ -462,7 +452,6 @@ async function updateBalanceMessage() {
         let detailsStr = "";
         
         if (tokenData.access_token) {
-            // ZAPYTANIE BEZ FILTRÓW - POBIERA WSZYSTKO JAK LECI
             const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances`, {
                 headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
             });
@@ -483,17 +472,14 @@ async function updateBalanceMessage() {
                         const curr = b.currency || (b.total_balance && b.total_balance.currency_code);
                         if (!curr) continue;
 
-                        // Wyciągamy całkowite saldo (nawet jak coś jest pending)
                         const valTotal = b.total_balance ? parseFloat(b.total_balance.value) : 0;
                         const valAvailable = b.available_balance ? parseFloat(b.available_balance.value) : 0;
                         
-                        // WYPISUJEMY DOSŁOWNIE KAŻDĄ WALUTĘ ZNALEZIONĄ NA KONCIE
                         detailsStr += `\n🔸 **${valTotal.toFixed(2)} ${curr}**`;
                         if (valTotal !== valAvailable) {
                             detailsStr += ` *(Dostępne na już: ${valAvailable.toFixed(2)})*`;
                         }
 
-                        // PRZELICZANIE NA USD DO SUMY
                         if (curr === 'USD') {
                             totalEstimatedUSD += valTotal;
                         } else if (rates[curr]) {
@@ -515,7 +501,8 @@ async function updateBalanceMessage() {
 
         const embed = {
             title: "🏦 Aktualne Saldo PayPal",
-            description: `💰 **Szacowana łączna wartość:** \`${balanceStr}\`\n${detailsStr !== "" ? `\n**Rozbicie na portfele:**${detailsStr}\n` : ""}\n🔄 *Wiadomość odświeża się sama co 15 minut, żeby zapobiec blokadom PayPala i Discorda.*`,
+            // Zmieniono tekst na dole, żeby informował o 3 godzinach opóźnienia PayPala
+            description: `💰 **Szacowana łączna wartość:** \`${balanceStr}\`\n${detailsStr !== "" ? `\n**Rozbicie na portfele:**${detailsStr}\n` : ""}\n🔄 *API PayPala odświeża te dane maksymalnie co 3 godziny.*`,
             color: embedColor,
             timestamp: new Date().toISOString()
         };
@@ -539,7 +526,8 @@ if (discordClient) {
         console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza systemem!`); 
         
         updateBalanceMessage();
-        setInterval(updateBalanceMessage, 900000); 
+        // Zmieniono interwał na 3 godziny (10800000 ms)
+        setInterval(updateBalanceMessage, 10800000); 
     });
 
     discordClient.on('messageCreate', async message => {
