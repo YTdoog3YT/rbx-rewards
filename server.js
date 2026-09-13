@@ -10,8 +10,8 @@ const { Server } = require('socket.io');
 // -----------------------------------------------------
 // 🔑 KLUCZE PAYPAL API (Live)
 // -----------------------------------------------------
-const PAYPAL_CLIENT_ID = "BAA6sPp3pOFgvRUdsDG_40QltBUQhkbVPSyCOZ0-S2wTUsBBPfdWE67Gb0aDgzOC73zpYSuOo45ayzdJ_I";
-const PAYPAL_SECRET = "EBl6BIaucpcYWrzMYXHQUEU23Vqdg-CZy9HLUQew0XhYGoLPTLmye1Hd9JNavcyHWAiz8CveAkOzLUgv";
+const PAYPAL_CLIENT_ID = "BAAGR8OP_rMS5K6OGviXl4mHaC4_1YBS8BK2pHeBgjMujM7ac5RgPcFwZYJOeSnIRpgypw6hqn3cEeKSPE";
+const PAYPAL_SECRET = "ELOtGxTd_DhXSkDOu3F7wjEQBjUa2DTw0JIGTa5L58GKFyQ2FFkPNlIL-tBReV-Jrd1iIxxpC_3XiJOT";
 const PAYPAL_API_BASE = "https://api-m.paypal.com";
 
 // -----------------------------------------------------
