@@ -462,7 +462,7 @@ async function updateBalanceMessage() {
         let detailsStr = "";
         
         if (tokenData.access_token) {
-            // Pobieramy całe konto bez limitowania waluty
+            // ZAPYTANIE BEZ FILTRÓW - POBIERA WSZYSTKO JAK LECI
             const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances`, {
                 headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
             });
@@ -473,7 +473,6 @@ async function updateBalanceMessage() {
                     let totalEstimatedUSD = 0;
                     let rates = {};
                     
-                    // Pobieranie kursów walut dla dokładnego oszacowania
                     try {
                         const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
                         const rateData = await rateRes.json();
@@ -481,21 +480,24 @@ async function updateBalanceMessage() {
                     } catch (e) {}
 
                     for (const b of balData.balances) {
-                        const valObj = b.available_balance || b.total_balance;
-                        if (!valObj) continue;
-                        
-                        const val = parseFloat(valObj.value);
-                        const curr = valObj.currency_code;
+                        const curr = b.currency || (b.total_balance && b.total_balance.currency_code);
+                        if (!curr) continue;
 
-                        // Wypisujemy szczegóły dla każdej waluty > 0 (oraz zawsze pokazujemy dolary)
-                        if (val > 0 || curr === 'USD') {
-                            detailsStr += `\n🔸 **${val.toFixed(2)} ${curr}**`;
+                        // Wyciągamy całkowite saldo (nawet jak coś jest pending)
+                        const valTotal = b.total_balance ? parseFloat(b.total_balance.value) : 0;
+                        const valAvailable = b.available_balance ? parseFloat(b.available_balance.value) : 0;
+                        
+                        // WYPISUJEMY DOSŁOWNIE KAŻDĄ WALUTĘ ZNALEZIONĄ NA KONCIE
+                        detailsStr += `\n🔸 **${valTotal.toFixed(2)} ${curr}**`;
+                        if (valTotal !== valAvailable) {
+                            detailsStr += ` *(Dostępne na już: ${valAvailable.toFixed(2)})*`;
                         }
 
+                        // PRZELICZANIE NA USD DO SUMY
                         if (curr === 'USD') {
-                            totalEstimatedUSD += val;
+                            totalEstimatedUSD += valTotal;
                         } else if (rates[curr]) {
-                            totalEstimatedUSD += (val / rates[curr]);
+                            totalEstimatedUSD += (valTotal / rates[curr]);
                         }
                     }
                     
