@@ -372,9 +372,10 @@
 
       <input type="email" id="paypalEmail" placeholder="PayPal Email" style="margin-bottom: 10px;">
       
-      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-          <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.01" style="flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; height: 42px; box-sizing: border-box;">
-          <button style="flex-shrink: 0; background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 0 20px; font-weight: bold; cursor: pointer; transition: 0.2s; height: 42px; box-sizing: border-box;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
+      <!-- NAPRAWIONY KONTENER PRZYCISKU MAX -->
+      <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
+          <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box; min-width: 50%;">
+          <button style="width: auto; flex: 0 0 auto; background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 10px 20px; font-weight: bold; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
       </div>
       
       <p style="margin: 15px 0; font-size: 1.1rem;"><span data-lang="youWillReceive">You will receive:</span> <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
