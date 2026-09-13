@@ -20,8 +20,10 @@ const PAYPAL_API_BASE = "https://api-m.paypal.com";
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
-const KANAL_PUBLICZNY_ID = "1547480985506029639";
-const KANAL_ADMIN_ID = "1548618275083264060";
+// ID KANAŁÓW:
+const KANAL_PUBLICZNY_ID = "1547480985506029639"; // Tylko chwalenie się wypłatami
+const KANAL_ADMIN_ID = "1548618275083264060"; // Ogólne logi
+const KANAL_ZLECENIA_ID = "1548683873012162601"; // NOWY KANAŁ: Zlecenia wypłat z mailem
 const KANAL_ALARMOWY_ID = "1548618577567809666";
 const KANAL_SALDO_ID = "1548618640557998111";
 
@@ -220,7 +222,7 @@ app.post('/api/support-ticket', async (req, res) => {
     } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY (TRYB RĘCZNY - BEZ API)
+// 🔥 ŚCIEŻKA WYPŁATY Z ROZDZIELONYMI POWIADOMIENIAMI
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Błędne dane.' });
@@ -231,37 +233,36 @@ app.post('/api/withdraw', async (req, res) => {
         
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
 
-        // Odejmujemy punkty od razu (bo zlecamy ręczną wypłatę)
+        // Odejmujemy punkty od razu
         user.points -= points; 
         await user.save();
         
-        // Zapisujemy wypłatę w logach
+        // Zapisujemy w logach bazy jako oczekująca ręczna
         await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save();
 
         if (discordClient && discordClient.isReady()) {
             try {
-                // Powiadomienie na kanale publicznym
+                // 1. KANAŁ PUBLICZNY (Nakręcanie graczy - TYLKO NICK I KWOTA)
                 const publicChannel = discordClient.channels.cache.get(KANAL_PUBLICZNY_ID);
                 if (publicChannel && publicChannel.isTextBased()) {
                     await publicChannel.send({
                         embeds: [{
-                            title: "💸 NOWE ZLECENIE WYPŁATY!",
-                            description: `👤 Gracz: **${username}** zlecił wypłatę na kwotę **${points} R$**\n\n⏳ *Pieniądze zostaną wkrótce wysłane przez Administrację!*`,
+                            title: "💸 NOWA WYPŁATA W TOKU!",
+                            description: `👤 Gracz: **${username}**\n💰 Kwota: **${points} R$**\n\n⏳ *Administracja właśnie realizuje ten przelew!*`,
                             color: 0x00FFAA,
                             thumbnail: { url: "https://rbx-rewards.onrender.com/logo.png" },
-                            timestamp: new Date().toISOString(),
-                            footer: { text: "RBX-Rewards System" }
+                            timestamp: new Date().toISOString()
                         }]
                     });
                 }
 
-                // Powiadomienie na kanale ADMIN (dla Ciebie, żebyś wiedział komu przelać)
-                const adminChannel = discordClient.channels.cache.get(KANAL_ADMIN_ID);
-                if (adminChannel && adminChannel.isTextBased()) {
-                    await adminChannel.send({
+                // 2. NOWY KANAŁ ADMINISTRACJI Z ZLECENIAMI (Pełne dane do przelewu ręcznego)
+                const zleceniaChannel = discordClient.channels.cache.get(KANAL_ZLECENIA_ID);
+                if (zleceniaChannel && zleceniaChannel.isTextBased()) {
+                    await zleceniaChannel.send({
                         embeds: [{
-                            title: "⚠️ RĘCZNE ZLECENIE WYPŁATY",
-                            description: `**Gracz:** ${username}\n**Email PayPal:** \`${paypalEmail}\`\n\n💰 **Kwota Robux:** ${points} R$\n💵 **Do przelewu ręcznego:** **$${usdAmount.toFixed(2)}**\n\n*Skopiuj email i wyślij pieniądze przez panel PayPal.*`,
+                            title: "⚠️ NOWE ZLECENIE DO OPŁACENIA",
+                            description: `**Gracz:** ${username}\n**Email PayPal:** \`${paypalEmail}\`\n\n💰 **Zlecone Robuxy:** ${points} R$\n💵 **Do przelewu (USD):** **$${usdAmount.toFixed(2)}**\n\n*Skopiuj adres email, wejdź na PayPal i wyślij pieniądze ręcznie.*`,
                             color: 0xFF9900, 
                             timestamp: new Date().toISOString()
                         }]
