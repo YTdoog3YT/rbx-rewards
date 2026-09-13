@@ -8,7 +8,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 // -----------------------------------------------------
-// 🔑 KLUCZE PAYPAL API (Live)
+// 🔑 KLUCZE PAYPAL API (Live) - ZOSTAWIAMY DO ODCZYTU SALDA
 // -----------------------------------------------------
 const PAYPAL_CLIENT_ID = "BAAGR8OP_rMS5K6OGviXl4mHaC4_1YBS8BK2pHeBgjMujM7ac5RgPcFwZYJOeSnIRpgypw6hqn3cEeKSPE";
 const PAYPAL_SECRET = "ELOtGxTd_DhXSkDOu3F7wjEQBjUa2DTw0JIGTa5L58GKFyQ2FFkPNlIL-tBReV-Jrd1iIxxpC_3XiJOT";
@@ -106,54 +106,6 @@ async function processReferralBonus(username, amountEarned) {
             }
         }
     } catch (err) { console.error("Błąd 15%:", err); }
-}
-
-async function sendPayPalPayout(email, amountUSD) {
-    const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
-    const tokenRes = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Basic ${auth}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'grant_type=client_credentials'
-    });
-
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) {
-        console.error("❌ Błąd Tokenu PayPal:", tokenData);
-        throw new Error("Błąd autoryzacji serwera PayPal.");
-    }
-
-    const payoutBody = {
-        sender_batch_header: {
-            sender_batch_id: `RBX_${Date.now()}_${Math.floor(Math.random()*1000)}`,
-            email_subject: "Wypłata gotowa! Dzięki za korzystanie z RBX Rewards!"
-        },
-        items: [{
-            recipient_type: "EMAIL",
-            amount: { value: amountUSD.toFixed(2), currency: "USD" },
-            note: "Twoja wypłata za Robuxy została zrealizowana automatycznie. Poleć nas znajomym!",
-            receiver: email
-        }]
-    };
-
-    const payoutRes = await fetch(`${PAYPAL_API_BASE}/v1/payments/payouts`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${tokenData.access_token}`
-        },
-        body: JSON.stringify(payoutBody)
-    });
-
-    const payoutData = await payoutRes.json();
-    if (payoutRes.ok || payoutRes.status === 201) {
-        return payoutData;
-    } else {
-        console.error("❌ Odrzucono Wypłatę:", JSON.stringify(payoutData));
-        throw new Error(payoutData.message || "Odrzucono przez PayPal (Brak środków lub zablokowane API).");
-    }
 }
 
 app.get('/postback', async (req, res) => {
@@ -268,6 +220,7 @@ app.post('/api/support-ticket', async (req, res) => {
     } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
+// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY (TRYB RĘCZNY - BEZ API)
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Błędne dane.' });
@@ -278,47 +231,22 @@ app.post('/api/withdraw', async (req, res) => {
         
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
 
-        try {
-            await sendPayPalPayout(paypalEmail, usdAmount);
-        } catch (paypalError) {
-            console.error("Wypłata zatrzymana przed odjęciem punktów:", paypalError.message);
-            if (discordClient && discordClient.isReady()) {
-                const alarmChannel = discordClient.channels.cache.get(KANAL_ALARMOWY_ID);
-                if (alarmChannel && alarmChannel.isTextBased()) {
-                    await alarmChannel.send(`🚨 @here **ALARM WYPŁATY!** 🚨\nGracz **${username}** próbował wypłacić **${points} R$** ($${usdAmount}), ale PayPal to odrzucił!\n**Powód:** \`${paypalError.message}\`\nSprawdźcie natychmiast stan konta!`);
-                }
-            }
-            return res.status(500).json({ error: "Błąd serwera płatności (Możliwy brak środków lub blokada API). Zgłoś to na Discordzie!" });
-        }
-
+        // Odejmujemy punkty od razu (bo zlecamy ręczną wypłatę)
         user.points -= points; 
         await user.save();
         
-        await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount, status: 'Completed' }).save();
+        // Zapisujemy wypłatę w logach
+        await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save();
 
         if (discordClient && discordClient.isReady()) {
             try {
-                let plnText = "";
-                try {
-                    const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
-                    const rateData = await rateRes.json();
-                    if (rateData && rateData.rates && rateData.rates.PLN) {
-                        const marketRate = rateData.rates.PLN;
-                        const paypalEstimatedRate = marketRate * 0.965; 
-                        const plnAmount = (usdAmount * paypalEstimatedRate).toFixed(2);
-                        plnText = ` - ~${plnAmount} zł`;
-                    }
-                } catch (e) {}
-
-                const estimatedRevenue = points / 15;
-                const netProfit = estimatedRevenue - usdAmount;
-
+                // Powiadomienie na kanale publicznym
                 const publicChannel = discordClient.channels.cache.get(KANAL_PUBLICZNY_ID);
                 if (publicChannel && publicChannel.isTextBased()) {
                     await publicChannel.send({
                         embeds: [{
-                            title: "💸 AUTOMATYCZNA WYPŁATA ZREALIZOWANA!",
-                            description: `👤 Gracz: **${username}**\n💰 Kwota: **${points} R$**\n\n✅ *Pieniądze zostały automatycznie wysłane na PayPal!*`,
+                            title: "💸 NOWE ZLECENIE WYPŁATY!",
+                            description: `👤 Gracz: **${username}** zlecił wypłatę na kwotę **${points} R$**\n\n⏳ *Pieniądze zostaną wkrótce wysłane przez Administrację!*`,
                             color: 0x00FFAA,
                             thumbnail: { url: "https://rbx-rewards.onrender.com/logo.png" },
                             timestamp: new Date().toISOString(),
@@ -327,13 +255,14 @@ app.post('/api/withdraw', async (req, res) => {
                     });
                 }
 
+                // Powiadomienie na kanale ADMIN (dla Ciebie, żebyś wiedział komu przelać)
                 const adminChannel = discordClient.channels.cache.get(KANAL_ADMIN_ID);
                 if (adminChannel && adminChannel.isTextBased()) {
                     await adminChannel.send({
                         embeds: [{
-                            title: "📊 LOG WYPŁATY - SZCZEGÓŁY",
-                            description: `**Gracz:** ${username}\n**Email PayPal:** \`${paypalEmail}\`\n\n📉 **Koszt wypłaty (poszło z salda):** -$${usdAmount.toFixed(2)}\n📈 **Szacowany przychód (z ankiet):** +$${estimatedRevenue.toFixed(2)}\n\n💎 **ZYSK NA CZYSTO:** **$${netProfit.toFixed(2)}**`,
-                            color: 0xFFD700, 
+                            title: "⚠️ RĘCZNE ZLECENIE WYPŁATY",
+                            description: `**Gracz:** ${username}\n**Email PayPal:** \`${paypalEmail}\`\n\n💰 **Kwota Robux:** ${points} R$\n💵 **Do przelewu ręcznego:** **$${usdAmount.toFixed(2)}**\n\n*Skopiuj email i wyślij pieniądze przez panel PayPal.*`,
+                            color: 0xFF9900, 
                             timestamp: new Date().toISOString()
                         }]
                     });
@@ -501,7 +430,6 @@ async function updateBalanceMessage() {
 
         const embed = {
             title: "🏦 Aktualne Saldo PayPal",
-            // Zmieniono tekst na dole, żeby informował o 3 godzinach opóźnienia PayPala
             description: `💰 **Szacowana łączna wartość:** \`${balanceStr}\`\n${detailsStr !== "" ? `\n**Rozbicie na portfele:**${detailsStr}\n` : ""}\n🔄 *API PayPala odświeża te dane maksymalnie co 3 godziny.*`,
             color: embedColor,
             timestamp: new Date().toISOString()
@@ -526,7 +454,6 @@ if (discordClient) {
         console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza systemem!`); 
         
         updateBalanceMessage();
-        // Zmieniono interwał na 3 godziny (10800000 ms)
         setInterval(updateBalanceMessage, 10800000); 
     });
 
