@@ -361,7 +361,6 @@
     </div>
   </div>
 
-  <!-- POPRAWIONY MODAL WYPŁAT (PRZYCISK MAX I UŁAMKI) -->
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Withdraw to PayPal</h3>
@@ -696,7 +695,11 @@
             try { let cashSound = new Audio('/cash.mp3'); cashSound.play(); } catch (error) {}
         }
         previousPoints = data.points; 
-        document.getElementById("userPoints").innerText = data.points.toFixed(2);
+        
+        // Zawsze ucinamy ułamek do dwóch miejsc (gilotyna w dół)
+        const safePoints = Math.floor(data.points * 100) / 100;
+        document.getElementById("userPoints").innerText = safePoints.toFixed(2);
+        
         localStorage.setItem("rbx_points", data.points);
         if (data.referredBy) document.getElementById("redeemCodeSection").style.display = "none";
       } catch (error) {}
@@ -971,17 +974,19 @@
       } else { alert("Invalid username!"); }
     }
     
-    // POPRAWA 1: ToFixed na otwarcie modala
+    // 🔥 Ucinanie końcówek przy otwieraniu okna wypłaty
     function openWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "flex"; 
         const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
-        document.getElementById("modalCurrentPoints").innerText = currentPoints.toFixed(2) + " R$";
+        const safePoints = Math.floor(currentPoints * 100) / 100;
+        document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
     }
 
-    // POPRAWA 2: ToFixed na wpisanie do inputa po kliknięciu MAX
+    // 🔥 Ucinanie końcówek w przycisku MAX
     function setMaxPoints() {
         const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
-        document.getElementById("withdrawPoints").value = currentPoints.toFixed(2);
+        const safePoints = Math.floor(currentPoints * 100) / 100;
+        document.getElementById("withdrawPoints").value = safePoints.toFixed(2);
         calculateUSD();
     }
     
@@ -1012,7 +1017,8 @@
             if (data.error) alert("Error: " + data.error);
             else {
                 alert(`Success! Requested payout: $${data.usd.toFixed(2)}.`);
-                document.getElementById("userPoints").innerText = data.newBalance.toFixed(2);
+                const safeNewBal = Math.floor(data.newBalance * 100) / 100;
+                document.getElementById("userPoints").innerText = safeNewBal.toFixed(2);
                 localStorage.setItem("rbx_points", data.newBalance);
                 closeWithdrawModal(); fetchLatestPayouts(); 
             }
