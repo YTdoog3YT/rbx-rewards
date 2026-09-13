@@ -12,7 +12,6 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
   
-  <!-- Skrypt Twitcha do obsługi statusu LIVE -->
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
   <style>
@@ -126,7 +125,6 @@
     .mobile-nav .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 3px; }
     .mobile-nav .nav-item.active { color: #00e676; }
 
-    /* WIDGET TWITCH - NOWY STYL */
     @keyframes slideInLeft {
         from { transform: translateX(-100%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
@@ -134,15 +132,15 @@
     .twitch-widget {
         position: fixed;
         bottom: 20px;
-        left: 20px; /* Po przeciwnej stronie czatu */
+        left: 20px; 
         width: 320px;
         background: #181b22;
-        border: 2px solid #9146FF; /* Fioletowy kolor Twitcha */
+        border: 2px solid #9146FF; 
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 0 25px rgba(145, 70, 255, 0.4);
         z-index: 1000;
-        display: none; /* Ukryte aż skrypt potwierdzi, że jesteś LIVE */
+        display: none; 
         animation: slideInLeft 0.5s ease-out forwards;
     }
     .twitch-header {
@@ -185,8 +183,6 @@
         footer { padding-bottom: 140px; } 
         .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } 
         .chat-widget:not(.minimized) { height: 350px; }
-        
-        /* UBIJAMY TWITCHA NA TELEFONIE */
         .twitch-widget { display: none !important; }
     }
   </style>
@@ -372,6 +368,8 @@
         <div class="content-box">
           <h3 style="color: #fff; margin-bottom: 10px;" data-lang="needHelp">Need Help?</h3>
           <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="supportDesc">If you have any issues, describe your problem below. A ticket will be sent directly to our Admins on Discord!</p>
+          <!-- 🔥 NOWA RUBRYKA NA KONTAKT -->
+          <input type="text" id="ticketContactInput" data-lang-placeholder="phSupportContact" placeholder="Your Discord / Email (optional)" style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
           <textarea id="ticketMessageInput" rows="5" data-lang-placeholder="phSupport" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
           <br><button class="btn-action" id="submitTicketBtn" onclick="submitSupportTicket()" data-lang="btnSubmitTicket">Submit Ticket</button>
         </div>
@@ -410,7 +408,7 @@
       </div>
   </div>
 
-  <!-- WIDGET TWITCH - POJAWIA SIĘ TYLKO KIEDY JESTEŚ LIVE -->
+  <!-- WIDGET TWITCH -->
   <div class="twitch-widget" id="twitchWidget">
       <div class="twitch-header">
           <span>🔴 LIVE: ttv_ytdoog3yt</span>
@@ -516,7 +514,8 @@
             phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...",
             historyTitle: "Earning History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Offer Completion", historyPartial: "Screenout (Partial)",
             historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Withdrawal (PayPal)", historyFrom: "from:",
-            currentBalance: "Current Balance:" 
+            currentBalance: "Current Balance:",
+            phSupportContact: "Your Discord / Email (optional)"
         },
         pl: {
             navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
@@ -547,7 +546,8 @@
             phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...",
             historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Wypełnienie ankiety", historyPartial: "Dyskwalifikacja (Pocieszenie)",
             historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata (PayPal)", historyFrom: "od:",
-            currentBalance: "Aktualny Stan Konta:" 
+            currentBalance: "Aktualny Stan Konta:",
+            phSupportContact: "Twój Discord / Email (opcjonalnie)"
         },
         de: {
             navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
@@ -578,7 +578,8 @@
             phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas...",
             historyTitle: "Kontoverlauf", historyEmpty: "Noch keine Aktionen!", historyAction: "Aktion", historySurvey: "Umfrage abgeschlossen", historyPartial: "Disqualifikation (Teilweise)",
             historyPromo: "Promo-Code", historyRef: "Empfehlungsbonus", historyPayout: "Auszahlung (PayPal)", historyFrom: "von:",
-            currentBalance: "Aktueller Kontostand:" 
+            currentBalance: "Aktueller Kontostand:",
+            phSupportContact: "Dein Discord / E-Mail (optional)"
         },
         ru: {
             navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
@@ -609,7 +610,8 @@
             phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши...",
             historyTitle: "История аккаунта", historyEmpty: "Пока нет действий!", historyAction: "Действие", historySurvey: "Опрос пройден", historyPartial: "Дисквалификация",
             historyPromo: "Промокод", historyRef: "Реферальный бонус", historyPayout: "Вывод (PayPal)", historyFrom: "от:",
-            currentBalance: "Текущий баланс:"
+            currentBalance: "Текущий баланс:",
+            phSupportContact: "Твой Discord / Email (для ответа)"
         }
     };
 
@@ -656,7 +658,6 @@
       setInterval(fetchLiveEarners, 30000); 
       setInterval(fetchLatestPayouts, 30000); 
       
-      // URUCHOMIENIE NASŁUCHIWANIA TWITCHA
       initTwitchPlayer();
     });
 
@@ -735,11 +736,16 @@
         });
     }
 
+    // 🔥 ZAKTUALIZOWANE WYSYŁANIE TICKETÓW Z KONTAKTEM
     async function submitSupportTicket() {
+        const contactInput = document.getElementById("ticketContactInput");
         const messageInput = document.getElementById("ticketMessageInput");
+        
+        const contact = contactInput.value.trim();
         const message = messageInput.value.trim();
         const username = localStorage.getItem("rbx_username");
         const btn = document.getElementById("submitTicketBtn");
+        
         if (!username) return alert("Log in first!");
         if (!message || message.length < 10) return alert("Message too short!");
 
@@ -748,12 +754,17 @@
         try {
             const response = await fetch('/api/support-ticket', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, message })
+                body: JSON.stringify({ username, contact, message })
             });
             if (!response.ok) { alert("❌ Server Error!"); btn.innerText = "Submit"; btn.disabled = false; return; }
             const data = await response.json();
             if (data.error) alert("❌ " + data.error);
-            else { alert("✅ " + data.message); messageInput.value = ""; switchTab('home'); }
+            else { 
+                alert("✅ " + data.message); 
+                contactInput.value = "";
+                messageInput.value = ""; 
+                switchTab('home'); 
+            }
         } catch (error) { alert("Connection Error"); }
         btn.innerText = "Submit Ticket"; btn.disabled = false;
     }
@@ -1096,27 +1107,24 @@
         } catch (error) { alert("Connection Error"); }
     }
 
-    // --- LOGIKA WIDGETU TWITCHA ---
     let twitchPlayer = null;
     function initTwitchPlayer() {
         if (typeof Twitch === 'undefined') return;
         
         twitchPlayer = new Twitch.Player("twitch-embed", {
-            channel: "ttv_ytdoog3yt", // Twój kanał
+            channel: "ttv_ytdoog3yt", 
             width: 320,
             height: 180,
-            muted: true, // Wyciszony (inaczej przeglądarka zablokuje mu autostart)
+            muted: true, 
             parent: [window.location.hostname, "rbx-rewards.onrender.com", "localhost", "127.0.0.1"]
         });
 
-        // Event odpalany tylko i wyłącznie jak odpalisz streama
         twitchPlayer.addEventListener(Twitch.Player.ONLINE, function() {
             if (!sessionStorage.getItem('twitch_widget_closed')) {
                 document.getElementById('twitchWidget').style.display = 'block';
             }
         });
 
-        // Event jak skończysz transmisję
         twitchPlayer.addEventListener(Twitch.Player.OFFLINE, function() {
             document.getElementById('twitchWidget').style.display = 'none';
         });

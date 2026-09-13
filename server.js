@@ -207,14 +207,16 @@ app.get('/api/earning-history/:username', async (req, res) => {
     }
 });
 
+// 🔥 ZAKTUALIZOWANA FUNKCJA TICKETÓW Z KONTAKTEM
 app.post('/api/support-ticket', async (req, res) => {
     try {
-        const { username, message } = req.body;
+        const { username, contact, message } = req.body;
         if (!username || !message) return res.status(400).json({ error: 'Brak wymaganych danych.' });
         if (discordClient && discordClient.isReady()) {
             const targetChannel = discordClient.channels.cache.find(c => c.name === 'support-tickets');
             if (targetChannel && targetChannel.isTextBased()) {
-                await targetChannel.send(`🚨 **NOWY TICKET** 🚨\n👤 **Od:** \`${username}\`\n📝 **Wiadomość:**\n> ${message}`);
+                const contactInfo = contact ? contact : "Brak danych";
+                await targetChannel.send(`🚨 **NOWY TICKET** 🚨\n👤 **Od:** \`${username}\`\n💬 **Kontakt:** \`${contactInfo}\`\n📝 **Wiadomość:**\n> ${message}`);
                 return res.json({ success: true, message: 'Ticket pomyślnie wysłany!' });
             }
         }
@@ -222,7 +224,6 @@ app.post('/api/support-ticket', async (req, res) => {
     } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// 🔥 ŚCIEŻKA WYPŁATY Z ROZDZIELONYMI POWIADOMIENIAMI
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Błędne dane.' });
