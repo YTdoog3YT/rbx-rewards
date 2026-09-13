@@ -463,7 +463,6 @@ async function updateBalanceMessage() {
         
         // 2. Pobieranie aktualnego salda
         if (tokenData.access_token) {
-            // Dodano parametr ?currency_code=USD, by wymusić format i zapobiec niektórym błędom
             const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances?currency_code=USD`, {
                 headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
             });
@@ -473,19 +472,18 @@ async function updateBalanceMessage() {
                 if (balData.balances && balData.balances.length > 0) {
                     const avail = balData.balances.find(b => b.available_balance);
                     if (avail) {
-                        balanceStr = `${avail.available_balance.value} ${avail.available_balance.currency}`;
+                        balanceStr = `${avail.available_balance.value} ${avail.available_balance.currency_code}`;
                     } else {
-                        balanceStr = `${balData.balances[0].total_balance.value} ${balData.balances[0].total_balance.currency}`;
+                        balanceStr = `${balData.balances[0].total_balance.value} ${balData.balances[0].total_balance.currency_code}`;
                     }
                 } else {
-                    balanceStr = "Konto puste (0.00)";
+                    balanceStr = "Konto puste (0.00 USD)";
                 }
             } else {
-                // JEŚLI JEST BŁĄD, LOGUJEMY GO DOKŁADNIE DO KONSOLI
                 const errorText = await balRes.text();
                 console.error("❌ BŁĄD PAYPAL (SALDO):", errorText);
                 balanceStr = "Brak uprawnień API (Zaznacz opcje w PayPal Developer!)";
-                embedColor = 0xFF0000; // Zmieni pasek na czerwony, jak znowu wywali błąd
+                embedColor = 0xFF0000; 
             }
         }
 
