@@ -318,7 +318,6 @@ app.post('/api/withdraw', async (req, res) => {
                 } catch (e) {}
 
                 // OBLICZANIE ZYSKU NA CZYSTO 
-                // Skoro w Jitscape za 1.00$ dajesz 15 pkt, to szacowany przychód firmy to: points / 15
                 const estimatedRevenue = points / 15;
                 const netProfit = estimatedRevenue - usdAmount;
 
@@ -344,7 +343,7 @@ app.post('/api/withdraw', async (req, res) => {
                         embeds: [{
                             title: "📊 LOG WYPŁATY - SZCZEGÓŁY",
                             description: `**Gracz:** ${username}\n**Email PayPal:** \`${paypalEmail}\`\n\n📉 **Koszt wypłaty (poszło z salda):** -$${usdAmount.toFixed(2)}\n📈 **Szacowany przychód (z ankiet):** +$${estimatedRevenue.toFixed(2)}\n\n💎 **ZYSK NA CZYSTO:** **$${netProfit.toFixed(2)}**`,
-                            color: 0xFFD700, // Złoty kolor dla panelu admina
+                            color: 0xFFD700, 
                             timestamp: new Date().toISOString()
                         }]
                     });
@@ -460,10 +459,12 @@ async function updateBalanceMessage() {
         const tokenData = await tokenRes.json();
         
         let balanceStr = "Błąd połączenia z PayPal (sprawdź uprawnienia API)";
+        let embedColor = 0x00FFAA;
         
         // 2. Pobieranie aktualnego salda
         if (tokenData.access_token) {
-            const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances`, {
+            // Dodano parametr ?currency_code=USD, by wymusić format i zapobiec niektórym błędom
+            const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances?currency_code=USD`, {
                 headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
             });
             
@@ -479,13 +480,19 @@ async function updateBalanceMessage() {
                 } else {
                     balanceStr = "Konto puste (0.00)";
                 }
+            } else {
+                // JEŚLI JEST BŁĄD, LOGUJEMY GO DOKŁADNIE DO KONSOLI
+                const errorText = await balRes.text();
+                console.error("❌ BŁĄD PAYPAL (SALDO):", errorText);
+                balanceStr = "Brak uprawnień API (Zaznacz opcje w PayPal Developer!)";
+                embedColor = 0xFF0000; // Zmieni pasek na czerwony, jak znowu wywali błąd
             }
         }
 
         const embed = {
             title: "🏦 Aktualne Saldo PayPal",
             description: `💰 **Dostępne środki:** \`${balanceStr}\`\n\n🔄 *Wiadomość odświeża się sama co 15 minut, żeby zapobiec blokadom PayPala i Discorda.*`,
-            color: 0x00FFAA,
+            color: embedColor,
             timestamp: new Date().toISOString()
         };
 
