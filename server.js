@@ -20,6 +20,12 @@ const PAYPAL_API_BASE = "https://api-m.paypal.com";
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const ADMIN_DISCORD_ID = "398911896893521921";
 
+// ID KANAŁÓW OD CIEBIE:
+const KANAL_PUBLICZNY_ID = "1547480985506029639";
+const KANAL_ADMIN_ID = "1548618275083264060";
+const KANAL_ALARMOWY_ID = "1548618577567809666";
+const KANAL_SALDO_ID = "1548618640557998111";
+
 console.log("🔥 Czy serwer widzi token Discorda?", DISCORD_BOT_TOKEN ? "TAK, JEST!" : "NIE, PUSTO!");
 
 let discordClient = null;
@@ -266,7 +272,7 @@ app.post('/api/support-ticket', async (req, res) => {
     } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY Z NOWYM LOGO W EMBEDZIE DISCORDA
+// 🔥 ZAKTUALIZOWANA ŚCIEŻKA WYPŁATY Z ROZDZIELENIEM KANAŁÓW I OBLICZENIEM ZYSKU
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     if (!username || !paypalEmail || !points || points <= 0) return res.status(400).json({ error: 'Błędne dane.' });
@@ -281,7 +287,15 @@ app.post('/api/withdraw', async (req, res) => {
             await sendPayPalPayout(paypalEmail, usdAmount);
         } catch (paypalError) {
             console.error("Wypłata zatrzymana przed odjęciem punktów:", paypalError.message);
-            return res.status(500).json({ error: "Błąd serwera płatności (Możliwy brak środków lub blokada API na koncie firmy). Zgłoś to na Discordzie!" });
+            
+            // WYSYŁKA ALARMU NA DISCORD (OZNACZA @here)
+            if (discordClient && discordClient.isReady()) {
+                const alarmChannel = discordClient.channels.cache.get(KANAL_ALARMOWY_ID);
+                if (alarmChannel && alarmChannel.isTextBased()) {
+                    await alarmChannel.send(`🚨 @here **ALARM WYPŁATY!** 🚨\nGracz **${username}** próbował wypłacić **${points} R$** ($${usdAmount}), ale PayPal to odrzucił!\n**Powód:** \`${paypalError.message}\`\nSprawdźcie natychmiast stan konta!`);
+                }
+            }
+            return res.status(500).json({ error: "Błąd serwera płatności (Możliwy brak środków lub blokada API). Zgłoś to na Discordzie!" });
         }
 
         user.points -= points; 
@@ -303,23 +317,39 @@ app.post('/api/withdraw', async (req, res) => {
                     }
                 } catch (e) {}
 
-                const targetChannel = discordClient.channels.cache.find(c => c.name === 'robux');
-                if (targetChannel && targetChannel.isTextBased()) {
-                    await targetChannel.send({
+                // OBLICZANIE ZYSKU NA CZYSTO 
+                // Skoro w Jitscape za 1.00$ dajesz 15 pkt, to szacowany przychód firmy to: points / 15
+                const estimatedRevenue = points / 15;
+                const netProfit = estimatedRevenue - usdAmount;
+
+                // 1. KANAŁ PUBLICZNY (Tylko czyste info dla graczy)
+                const publicChannel = discordClient.channels.cache.get(KANAL_PUBLICZNY_ID);
+                if (publicChannel && publicChannel.isTextBased()) {
+                    await publicChannel.send({
                         embeds: [{
                             title: "💸 AUTOMATYCZNA WYPŁATA ZREALIZOWANA!",
-                            description: `👤 Gracz: **${username}**\n💰 Kwota: **${points} R$** ($${usdAmount}${plnText})\n📧 PayPal: **${paypalEmail}**\n\n✅ *Pieniądze zostały automatycznie wysłane z PayPala.*`,
+                            description: `👤 Gracz: **${username}**\n💰 Kwota: **${points} R$**\n\n✅ *Pieniądze zostały automatycznie wysłane na PayPal!*`,
                             color: 0x00FFAA,
-                            thumbnail: {
-                                url: "https://rbx-rewards.onrender.com/logo.png"
-                            },
+                            thumbnail: { url: "https://rbx-rewards.onrender.com/logo.png" },
                             timestamp: new Date().toISOString(),
-                            footer: {
-                                text: "RBX-Rewards System"
-                            }
+                            footer: { text: "RBX-Rewards System" }
                         }]
                     });
                 }
+
+                // 2. KANAŁ DLA ADMINISTRACJI (Pełne logi z zyskiem na czysto i mailem)
+                const adminChannel = discordClient.channels.cache.get(KANAL_ADMIN_ID);
+                if (adminChannel && adminChannel.isTextBased()) {
+                    await adminChannel.send({
+                        embeds: [{
+                            title: "📊 LOG WYPŁATY - SZCZEGÓŁY",
+                            description: `**Gracz:** ${username}\n**Email PayPal:** \`${paypalEmail}\`\n\n📉 **Koszt wypłaty (poszło z salda):** -$${usdAmount.toFixed(2)}\n📈 **Szacowany przychód (z ankiet):** +$${estimatedRevenue.toFixed(2)}\n\n💎 **ZYSK NA CZYSTO:** **$${netProfit.toFixed(2)}**`,
+                            color: 0xFFD700, // Złoty kolor dla panelu admina
+                            timestamp: new Date().toISOString()
+                        }]
+                    });
+                }
+
             } catch (err) { console.error("Błąd powiadomienia:", err); }
         }
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
@@ -412,7 +442,79 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
+// -----------------------------------------------------
+// 💰 FUNKCJA: AKTUALIZACJA SALDA CO 15 MINUT NA KANALE
+// -----------------------------------------------------
+async function updateBalanceMessage() {
+    try {
+        const channel = discordClient.channels.cache.get(KANAL_SALDO_ID);
+        if (!channel || !channel.isTextBased()) return;
+
+        // 1. Pobieranie tokenu API z PayPala
+        const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
+        const tokenRes = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+            method: 'POST',
+            headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'grant_type=client_credentials'
+        });
+        const tokenData = await tokenRes.json();
+        
+        let balanceStr = "Błąd połączenia z PayPal (sprawdź uprawnienia API)";
+        
+        // 2. Pobieranie aktualnego salda
+        if (tokenData.access_token) {
+            const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances`, {
+                headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
+            });
+            
+            if (balRes.ok) {
+                const balData = await balRes.json();
+                if (balData.balances && balData.balances.length > 0) {
+                    const avail = balData.balances.find(b => b.available_balance);
+                    if (avail) {
+                        balanceStr = `${avail.available_balance.value} ${avail.available_balance.currency}`;
+                    } else {
+                        balanceStr = `${balData.balances[0].total_balance.value} ${balData.balances[0].total_balance.currency}`;
+                    }
+                } else {
+                    balanceStr = "Konto puste (0.00)";
+                }
+            }
+        }
+
+        const embed = {
+            title: "🏦 Aktualne Saldo PayPal",
+            description: `💰 **Dostępne środki:** \`${balanceStr}\`\n\n🔄 *Wiadomość odświeża się sama co 15 minut, żeby zapobiec blokadom PayPala i Discorda.*`,
+            color: 0x00FFAA,
+            timestamp: new Date().toISOString()
+        };
+
+        // 3. Sprawdzanie, czy bot wysłał tu już kiedyś wiadomość, żeby ją po prostu edytować
+        const messages = await channel.messages.fetch({ limit: 10 });
+        const botMessage = messages.find(m => m.author.id === discordClient.user.id);
+
+        if (botMessage) {
+            await botMessage.edit({ embeds: [embed] });
+        } else {
+            await channel.send({ embeds: [embed] }); // Jak nie ma, to wysyła pierwszą
+        }
+
+    } catch (err) {
+        console.error("Błąd przy pobieraniu salda w tle:", err.message);
+    }
+}
+
 if (discordClient) {
+    discordClient.once('ready', () => { 
+        console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza systemem!`); 
+        
+        // Odpalenie pobierania salda po włączeniu bota
+        updateBalanceMessage();
+        
+        // ... i powtarzanie tego dokładnie co 15 minut (900 000 milisekund)
+        setInterval(updateBalanceMessage, 900000); 
+    });
+
     discordClient.on('messageCreate', async message => {
         if (message.author.bot) return;
         const cmd = message.content.split(' ')[0].toLowerCase();
@@ -476,6 +578,5 @@ if (discordClient) {
         }
     });
 
-    discordClient.once('ready', () => { console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza kodami!`); });
     discordClient.login(DISCORD_BOT_TOKEN).catch(console.error);
 }
