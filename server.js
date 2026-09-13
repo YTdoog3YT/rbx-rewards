@@ -449,7 +449,6 @@ async function updateBalanceMessage() {
         const channel = discordClient.channels.cache.get(KANAL_SALDO_ID);
         if (!channel || !channel.isTextBased()) return;
 
-        // 1. Pobieranie tokenu API z PayPala
         const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
         const tokenRes = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
             method: 'POST',
@@ -460,22 +459,47 @@ async function updateBalanceMessage() {
         
         let balanceStr = "Błąd połączenia z PayPal (sprawdź uprawnienia API)";
         let embedColor = 0x00FFAA;
+        let detailsStr = "";
         
-        // 2. Pobieranie aktualnego salda
         if (tokenData.access_token) {
-            const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances?currency_code=USD`, {
+            // Pobieramy całe konto bez limitowania waluty
+            const balRes = await fetch(`${PAYPAL_API_BASE}/v1/reporting/balances`, {
                 headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
             });
             
             if (balRes.ok) {
                 const balData = await balRes.json();
                 if (balData.balances && balData.balances.length > 0) {
-                    const avail = balData.balances.find(b => b.available_balance);
-                    if (avail) {
-                        balanceStr = `${avail.available_balance.value} ${avail.available_balance.currency_code}`;
-                    } else {
-                        balanceStr = `${balData.balances[0].total_balance.value} ${balData.balances[0].total_balance.currency_code}`;
+                    let totalEstimatedUSD = 0;
+                    let rates = {};
+                    
+                    // Pobieranie kursów walut dla dokładnego oszacowania
+                    try {
+                        const rateRes = await fetch('https://open.er-api.com/v6/latest/USD');
+                        const rateData = await rateRes.json();
+                        if (rateData && rateData.rates) rates = rateData.rates;
+                    } catch (e) {}
+
+                    for (const b of balData.balances) {
+                        const valObj = b.available_balance || b.total_balance;
+                        if (!valObj) continue;
+                        
+                        const val = parseFloat(valObj.value);
+                        const curr = valObj.currency_code;
+
+                        // Wypisujemy szczegóły dla każdej waluty > 0 (oraz zawsze pokazujemy dolary)
+                        if (val > 0 || curr === 'USD') {
+                            detailsStr += `\n🔸 **${val.toFixed(2)} ${curr}**`;
+                        }
+
+                        if (curr === 'USD') {
+                            totalEstimatedUSD += val;
+                        } else if (rates[curr]) {
+                            totalEstimatedUSD += (val / rates[curr]);
+                        }
                     }
+                    
+                    balanceStr = `~${totalEstimatedUSD.toFixed(2)} USD`;
                 } else {
                     balanceStr = "Konto puste (0.00 USD)";
                 }
@@ -489,19 +513,18 @@ async function updateBalanceMessage() {
 
         const embed = {
             title: "🏦 Aktualne Saldo PayPal",
-            description: `💰 **Dostępne środki:** \`${balanceStr}\`\n\n🔄 *Wiadomość odświeża się sama co 15 minut, żeby zapobiec blokadom PayPala i Discorda.*`,
+            description: `💰 **Szacowana łączna wartość:** \`${balanceStr}\`\n${detailsStr !== "" ? `\n**Rozbicie na portfele:**${detailsStr}\n` : ""}\n🔄 *Wiadomość odświeża się sama co 15 minut, żeby zapobiec blokadom PayPala i Discorda.*`,
             color: embedColor,
             timestamp: new Date().toISOString()
         };
 
-        // 3. Sprawdzanie, czy bot wysłał tu już kiedyś wiadomość, żeby ją po prostu edytować
         const messages = await channel.messages.fetch({ limit: 10 });
         const botMessage = messages.find(m => m.author.id === discordClient.user.id);
 
         if (botMessage) {
             await botMessage.edit({ embeds: [embed] });
         } else {
-            await channel.send({ embeds: [embed] }); // Jak nie ma, to wysyła pierwszą
+            await channel.send({ embeds: [embed] }); 
         }
 
     } catch (err) {
@@ -513,10 +536,7 @@ if (discordClient) {
     discordClient.once('ready', () => { 
         console.log(`🤖 Bot Discord (${discordClient.user.tag}) połączony i zarządza systemem!`); 
         
-        // Odpalenie pobierania salda po włączeniu bota
         updateBalanceMessage();
-        
-        // ... i powtarzanie tego dokładnie co 15 minut (900 000 milisekund)
         setInterval(updateBalanceMessage, 900000); 
     });
 
