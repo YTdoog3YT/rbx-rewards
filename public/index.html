@@ -12,7 +12,6 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
   
-  <!-- Skrypt Twitcha do obsługi statusu LIVE -->
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
   <style>
@@ -126,7 +125,6 @@
     .mobile-nav .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 3px; }
     .mobile-nav .nav-item.active { color: #00e676; }
 
-    /* WIDGET TWITCH - NOWY STYL */
     @keyframes slideInLeft {
         from { transform: translateX(-100%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
@@ -134,15 +132,15 @@
     .twitch-widget {
         position: fixed;
         bottom: 20px;
-        left: 20px; /* Po przeciwnej stronie czatu */
+        left: 20px; 
         width: 320px;
         background: #181b22;
-        border: 2px solid #9146FF; /* Fioletowy kolor Twitcha */
+        border: 2px solid #9146FF; 
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 0 25px rgba(145, 70, 255, 0.4);
         z-index: 1000;
-        display: none; /* Ukryte aż skrypt potwierdzi, że jesteś LIVE */
+        display: none; 
         animation: slideInLeft 0.5s ease-out forwards;
     }
     .twitch-header {
@@ -185,8 +183,6 @@
         footer { padding-bottom: 140px; } 
         .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } 
         .chat-widget:not(.minimized) { height: 350px; }
-        
-        /* UBIJAMY TWITCHA NA TELEFONIE */
         .twitch-widget { display: none !important; }
     }
   </style>
@@ -442,7 +438,13 @@
           <span data-lang="currentBalance">Current Balance:</span> <span id="modalCurrentPoints">0.00 R$</span>
       </p>
 
-      <input type="email" id="paypalEmail" placeholder="PayPal Email" style="margin-bottom: 10px;">
+      <!-- 🔥 NOWE: Żółte Ostrzeżenie dla nowych graczy (przed pierwszym przypisaniem konta) -->
+      <p id="paypalFirstTimeWarning" style="color: #ffb703; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold; background: rgba(255, 183, 3, 0.1); padding: 10px; border-radius: 6px; border: 1px solid #ffb703;" data-lang="paypalWarningInfo">⚠️ Uwaga: Ten adres PayPal zostanie na stałe przypisany do Twojego konta ze względów bezpieczeństwa. Zmiana będzie możliwa tylko przez Support.</p>
+      
+      <!-- Ostrzeżenie z Kłódką dla starych graczy -->
+      <p id="paypalLockWarning" style="color: #00e676; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold;" data-lang="paypalLocked">🔒 PayPal email is securely locked to this account.</p>
+      
+      <input type="email" id="paypalEmail" placeholder="PayPal Email" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
       
       <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
           <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box; min-width: 50%;">
@@ -518,7 +520,9 @@
             historyTitle: "Earning History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Offer Completion", historyPartial: "Screenout (Partial)",
             historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Withdrawal (PayPal)", historyFrom: "from:",
             currentBalance: "Current Balance:",
-            phSupportContact: "Your Discord / Email (optional)"
+            phSupportContact: "Your Discord / Email (optional)",
+            paypalLocked: "🔒 PayPal email is securely locked to this account.",
+            paypalWarningInfo: "⚠️ Note: This PayPal email will be permanently linked to your account for security. To change it later, contact Support."
         },
         pl: {
             navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
@@ -550,7 +554,9 @@
             historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Wypełnienie ankiety", historyPartial: "Dyskwalifikacja (Pocieszenie)",
             historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata (PayPal)", historyFrom: "od:",
             currentBalance: "Aktualny Stan Konta:",
-            phSupportContact: "Twój Discord / Email (opcjonalnie)"
+            phSupportContact: "Twój Discord / Email (opcjonalnie)",
+            paypalLocked: "🔒 Ten adres PayPal jest na stałe przypisany do konta.",
+            paypalWarningInfo: "⚠️ Uwaga: Ten adres PayPal zostanie na stałe przypisany do Twojego konta ze względów bezpieczeństwa. Zmiana będzie możliwa tylko przez Support."
         },
         de: {
             navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
@@ -582,7 +588,9 @@
             historyTitle: "Kontoverlauf", historyEmpty: "Noch keine Aktionen!", historyAction: "Aktion", historySurvey: "Umfrage abgeschlossen", historyPartial: "Disqualifikation (Teilweise)",
             historyPromo: "Promo-Code", historyRef: "Empfehlungsbonus", historyPayout: "Auszahlung (PayPal)", historyFrom: "von:",
             currentBalance: "Aktueller Kontostand:",
-            phSupportContact: "Dein Discord / E-Mail (optional)"
+            phSupportContact: "Dein Discord / E-Mail (optional)",
+            paypalLocked: "🔒 PayPal-E-Mail ist sicher an dieses Konto gebunden.",
+            paypalWarningInfo: "⚠️ Hinweis: Diese PayPal-E-Mail wird aus Sicherheitsgründen dauerhaft mit deinem Konto verknüpft. Um sie später zu ändern, kontaktiere den Support."
         },
         ru: {
             navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
@@ -614,7 +622,9 @@
             historyTitle: "История аккаунта", historyEmpty: "Пока нет действий!", historyAction: "Действие", historySurvey: "Опрос пройден", historyPartial: "Дисквалификация",
             historyPromo: "Промокод", historyRef: "Реферальный бонус", historyPayout: "Вывод (PayPal)", historyFrom: "от:",
             currentBalance: "Текущий баланс:",
-            phSupportContact: "Твой Discord / Email (для ответа)"
+            phSupportContact: "Твой Discord / Email (для ответа)",
+            paypalLocked: "🔒 Этот PayPal навсегда привязан к аккаунту.",
+            paypalWarningInfo: "⚠️ Внимание: Этот PayPal навсегда привязывается к вашему аккаунту в целях безопасности. Для изменения обратитесь в Поддержку."
         }
     };
 
@@ -771,7 +781,6 @@
         btn.innerText = "Submit Ticket"; btn.disabled = false;
     }
 
-    // 🔥 POBIERANIE SKRZYNKI ODBIORCZEJ Z SUPPOTU
     async function fetchInbox() {
         const username = localStorage.getItem("rbx_username");
         if (!username) return;
@@ -805,6 +814,8 @@
         document.getElementById("userPoints").innerText = safePoints.toFixed(2);
         
         localStorage.setItem("rbx_points", data.points);
+        localStorage.setItem("rbx_linked_paypal", data.linkedPayPal || "");
+
         if (data.referredBy) document.getElementById("redeemCodeSection").style.display = "none";
       } catch (error) {}
     }
@@ -1026,7 +1037,6 @@
         if (chatWidget) chatWidget.style.display = "flex";
 
         fetchUserPoints();
-        // 🔥 Wrzucamy sprawdzanie skrzynki zaraz po wejściu na stronę
         fetchInbox();
         
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
@@ -1080,11 +1090,33 @@
       } else { alert("Invalid username!"); }
     }
     
+    // 🔥 LOGIKA ZABLOKOWANEGO PAYPALA I OSTRZEŻEŃ W HTML
     function openWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "flex"; 
         const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
         const safePoints = Math.floor(currentPoints * 100) / 100;
         document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
+
+        const linkedPayPal = localStorage.getItem("rbx_linked_paypal");
+        const emailInput = document.getElementById("paypalEmail");
+        const lockWarning = document.getElementById("paypalLockWarning");
+        const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
+
+        if (linkedPayPal && linkedPayPal !== "null" && linkedPayPal !== "") {
+            emailInput.value = linkedPayPal;
+            emailInput.readOnly = true;
+            emailInput.style.opacity = "0.5";
+            emailInput.style.cursor = "not-allowed";
+            lockWarning.style.display = "block";
+            firstTimeWarning.style.display = "none";
+        } else {
+            emailInput.value = "";
+            emailInput.readOnly = false;
+            emailInput.style.opacity = "1";
+            emailInput.style.cursor = "text";
+            lockWarning.style.display = "none";
+            firstTimeWarning.style.display = "block";
+        }
     }
 
     function setMaxPoints() {
@@ -1096,7 +1128,12 @@
     
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
-        document.getElementById("paypalEmail").value = ""; 
+        
+        const linkedPayPal = localStorage.getItem("rbx_linked_paypal");
+        if (!linkedPayPal || linkedPayPal === "null" || linkedPayPal === "") {
+            document.getElementById("paypalEmail").value = ""; 
+        }
+        
         document.getElementById("withdrawPoints").value = ""; 
         document.getElementById("usdResult").innerText = "$0.00";
     }
@@ -1116,7 +1153,11 @@
 
         try {
             const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
-            if (!response.ok) { alert("❌ Server Error!"); return; }
+            if (!response.ok) { 
+                const data = await response.json().catch(() => null);
+                if (data && data.error) return alert("❌ " + data.error);
+                alert("❌ Server Error!"); return; 
+            }
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);
             else {
@@ -1124,6 +1165,9 @@
                 const safeNewBal = Math.floor(data.newBalance * 100) / 100;
                 document.getElementById("userPoints").innerText = safeNewBal.toFixed(2);
                 localStorage.setItem("rbx_points", data.newBalance);
+                
+                localStorage.setItem("rbx_linked_paypal", email.toLowerCase());
+
                 closeWithdrawModal(); fetchLatestPayouts(); 
             }
         } catch (error) { alert("Connection Error"); }

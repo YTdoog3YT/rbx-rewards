@@ -45,7 +45,9 @@ const UserSchema = new mongoose.Schema({
     bonusClicksToday: { type: Number, default: 0 },
     lastBonusClickDate: { type: Date, default: null },
     redeemedPromoCodes: { type: [{ code: String, reward: Number, date: { type: Date, default: Date.now } }], default: [] },
-    inbox: { type: [{ message: String, date: { type: Date, default: Date.now }, read: { type: Boolean, default: false } }], default: [] }
+    inbox: { type: [{ message: String, date: { type: Date, default: Date.now }, read: { type: Boolean, default: false } }], default: [] },
+    // 🔥 NOWOŚĆ: Stałe przypisanie adresu PayPal
+    linkedPayPal: { type: String, default: null }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -128,10 +130,15 @@ app.all('/api/jitscape-postback', async (req, res) => {
     } catch (error) {}
 });
 
+// 🔥 NOWOŚĆ: Wysyłamy informację o zablokowanym PayPalu do strony (frontendu)
 app.get('/api/points/:username', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.params.username });
-        res.json({ points: user ? user.points : 0, referredBy: user ? user.referredBy : null });
+        res.json({ 
+            points: user ? user.points : 0, 
+            referredBy: user ? user.referredBy : null,
+            linkedPayPal: user ? user.linkedPayPal : null
+        });
     } catch (error) { res.json({ points: 0 }); }
 });
 
@@ -149,7 +156,6 @@ app.get('/api/earning-history/:username', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Error" }); }
 });
 
-// POBIERANIE SKRZYNKI
 app.get('/api/inbox/:username', async (req, res) => {
     try {
         const user = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
@@ -164,7 +170,6 @@ app.get('/api/inbox/:username', async (req, res) => {
     } catch (error) { res.json([]); }
 });
 
-// TICKET
 app.post('/api/support-ticket', async (req, res) => {
     try {
         const { username, contact, message } = req.body;
@@ -174,24 +179,36 @@ app.post('/api/support-ticket', async (req, res) => {
     } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// WYPŁATA
+// 🔥 ZABEZPIECZONA WYPŁATA (Sprawdzanie i przypisywanie PayPala)
 app.post('/api/withdraw', async (req, res) => {
     const { username, paypalEmail, points } = req.body;
     try {
         const user = await User.findOne({ username });
         if (!user || user.points < points) return res.status(400).json({ error: 'Nie masz tylu Robuxów!' });
         
+        // --- BLOKADA PAYPAL ---
+        if (user.linkedPayPal) {
+            // Jeśli gracz ma przypisany PayPal, a próbuje wypłacić na inny
+            if (user.linkedPayPal.toLowerCase() !== paypalEmail.toLowerCase()) {
+                return res.status(400).json({ error: `To konto jest na stałe zablokowane na adres: ${user.linkedPayPal}. Jeśli chcesz go zmienić, napisz Ticket w zakładce Support!` });
+            }
+        } else {
+            // Jeśli nie ma przypisanego PayPala (pierwsza wypłata), przypisujemy na zawsze
+            user.linkedPayPal = paypalEmail.toLowerCase();
+        }
+        // ----------------------
+
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
-        user.points -= points; await user.save();
+        user.points -= points; 
+        await user.save();
         
-        const newPayout = await new Payout({ username, paypalEmail, pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save();
+        const newPayout = await new Payout({ username, paypalEmail: paypalEmail.toLowerCase(), pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save();
 
         discordBot.sendPayoutAlert(newPayout);
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// KODY PROMOCYJNE
 app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body;
     if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
@@ -217,7 +234,6 @@ app.post('/api/redeem-promo', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// PRZYWRÓCONA ŚCIEŻKA (Historia Promokodów)
 app.get('/api/promo-history/:username', async (req, res) => {
     try {
         const username = req.params.username; const user = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
@@ -228,7 +244,6 @@ app.get('/api/promo-history/:username', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Internal server error" }); }
 });
 
-// POLECENIA
 app.post('/api/redeem-code', async (req, res) => {
     const { username, code } = req.body;
     if (!username || !code) return res.status(400).json({ error: 'Missing data.' });
@@ -245,7 +260,6 @@ app.post('/api/redeem-code', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-// PRZYWRÓCONA ŚCIEŻKA (Statystyki Referrali)
 app.get('/api/referral-stats/:username', async (req, res) => {
     try {
         const username = req.params.username; const period = req.query.period || '7days';
