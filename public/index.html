@@ -12,6 +12,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
   
+  <!-- Skrypt Twitcha do obsługi statusu LIVE -->
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
   <style>
@@ -125,6 +126,7 @@
     .mobile-nav .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 3px; }
     .mobile-nav .nav-item.active { color: #00e676; }
 
+    /* WIDGET TWITCH - NOWY STYL */
     @keyframes slideInLeft {
         from { transform: translateX(-100%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
@@ -132,15 +134,15 @@
     .twitch-widget {
         position: fixed;
         bottom: 20px;
-        left: 20px; 
+        left: 20px; /* Po przeciwnej stronie czatu */
         width: 320px;
         background: #181b22;
-        border: 2px solid #9146FF; 
+        border: 2px solid #9146FF; /* Fioletowy kolor Twitcha */
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 0 25px rgba(145, 70, 255, 0.4);
         z-index: 1000;
-        display: none; 
+        display: none; /* Ukryte aż skrypt potwierdzi, że jesteś LIVE */
         animation: slideInLeft 0.5s ease-out forwards;
     }
     .twitch-header {
@@ -183,6 +185,8 @@
         footer { padding-bottom: 140px; } 
         .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } 
         .chat-widget:not(.minimized) { height: 350px; }
+        
+        /* UBIJAMY TWITCHA NA TELEFONIE */
         .twitch-widget { display: none !important; }
     }
   </style>
@@ -368,7 +372,6 @@
         <div class="content-box">
           <h3 style="color: #fff; margin-bottom: 10px;" data-lang="needHelp">Need Help?</h3>
           <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="supportDesc">If you have any issues, describe your problem below. A ticket will be sent directly to our Admins on Discord!</p>
-          <!-- 🔥 NOWA RUBRYKA NA KONTAKT -->
           <input type="text" id="ticketContactInput" data-lang-placeholder="phSupportContact" placeholder="Your Discord / Email (optional)" style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
           <textarea id="ticketMessageInput" rows="5" data-lang-placeholder="phSupport" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
           <br><button class="btn-action" id="submitTicketBtn" onclick="submitSupportTicket()" data-lang="btnSubmitTicket">Submit Ticket</button>
@@ -736,7 +739,6 @@
         });
     }
 
-    // 🔥 ZAKTUALIZOWANE WYSYŁANIE TICKETÓW Z KONTAKTEM
     async function submitSupportTicket() {
         const contactInput = document.getElementById("ticketContactInput");
         const messageInput = document.getElementById("ticketMessageInput");
@@ -767,6 +769,24 @@
             }
         } catch (error) { alert("Connection Error"); }
         btn.innerText = "Submit Ticket"; btn.disabled = false;
+    }
+
+    // 🔥 POBIERANIE SKRZYNKI ODBIORCZEJ Z SUPPOTU
+    async function fetchInbox() {
+        const username = localStorage.getItem("rbx_username");
+        if (!username) return;
+        try {
+            const response = await fetch(`/api/inbox/${username}`);
+            const messages = await response.json();
+            
+            if (messages.length > 0) {
+                let alertText = "🔔 MASZ NOWE WIADOMOŚCI OD ADMINISTRACJI:\n\n";
+                messages.forEach(msg => {
+                    alertText += `💬 "${msg.message}"\n`;
+                });
+                alert(alertText);
+            }
+        } catch (error) {}
     }
 
     let previousPoints = null;
@@ -1006,6 +1026,8 @@
         if (chatWidget) chatWidget.style.display = "flex";
 
         fetchUserPoints();
+        // 🔥 Wrzucamy sprawdzanie skrzynki zaraz po wejściu na stronę
+        fetchInbox();
         
         const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
         const secureHashParam = md5(savedUser + "-" + appSecureHash);
