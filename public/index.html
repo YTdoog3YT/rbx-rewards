@@ -2,8 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-<head>
-  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-adsense-account" content="ca-pub-6665069359963275">
   <title>RBX Rewards - Earn Free Robux</title>
@@ -30,15 +28,17 @@
     .nav-item:hover { background: #1f232e; color: #fff; }
     .nav-item.active { background: #00e676; color: #000; }
 
-    .adsense-sidebar, .adsense-banner { padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .adsense-sidebar, .adsense-banner { padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; max-width: 100%; }
     .adsense-banner { margin-bottom: 20px; }
 
-    .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; }
+    /* DODANE min-width: 0 żeby flexbox nie wymuszał rozszerzania na siłę */
+    .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; min-width: 0; }
     
-    header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
+    /* Zmiana w headerze: elastyczne zawijanie */
+    header { width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
     .lang-selector select { background: #14171d; color: #fff; border: 1px solid #333947; padding: 8px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; }
     
-    .user-info { display: flex; align-items: center; gap: 15px; justify-content: flex-end; }
+    .user-info { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
     
     .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; cursor: pointer; transition: 0.2s; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; height: 38px; }
     .points-badge:hover { background: #323846; box-shadow: 0 0 10px rgba(255, 183, 3, 0.4); transform: scale(1.05); }
@@ -81,17 +81,20 @@
     #iframeContainer { flex: 1; width: 100%; border-radius: 0 0 12px 12px; overflow: hidden; }
     #iframeContainer iframe { width: 100%; height: 100%; border: none; background: #fff; }
     
-    .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; }
-    .ticker-title { background: #00e676; color: #000; padding: 10px 15px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; z-index: 2; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-    .ticker-container { flex: 1; overflow: hidden; white-space: nowrap; }
+    /* POPRAWKA TICKERA - dodano min-width: 0 */
+    .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; min-width: 0; }
+    .ticker-title { background: #00e676; color: #000; padding: 10px 15px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; z-index: 2; box-shadow: 5px 0 15px rgba(0,0,0,0.5); flex-shrink: 0; }
+    .ticker-container { flex: 1; overflow: hidden; white-space: nowrap; min-width: 0; }
     .ticker-move { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
     .ticker-item { display: inline-block; margin-right: 40px; color: #e0e0e0; font-size: 0.95rem; }
     .ticker-item span { color: #ffb703; font-weight: bold; }
     @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
+    /* POPRAWKA TABEL - overflow-x aby na komórkach się przesuwały wewnątrz ramki */
     .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
-    .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
-    .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; }
+    .ref-table-container { width: 100%; overflow-x: auto; display: block; border-radius: 8px; }
+    .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; min-width: 300px; }
+    .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; white-space: nowrap; }
     .ref-table th { background: #1e1e26; color: #00e676; }
     .ref-table tr:hover { background: #14171d; }
 
@@ -102,10 +105,10 @@
     .faq-answer { display: none; color: #a0a0a0; margin-top: 10px; font-size: 0.95rem; line-height: 1.5; }
     
     footer { padding-bottom: 100px; padding-top: 20px; text-align: center; border-top: 1px solid #2a2e39; font-size: 0.9rem; }
-    footer .legal-links a { color: #00e676; text-decoration: none; margin: 0 10px; transition: 0.2s; }
+    footer .legal-links a { color: #00e676; text-decoration: none; margin: 0 10px; transition: 0.2s; display: inline-block; margin-bottom: 5px; }
     footer .legal-links a:hover { color: #fff; }
     
-    .social-links { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+    .social-links { margin-top: 20px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
     .social-links a { color: #a0a0b0; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 50%; background: #14171d; border: 1px solid #2a2e39; transition: all 0.3s; text-decoration: none; }
     .social-links a svg { width: 22px; height: 22px; fill: currentColor; }
     .social-links a.twitch:hover { color: #9146FF; border-color: #9146FF; transform: translateY(-3px); }
@@ -120,7 +123,7 @@
     .chat-body { flex: 1; padding: 10px; overflow-y: auto; background: #0f1115; display: flex; flex-direction: column; gap: 8px; }
     .chat-msg { background: #1e1e26; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; color: #e0e0e0; border-left: 3px solid #00e676; word-break: break-word;}
     .chat-input-area { display: flex; padding: 10px; background: #181b22; border-top: 1px solid #2a2e39; gap: 8px; }
-    .chat-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; outline: none; }
+    .chat-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; outline: none; min-width: 0; }
     .chat-input-area button { background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
     .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #14171d; border-top: 1px solid #2a2e39; z-index: 9999; justify-content: space-around; padding: 10px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
@@ -133,53 +136,16 @@
         to { transform: translateX(0); opacity: 1; }
     }
     .twitch-widget {
-        position: fixed;
-        bottom: 20px;
-        left: 20px; 
-        width: 320px;
-        background: #181b22;
-        border: 2px solid #9146FF; 
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 0 25px rgba(145, 70, 255, 0.4);
-        z-index: 1000;
-        display: none; 
-        animation: slideInLeft 0.5s ease-out forwards;
+        position: fixed; bottom: 20px; left: 20px; width: 320px; background: #181b22; border: 2px solid #9146FF; 
+        border-radius: 12px; overflow: hidden; box-shadow: 0 0 25px rgba(145, 70, 255, 0.4); z-index: 1000;
+        display: none; animation: slideInLeft 0.5s ease-out forwards;
     }
-    .twitch-header {
-        background: #9146FF;
-        color: #fff;
-        padding: 8px 15px;
-        font-weight: bold;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.95rem;
-    }
-    .twitch-header .close-btn {
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 1.2rem;
-        transition: 0.2s;
-    }
-    .twitch-header .close-btn:hover {
-        color: #ff3333;
-    }
-    .twitch-player-container {
-        position: relative;
-        width: 320px;
-        height: 180px;
-        background: #000;
-    }
-    .twitch-overlay-link {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 10;
-        cursor: pointer;
-    }
+    .twitch-header { background: #9146FF; color: #fff; padding: 8px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; }
+    .twitch-header .close-btn { cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.2s; }
+    .twitch-header .close-btn:hover { color: #ff3333; }
+    .twitch-player-container { position: relative; width: 320px; height: 180px; background: #000; }
+    .twitch-overlay-link { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer; }
+    
     @media (max-width: 900px) { 
         .side-nav-container { display: none; } 
         .mobile-nav { display: flex; }
@@ -187,6 +153,33 @@
         .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } 
         .chat-widget:not(.minimized) { height: 350px; }
         .twitch-widget { display: none !important; }
+    }
+
+    /* MOCNE ZABEZPIECZENIA NA MAŁE EKRANY TELEFONÓW */
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        .page-layout { gap: 10px; }
+        .content-box { padding: 15px; }
+        
+        /* Naprawa paska na górze */
+        header { flex-direction: column; gap: 12px; padding: 15px; text-align: center; }
+        .user-info { width: 100%; justify-content: center; }
+        .points-badge { width: 100%; margin-bottom: 5px; }
+        .btn-withdraw, .btn-login { flex: 1; }
+        
+        /* Naprawa paska Live Earners */
+        .ticker-wrap { flex-direction: column; align-items: stretch; border-radius: 8px; }
+        .ticker-title { text-align: center; border-radius: 8px 8px 0 0; }
+        
+        /* Złamanie długich tekstów w polach z linkiem referencyjnym */
+        .ref-link-box { flex-direction: column; text-align: center; word-break: break-all; }
+        .ref-link-box button { width: 100%; margin-top: 10px !important; }
+        .ref-link-box span { font-size: 0.95rem !important; }
+        
+        /* Naprawa modala od wypłaty */
+        .withdraw-input-row { flex-wrap: wrap; }
+        .withdraw-input-row input { width: 100%; min-width: 100% !important; margin-bottom: 10px !important; }
+        .withdraw-input-row button { width: 100% !important; flex: 1 1 100% !important; }
     }
   </style>
 </head>
@@ -248,10 +241,10 @@
         <h2 class="section-title" data-lang="earnTitle">Earn Real Money for Robux!</h2>
 
         <!-- BANER LOGOWANIA -->
-        <div id="loginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 30px 0;">
-            <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
+        <div id="loginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 20px 0;">
+            <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px 20px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
                 <div class="logo-container" style="margin-bottom: 25px;">
-                    <img src="/logo.png" alt="RBX Rewards Logo" class="login-banner-logo" style="max-width: 180px; filter: drop-shadow(0px 0px 15px rgba(0, 230, 118, 0.6));">
+                    <img src="/logo.png" alt="RBX Rewards Logo" class="login-banner-logo" style="max-width: 180px; width: 100%; filter: drop-shadow(0px 0px 15px rgba(0, 230, 118, 0.6));">
                 </div>
                 <h3 style="color: #fff; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 12px;" data-lang="startEarning">Start Earning Real Money for Robux! 💎</h3>
                 <p style="color: #b0b5c0; font-size: 1.05rem; margin-bottom: 25px; line-height: 1.5;" data-lang="startDesc">Enter your Roblox username below so we know where to send your rewards. No passwords required.</p>
@@ -286,12 +279,14 @@
 
         <div class="content-box" id="recentPayoutsBox">
             <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">💸 Recent Cashouts</h3>
-            <table class="ref-table">
-                <thead><tr><th data-lang="tableUser">User</th><th data-lang="tableAmount">Amount</th><th data-lang="tableTime">Time</th></tr></thead>
-                <tbody id="recentPayoutsBody">
-                    <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading real cashouts...</td></tr>
-                </tbody>
-            </table>
+            <div class="ref-table-container">
+              <table class="ref-table">
+                  <thead><tr><th data-lang="tableUser">User</th><th data-lang="tableAmount">Amount</th><th data-lang="tableTime">Time</th></tr></thead>
+                  <tbody id="recentPayoutsBody">
+                      <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading real cashouts...</td></tr>
+                  </tbody>
+              </table>
+            </div>
         </div>
 
         <div class="content-box faq-section">
@@ -318,13 +313,13 @@
           <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="refInfo">Your Referral Info</h3>
           <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="refDesc">Tell your friends to enter your username below, or share your custom link! You will earn a massive 15% of all Robux they make for life!</p>
           <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;" data-lang="refCodeLabel">Your Code (Username):</h4>
-          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; margin-bottom: 15px;">
+          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; word-break: break-all;">
               <span id="myRefCodeDisplay">Log in first</span>
           </div>
           <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;" data-lang="refLinkLabel">Your Custom Link:</h4>
-          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
               <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-all;">Log in first</span>
-              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
+              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem; flex-shrink: 0;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
           </div>
         </div>
         <div id="redeemCodeSection" class="content-box">
@@ -340,10 +335,12 @@
               <option value="7days" selected>Last 7 Days</option>
               <option value="30days">Last 30 Days</option>
           </select>
-          <table class="ref-table">
-              <thead><tr><th data-lang="tableFriend">Friend's Username</th><th data-lang="tableEarned">You Earned (15%)</th></tr></thead>
-              <tbody id="refTableBody"><tr><td colspan="2" style="text-align: center; color: #888;" data-lang="loadingStats">Loading stats...</td></tr></tbody>
-          </table>
+          <div class="ref-table-container">
+            <table class="ref-table">
+                <thead><tr><th data-lang="tableFriend">Friend's Username</th><th data-lang="tableEarned">You Earned (15%)</th></tr></thead>
+                <tbody id="refTableBody"><tr><td colspan="2" style="text-align: center; color: #888;" data-lang="loadingStats">Loading stats...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </main>
 
@@ -358,10 +355,12 @@
         </div>
         <div id="promoHistorySection" class="content-box" style="display: none;">
           <h3 style="color: #fff; margin-bottom: 15px;" data-lang="promoHistoryTitle">Your Redeemed Codes</h3>
-          <table class="ref-table">
-              <thead><tr><th data-lang="tableDate">Date</th><th data-lang="tableCode">Code</th><th data-lang="tableEarned">Earned</th></tr></thead>
-              <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading history...</td></tr></tbody>
-          </table>
+          <div class="ref-table-container">
+            <table class="ref-table">
+                <thead><tr><th data-lang="tableDate">Date</th><th data-lang="tableCode">Code</th><th data-lang="tableEarned">Earned</th></tr></thead>
+                <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading history...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </main>
 
@@ -448,8 +447,8 @@
       
       <input type="email" id="paypalEmail" placeholder="PayPal Email" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
       
-      <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
-          <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box; min-width: 50%;">
+      <div class="withdraw-input-row" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
+          <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; min-width: 0; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box;">
           <button style="width: auto; flex: 0 0 auto; background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 10px 20px; font-weight: bold; cursor: pointer; transition: 0.2s; height: 42px; box-sizing: border-box;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
       </div>
       
