@@ -31,19 +31,18 @@
     .adsense-sidebar, .adsense-banner { padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; max-width: 100%; }
     .adsense-banner { margin-bottom: 20px; }
 
-    /* DODANE min-width: 0 żeby flexbox nie wymuszał rozszerzania na siłę */
     .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; min-width: 0; }
     
-    /* Zmiana w headerze: elastyczne zawijanie */
     header { width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
     .lang-selector select { background: #14171d; color: #fff; border: 1px solid #333947; padding: 8px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; }
     
-    .user-info { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+    .user-info { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
     
     .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; cursor: pointer; transition: 0.2s; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; height: 38px; }
     .points-badge:hover { background: #323846; box-shadow: 0 0 10px rgba(255, 183, 3, 0.4); transform: scale(1.05); }
     
-    .btn-login, .btn-withdraw { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; height: 38px; }
+    /* Zablokowana szerokość na auto, żeby przyciski nie rosły jak popieprzone na PC */
+    .btn-login, .btn-withdraw { width: auto; padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; height: 38px; }
     .btn-login { background: #00e676; }
     .btn-login:hover { background: #00c853; }
     .btn-withdraw { background: #ffb703; display: none; }
@@ -52,7 +51,7 @@
     .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
     .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
     
-    .btn-action { background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-block; margin-top: 15px; }
+    .btn-action { width: auto; background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-block; margin-top: 15px; }
     .btn-action:hover { background: #00c853; }
     
     .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
@@ -61,6 +60,7 @@
 
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
     .modal-content input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
+    .modal-content button { width: 100%; } /* W modalach buttony na 100% */
     
     .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
     .offer-card { position: relative; background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 1px solid #2a2e39; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; }
@@ -81,7 +81,6 @@
     #iframeContainer { flex: 1; width: 100%; border-radius: 0 0 12px 12px; overflow: hidden; }
     #iframeContainer iframe { width: 100%; height: 100%; border: none; background: #fff; }
     
-    /* POPRAWKA TICKERA - dodano min-width: 0 */
     .ticker-wrap { width: 100%; background: #14171d; border: 1px solid #333947; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; min-width: 0; }
     .ticker-title { background: #00e676; color: #000; padding: 10px 15px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; z-index: 2; box-shadow: 5px 0 15px rgba(0,0,0,0.5); flex-shrink: 0; }
     .ticker-container { flex: 1; overflow: hidden; white-space: nowrap; min-width: 0; }
@@ -90,7 +89,6 @@
     .ticker-item span { color: #ffb703; font-weight: bold; }
     @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-    /* POPRAWKA TABEL - overflow-x aby na komórkach się przesuwały wewnątrz ramki */
     .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
     .ref-table-container { width: 100%; overflow-x: auto; display: block; border-radius: 8px; }
     .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; min-width: 300px; }
@@ -124,7 +122,7 @@
     .chat-msg { background: #1e1e26; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; color: #e0e0e0; border-left: 3px solid #00e676; word-break: break-word;}
     .chat-input-area { display: flex; padding: 10px; background: #181b22; border-top: 1px solid #2a2e39; gap: 8px; }
     .chat-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; outline: none; min-width: 0; }
-    .chat-input-area button { background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .chat-input-area button { width: auto; background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
     .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #14171d; border-top: 1px solid #2a2e39; z-index: 9999; justify-content: space-around; padding: 10px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
     .mobile-nav .nav-item { flex: 1; text-align: center; color: #a0a0a0; text-decoration: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
@@ -155,28 +153,25 @@
         .twitch-widget { display: none !important; }
     }
 
-    /* MOCNE ZABEZPIECZENIA NA MAŁE EKRANY TELEFONÓW */
+    /* MOCNE ZABEZPIECZENIA TYLKO NA MAŁE EKRANY TELEFONÓW */
     @media (max-width: 600px) {
         body { padding: 10px; }
         .page-layout { gap: 10px; }
         .content-box { padding: 15px; }
         
-        /* Naprawa paska na górze */
+        /* Naprawa paska na górze - na telefonie ułożą się ładnie w rzędzie */
         header { flex-direction: column; gap: 12px; padding: 15px; text-align: center; }
-        .user-info { width: 100%; justify-content: center; }
+        .user-info { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
         .points-badge { width: 100%; margin-bottom: 5px; }
-        .btn-withdraw, .btn-login { flex: 1; }
+        .btn-withdraw, .btn-login { width: 48% !important; margin: 0; }
         
-        /* Naprawa paska Live Earners */
         .ticker-wrap { flex-direction: column; align-items: stretch; border-radius: 8px; }
         .ticker-title { text-align: center; border-radius: 8px 8px 0 0; }
         
-        /* Złamanie długich tekstów w polach z linkiem referencyjnym */
         .ref-link-box { flex-direction: column; text-align: center; word-break: break-all; }
-        .ref-link-box button { width: 100%; margin-top: 10px !important; }
+        .ref-link-box button { width: 100% !important; margin-top: 10px !important; }
         .ref-link-box span { font-size: 0.95rem !important; }
         
-        /* Naprawa modala od wypłaty */
         .withdraw-input-row { flex-wrap: wrap; }
         .withdraw-input-row input { width: 100%; min-width: 100% !important; margin-bottom: 10px !important; }
         .withdraw-input-row button { width: 100% !important; flex: 1 1 100% !important; }
@@ -231,7 +226,6 @@
         </div>
       </header>
 
-      <!-- ZAKŁADKA 1: HOME -->
       <main id="tab-home">
         <div class="ticker-wrap">
           <div class="ticker-title" data-lang="liveEarners">🔥 Live Earners</div>
@@ -240,7 +234,6 @@
 
         <h2 class="section-title" data-lang="earnTitle">Earn Real Money for Robux!</h2>
 
-        <!-- BANER LOGOWANIA -->
         <div id="loginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 20px 0;">
             <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px 20px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
                 <div class="logo-container" style="margin-bottom: 25px;">
@@ -248,7 +241,7 @@
                 </div>
                 <h3 style="color: #fff; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 12px;" data-lang="startEarning">Start Earning Real Money for Robux! 💎</h3>
                 <p style="color: #b0b5c0; font-size: 1.05rem; margin-bottom: 25px; line-height: 1.5;" data-lang="startDesc">Enter your Roblox username below so we know where to send your rewards. No passwords required.</p>
-                <button class="btn-action" style="padding: 15px; font-size: 1.1rem; width: 100%; border-radius: 8px;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
+                <button class="btn-action" style="width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 8px;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
             </div>
         </div>
 
@@ -306,7 +299,6 @@
         </div>
       </main>
 
-      <!-- ZAKŁADKA 2: REFERRALS -->
       <main id="tab-referrals" style="display: none;">
         <h2 class="section-title" data-lang="refTitle">Invite Friends & Earn 15%</h2>
         <div class="content-box">
@@ -318,8 +310,8 @@
           </div>
           <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;" data-lang="refLinkLabel">Your Custom Link:</h4>
           <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-              <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-all;">Log in first</span>
-              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem; flex-shrink: 0;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
+              <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-word;">Log in first</span>
+              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem; flex-shrink: 0; width: auto;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
           </div>
         </div>
         <div id="redeemCodeSection" class="content-box">
@@ -344,7 +336,6 @@
         </div>
       </main>
 
-      <!-- ZAKŁADKA 3: PROMO CODES -->
       <main id="tab-promocodes" style="display: none;">
         <h2 class="section-title" data-lang="promoTitle">Redeem Promo Codes</h2>
         <div class="content-box">
@@ -364,7 +355,6 @@
         </div>
       </main>
 
-      <!-- ZAKŁADKA 4: SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
         <div class="content-box">
@@ -376,7 +366,6 @@
         </div>
       </main>
 
-      <!-- Stopka -->
       <footer>
           <div class="legal-links" style="margin-bottom: 15px;">
               <a href="blog.html" target="_blank">Blog & Guides</a> | 
@@ -410,7 +399,6 @@
       </div>
   </div>
 
-  <!-- WIDGET TWITCH -->
   <div class="twitch-widget" id="twitchWidget">
       <div class="twitch-header">
           <span>🔴 LIVE: ttv_ytdoog3yt</span>
@@ -422,7 +410,6 @@
       </div>
   </div>
 
-  <!-- MODALS -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <h3 style="color: #fff;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
