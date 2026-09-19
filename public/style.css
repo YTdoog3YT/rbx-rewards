@@ -1,6 +1,9 @@
 /* =========================================
    0. RESET I BLOKADA PRZEWIJANIA (MOBILKI)
    ========================================= */
+   * {
+    border: 1px solid red !important;
+}
 * {
     box-sizing: border-box;
 }
