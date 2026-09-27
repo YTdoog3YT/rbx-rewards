@@ -30,6 +30,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// --- UKRYTY ENDPOINT DLA UPTIMEROBOTA (BEZPIECZNY DLA ADSENSE) ---
+app.get('/ping', (req, res) => {
+    res.status(200).send('OK');
+});
+
 const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
 
 mongoose.connect(MONGO_URI).then(() => console.log('✅ Baza MongoDB gotowa!')).catch(err => console.error(err));
@@ -274,7 +279,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
         if (referredUsernames.length === 0) return res.json([]);
 
         const earnings = await Earning.aggregate([
-            { $match: { username: { $in: referredUsernames }, createdAt: { $gte: startDate, $lte: endDate } } },
+            { $match: { username: {$in: referredUsernames }, createdAt: { $gte: startDate,$lte: endDate } } },
             { $group: { _id: "$username", totalEarned: { $sum: "$amount" } } }
         ]);
         const finalStats = referredUsernames.map(ru => {
