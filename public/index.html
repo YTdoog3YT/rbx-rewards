@@ -41,7 +41,6 @@
     .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; cursor: pointer; transition: 0.2s; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; height: 38px; }
     .points-badge:hover { background: #323846; box-shadow: 0 0 10px rgba(255, 183, 3, 0.4); transform: scale(1.05); }
     
-    /* Zablokowana szerokość na auto, żeby przyciski nie rosły jak popieprzone na PC */
     .btn-login, .btn-withdraw { width: auto; padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; height: 38px; }
     .btn-login { background: #00e676; }
     .btn-login:hover { background: #00c853; }
@@ -60,7 +59,7 @@
 
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
     .modal-content input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
-    .modal-content button { width: 100%; } /* W modalach buttony na 100% */
+    .modal-content button { width: 100%; } 
     
     .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
     .offer-card { position: relative; background: #1e1e26; border-radius: 12px; padding: 20px 10px; cursor: pointer; border: 1px solid #2a2e39; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; }
@@ -245,7 +244,8 @@
             </div>
         </div>
 
-        <div id="offerwallSection" class="content-box" style="display: none; padding: 15px;">
+        <!-- USUNIĘTO "display: none;" Z OFFERWALL SECTION -->
+        <div id="offerwallSection" class="content-box" style="padding: 15px;">
           <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
           <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose an Offerwall</h3>
           <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;" data-lang="offerDesc">Select a network below to start earning Robux.</p>
@@ -297,6 +297,19 @@
                 <div class="faq-answer" data-lang="a3">Survey availability depends on your region, age, and profile. Always provide honest and consistent answers!</div>
             </div>
         </div>
+
+        <!-- MOCNY ARTYKUŁ SEO SPECJALNIE DLA BOTA GOOGLE ADSENSE -->
+        <div class="content-box seo-article" style="text-align: left; margin-top: 40px; color: #a0a0a0; line-height: 1.6;">
+            <h2 style="color: #00e676; margin-bottom: 15px; font-size: 1.5rem;">How to Earn Free Robux Safely in 2026?</h2>
+            <p style="margin-bottom: 15px;">Welcome to RBX Rewards, the premier platform designed to help you earn real money and convert it directly into Robux for your favorite Roblox games. In the dynamic world of online gaming, getting virtual currency can sometimes be expensive. Our platform bridges that gap by offering a legitimate, secure, and user-friendly way to get free Robux without ever asking for your sensitive passwords.</p>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.2rem;">Why Choose RBX Rewards?</h3>
+            <p style="margin-bottom: 15px;">Unlike many other sites that promise unrealistic rewards, we partner with trusted market research companies like CPX Research, TheoremReach, and Jitscape. By simply sharing your opinion in high-paying surveys, testing new mobile applications, or playing selected Roblox games, you generate real value. We share that revenue directly with you. You can exchange your earned points for direct PayPal cashouts, making it incredibly easy to purchase Robux or anything else you desire.</p>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.2rem;">Security and Privacy First</h3>
+            <p style="margin-bottom: 15px;">Your safety is our top priority. We operate on a strict "No Password Required" policy. All we need is your Roblox username to know where to assign your earned rewards and track your progress. Our integrated Discord bot and live support system ensure that if you ever encounter an issue, our administration team is ready to assist you instantly. Furthermore, our strict Anti-Fraud system protects our community and ensures fair payouts for everyone.</p>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.2rem;">Join Our Growing Community</h3>
+            <p>Don't miss out on exclusive promo codes, regular giveaways, and a generous 15% lifetime referral bonus. Share your custom link with friends, and watch your balance grow passively. Stay connected with us through our Twitch streams, Discord server, and YouTube channel. Start your journey today and unlock premium Roblox items, game passes, and avatars with RBX Rewards!</p>
+        </div>
+
       </main>
 
       <main id="tab-referrals" style="display: none;">
@@ -999,16 +1012,15 @@
     let currentUserJitscapeUrl = "";
     let currentUserTheoremReachUrl = "";
 
-    const jitscapePubId = "plc_xHHxjKbb5p5P";
-    const jitscapeSecret = "vrx_pub_OnJTafRy9KWQMss5eJCVfdas6Rsn9Y7Z";
-    const theoremReachApiKey = "23948d93f92a592c17bcff445d16";
-
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
+      
+      // 🔥 OTWARCIE STRONY DLA BOTA GOOGLE ADSENSE
+      document.getElementById("offerwallSection").style.display = "block";
+
       if (savedUser) {
         document.getElementById("loginBtn").innerText = savedUser;
         document.getElementById("loginPrompt").style.display = "none";
-        document.getElementById("offerwallSection").style.display = "block";
         document.getElementById("withdrawBtn").style.display = "inline-block"; 
         
         const codeDisplay = document.getElementById("myRefCodeDisplay");
@@ -1039,7 +1051,6 @@
       } else {
         document.getElementById("loginBtn").innerText = translations[document.getElementById('langSelect').value || 'en'].btnLogin;
         document.getElementById("loginPrompt").style.display = "block";
-        document.getElementById("offerwallSection").style.display = "none";
         document.getElementById("withdrawBtn").style.display = "none";
         document.getElementById("referralStatsSection").style.display = "none";
         document.getElementById("promoHistorySection").style.display = "none";
@@ -1050,6 +1061,10 @@
     }
 
     function openOfferwall(networkId, networkName) {
+      // 🔥 ZABEZPIECZENIE: Jeśli niezalogowany kliknie kafel, otworzy się logowanie
+      const savedUser = localStorage.getItem("rbx_username");
+      if (!savedUser) return openLoginModal();
+
       document.getElementById('offerModalTitle').innerText = networkName;
       let finalUrl = "";
       
