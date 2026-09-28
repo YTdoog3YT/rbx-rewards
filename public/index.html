@@ -46,6 +46,10 @@
     .btn-login:hover { background: #00c853; }
     .btn-withdraw { background: #ffb703; display: none; }
     .btn-withdraw:hover { background: #ff9e00; }
+
+    /* Nowy przycisk wylogowania */
+    .btn-logout { width: auto; padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #fff; height: 38px; background: #ff3333; display: none; }
+    .btn-logout:hover { background: #cc0000; }
     
     .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
     .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
@@ -152,17 +156,15 @@
         .twitch-widget { display: none !important; }
     }
 
-    /* MOCNE ZABEZPIECZENIA TYLKO NA MAŁE EKRANY TELEFONÓW */
     @media (max-width: 600px) {
         body { padding: 10px; }
         .page-layout { gap: 10px; }
         .content-box { padding: 15px; }
         
-        /* Naprawa paska na górze - na telefonie ułożą się ładnie w rzędzie */
         header { flex-direction: column; gap: 12px; padding: 15px; text-align: center; }
         .user-info { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
         .points-badge { width: 100%; margin-bottom: 5px; }
-        .btn-withdraw, .btn-login { width: 48% !important; margin: 0; }
+        .btn-withdraw, .btn-login, .btn-logout { width: 48% !important; margin: 0; }
         
         .ticker-wrap { flex-direction: column; align-items: stretch; border-radius: 8px; }
         .ticker-title { text-align: center; border-radius: 8px 8px 0 0; }
@@ -221,6 +223,12 @@
         <div class="user-info">
           <div class="points-badge" onclick="openHistoryModal()" title="Click to view history">Robux: <span id="userPoints" style="margin: 0 4px;">0.00</span> R$</div>
           <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()" data-lang="btnWithdraw">Withdraw</button>
+          
+          <!-- Przycisk wylogowania -->
+          <button class="btn-logout" id="logoutBtn" onclick="logoutUser()">
+              <span data-lang="btnLogout">Logout</span> (<span id="loggedUserName" style="opacity: 0.8; font-weight: normal;"></span>)
+          </button>
+          
           <button class="btn-login" id="loginBtn" onclick="openLoginModal()" data-lang="btnLogin">Login</button>
         </div>
       </header>
@@ -244,7 +252,6 @@
             </div>
         </div>
 
-        <!-- USUNIĘTO "display: none;" Z OFFERWALL SECTION -->
         <div id="offerwallSection" class="content-box" style="padding: 15px;">
           <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
           <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose an Offerwall</h3>
@@ -494,7 +501,7 @@
         en: {
             navHome: "🏠 Home", navRef: "👥 Referrals", navPromo: "🎫 Promo Codes", navSupport: "🛠️ Support",
             navHomeMob: "Home", navRefMob: "Ref", navPromoMob: "Promo", navSupMob: "Support",
-            btnWithdraw: "Withdraw", btnLogin: "Login", btnCancel: "Cancel",
+            btnWithdraw: "Withdraw", btnLogin: "Login", btnLogout: "Logout", btnCancel: "Cancel",
             liveEarners: "🔥 Live Earners", earnTitle: "Earn Real Money for Robux!", loadingStats: "Loading...",
             emptyEarners: "Be the first to earn Robux!",
             startEarning: "Start Earning Real Money for Robux! 💎", startDesc: "Enter your Roblox username below so we know where to send your rewards. No passwords required.",
@@ -528,7 +535,7 @@
         pl: {
             navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
             navHomeMob: "Główna", navRefMob: "Zaproś", navPromoMob: "Kody", navSupMob: "Pomoc",
-            btnWithdraw: "Wypłać", btnLogin: "Zaloguj", btnCancel: "Zamknij",
+            btnWithdraw: "Wypłać", btnLogin: "Zaloguj", btnLogout: "Wyloguj", btnCancel: "Zamknij",
             liveEarners: "🔥 Na żywo", earnTitle: "Zarabiaj Prawdziwe Pieniądze na Robuxy!", loadingStats: "Ładowanie...",
             emptyEarners: "Bądź pierwszy, który zarobi Robuxy!",
             startEarning: "Zacznij Zarabiać Prawdziwe Pieniądze na Robuxy! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.",
@@ -562,7 +569,7 @@
         de: {
             navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
             navHomeMob: "Start", navRefMob: "Partner", navPromoMob: "Codes", navSupMob: "Support",
-            btnWithdraw: "Auszahlen", btnLogin: "Einloggen", btnCancel: "Abbrechen",
+            btnWithdraw: "Auszahlen", btnLogin: "Einloggen", btnLogout: "Abmelden", btnCancel: "Abbrechen",
             liveEarners: "🔥 Live-Verdiener", earnTitle: "Verdiene echtes Geld für Robux!", loadingStats: "Lädt...",
             emptyEarners: "Sei der Erste, der Robux verdient!",
             startEarning: "Verdiene echtes Geld für Robux! 💎", startDesc: "Gib unten deinen Roblox-Namen ein. Wir fragen nie nach deinem Passwort.",
@@ -596,7 +603,7 @@
         ru: {
             navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
             navHomeMob: "Главная", navRefMob: "Рефы", navPromoMob: "Коды", navSupMob: "Помощь",
-            btnWithdraw: "Вывод", btnLogin: "Войти", btnCancel: "Отмена",
+            btnWithdraw: "Вывод", btnLogin: "Войти", btnLogout: "Выйти", btnCancel: "Отмена",
             liveEarners: "🔥 Прямой эфир", earnTitle: "Зарабатывай реальные деньги на Robux!", loadingStats: "Загрузка...",
             emptyEarners: "Будь первым, кто заработает Robux!",
             startEarning: "Зарабатывай реальные деньги на Robux! 💎", startDesc: "Введи свой никнейм Roblox ниже. Пароль не требуется.",
@@ -1019,7 +1026,10 @@
       document.getElementById("offerwallSection").style.display = "block";
 
       if (savedUser) {
-        document.getElementById("loginBtn").innerText = savedUser;
+        document.getElementById("loginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        document.getElementById("loggedUserName").innerText = savedUser;
+
         document.getElementById("loginPrompt").style.display = "none";
         document.getElementById("withdrawBtn").style.display = "inline-block"; 
         
@@ -1049,7 +1059,9 @@
         
         currentUserTheoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${theoremReachApiKey}&user_id=${encodeURIComponent(savedUser)}`;
       } else {
-        document.getElementById("loginBtn").innerText = translations[document.getElementById('langSelect').value || 'en'].btnLogin;
+        document.getElementById("loginBtn").style.display = "inline-block";
+        document.getElementById("logoutBtn").style.display = "none";
+
         document.getElementById("loginPrompt").style.display = "block";
         document.getElementById("withdrawBtn").style.display = "none";
         document.getElementById("referralStatsSection").style.display = "none";
@@ -1058,6 +1070,14 @@
         const chatWidget = document.getElementById("chatWidget");
         if (chatWidget) chatWidget.style.display = "none";
       }
+    }
+
+    // Nowa funkcja do wylogowywania
+    function logoutUser() {
+        localStorage.removeItem("rbx_username");
+        localStorage.removeItem("rbx_points");
+        localStorage.removeItem("rbx_linked_paypal");
+        window.location.reload();
     }
 
     function openOfferwall(networkId, networkName) {
