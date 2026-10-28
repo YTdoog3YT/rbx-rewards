@@ -105,3 +105,59 @@ button:hover {
 .login-box button {
     width: 100%;
 }
+
+/* =========================================
+   3. PASEK COOKIES (RODO / GDPR)
+   ========================================= */
+.cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #14171d;
+    border-top: 1px solid #333947;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 99999;
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+    box-sizing: border-box;
+    gap: 15px;
+}
+
+.cookie-banner p {
+    color: #a0a0a0;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.cookie-banner a {
+    color: #00e676;
+    text-decoration: none;
+}
+
+.cookie-banner button {
+    width: auto;
+    background: #00e676;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+.cookie-banner button:hover {
+    background: #00c853;
+}
+
+@media (max-width: 600px) {
+    .cookie-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+}

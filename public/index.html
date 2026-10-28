@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-adsense-account" content="ca-pub-6665069359963275">
-  <title>RBX Rewards - Earn Free Robux</title>
+  <title>RBX Rewards - Roblox Community, Quests & Guides</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/style.css">
   
@@ -12,7 +12,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
-  
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
   <style>
@@ -20,7 +19,6 @@
     body { background-color: #0f1115; color: #ffffff; padding: 20px; }
     
     .page-layout { display: flex; justify-content: center; align-items: flex-start; gap: 20px; width: 100%; max-width: 1450px; margin: 0 auto; }
-    
     .side-nav-container { display: flex; flex-direction: column; gap: 20px; width: 220px; flex-shrink: 0; position: sticky; top: 20px; }
     .side-nav { background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 20px 15px; }
     .nav-logo { font-size: 1.5rem; font-weight: bold; color: #00e676; margin-bottom: 30px; text-align: center; }
@@ -28,39 +26,124 @@
     .nav-item:hover { background: #1f232e; color: #fff; }
     .nav-item.active { background: #00e676; color: #000; }
 
-    .adsense-sidebar, .adsense-banner { padding: 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; max-width: 100%; }
-    .adsense-banner { margin-bottom: 20px; }
+    .adsense-sidebar, .adsense-banner { position: relative; padding: 30px 10px 10px 10px; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; max-width: 100%; min-height: 120px; background: #14171d; border: 1px dashed #333947; border-radius: 8px; }
+    .adsense-banner { margin-bottom: 25px; }
+    .adsense-sidebar::before, .adsense-banner::before { content: '- Advertisement -'; position: absolute; top: 8px; left: 0; width: 100%; text-align: center; font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 1.5px; pointer-events: none; }
 
     .main-content { flex: 1; width: 100%; max-width: 850px; display: flex; flex-direction: column; min-width: 0; }
-    
     header { width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 15px 20px; background: #181b22; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2e39; }
     .lang-selector select { background: #14171d; color: #fff; border: 1px solid #333947; padding: 8px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; }
     
     .user-info { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
-    
     .points-badge { background: #252a34; padding: 8px 15px; border-radius: 20px; font-weight: bold; color: #ffb703; border: 1px solid #ffb703; cursor: pointer; transition: 0.2s; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; height: 38px; }
     .points-badge:hover { background: #323846; box-shadow: 0 0 10px rgba(255, 183, 3, 0.4); transform: scale(1.05); }
     
-    .btn-login, .btn-withdraw { width: auto; padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #000; height: 38px; }
-    .btn-login { background: #00e676; }
-    .btn-login:hover { background: #00c853; }
-    .btn-withdraw { background: #ffb703; display: none; }
-    .btn-withdraw:hover { background: #ff9e00; }
-
-    /* Nowy przycisk wylogowania */
-    .btn-logout { width: auto; padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #fff; height: 38px; background: #ff3333; display: none; }
-    .btn-logout:hover { background: #cc0000; }
+    .btn-login, .btn-withdraw, .btn-logout { width: auto; padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; height: 38px; }
+    .btn-login { color: #000; background: #00e676; } .btn-login:hover { background: #00c853; }
+    .btn-withdraw { color: #000; background: #ffb703; } .btn-withdraw:hover { background: #ff9e00; }
+    .btn-logout { color: #fff; background: #ff3333; display: none; } .btn-logout:hover { background: #cc0000; }
+    body.on-home-tab .points-badge { display: none !important; }
     
-    .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; }
+    .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; text-align: left; }
     .content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
-    
     .btn-action { width: auto; background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-block; margin-top: 15px; }
     .btn-action:hover { background: #00c853; }
+    .btn-action:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+    /* GLOBALNY PASEK CELU */
+    .global-goal-bar { background: #14171d; border: 1px solid #333947; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: none; text-align: left; }
+    .global-goal-bar.active { display: block; }
     
+    /* SYSTEM POZIOMÓW I KOŁO FORTUNY */
+    .wheel-container { display: flex; flex-direction: column; align-items: center; background: #14171d; border: 1px solid #333947; padding: 25px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+    .wheel-stats { display: flex; gap: 20px; margin-bottom: 15px; width: 100%; justify-content: space-around; flex-wrap: wrap; }
+    .wheel-stat-box { background: #1e1e26; padding: 15px; border-radius: 8px; border: 1px solid #2a2e39; flex: 1; min-width: 120px; text-align: center; }
+    .wheel-stat-box span { display: block; color: #a0a0b0; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; }
+    .wheel-stat-box strong { color: #00e676; font-size: 1.3rem; }
+    .wheel-stat-box.streak strong { color: #ffb703; }
+
+    .spinner-window { width: 100%; height: 120px; background: #0f1115; border: 2px solid #2a2e39; border-radius: 8px; position: relative; margin: 20px 0; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+    .spinner-pointer { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #00e676; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 10px #00e676; }
+    .spinner-track { display: flex; height: 100%; position: absolute; left: 50%; transition: transform 5s cubic-bezier(0.1, 0.7, 0.1, 1); }
+    .spinner-tile { width: 100px; height: 100px; margin: 10px 5px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; color: #fff; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1); }
+    .tile-common { background: linear-gradient(135deg, #444, #222); border-bottom: 4px solid #777; }
+    .tile-rare { background: linear-gradient(135deg, #2b5876, #4e4376); border-bottom: 4px solid #4ea8de; }
+    .tile-epic { background: linear-gradient(135deg, #7b2cbf, #3c096c); border-bottom: 4px solid #9d4edd; }
+    .tile-legend { background: linear-gradient(135deg, #d00000, #6a040f); border-bottom: 4px solid #ff4d4d; }
+    .tile-jackpot { background: linear-gradient(135deg, #ffb703, #fb8500); border-bottom: 4px solid #ffd166; color: #000; text-shadow: 0 1px 5px rgba(255,255,255,0.5); }
+
+    .wheel-timer-box { margin-top: 15px; padding: 12px 20px; border-radius: 8px; background: #181b22; border: 1px solid #2a2e39; font-weight: bold; font-size: 1.05rem; display: none; }
+
+    .level-card { background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 15px; text-align: left; flex-wrap: wrap; transition: 0.2s; }
+    .level-card:hover { border-color: #00e676; }
+    .level-info { flex: 1; min-width: 200px; }
+    .level-info h4 { color: #fff; font-size: 1.15rem; margin-bottom: 5px; }
+    .level-info p { color: #a0a0b0; font-size: 0.9rem; margin-bottom: 10px; }
+    .progress-bar-bg { width: 100%; height: 10px; background: #252a34; border-radius: 10px; overflow: hidden; margin-bottom: 5px; position: relative; }
+    .progress-bar-fill { height: 100%; background: #00e676; width: 0%; transition: width 0.5s ease-in-out; }
+    .level-reward { font-size: 1.2rem; font-weight: bold; color: #ffb703; background: rgba(255, 183, 3, 0.1); padding: 8px 15px; border-radius: 8px; border: 1px solid #ffb703; white-space: nowrap; }
+
+    /* SYSTEM CELÓW */
+    .goal-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .goal-tab { flex: 1; padding: 10px; background: #14171d; border: 1px solid #333947; color: #a0a0b0; cursor: pointer; border-radius: 8px; font-weight: bold; text-align: center; }
+    .goal-tab.active { background: #00e676; color: #000; border-color: #00e676; }
+    .goal-form-section { background: #14171d; border: 1px solid #333947; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: left; }
+    .goal-form-section input { width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #2a2e39; color: #fff; border-radius: 6px; }
+    .goal-card { background: #1e1e26; border: 1px solid #2a2e39; padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: left; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .goal-img { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; background: #0f1115; flex-shrink: 0; }
+    .goal-details { flex: 1; min-width: 200px; }
+    .goal-details h4 { color: #fff; margin-bottom: 5px; font-size: 1.2rem; }
+    .goal-meta { font-size: 0.9rem; color: #a0a0b0; margin-bottom: 10px; }
+    .goal-status { font-weight: bold; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; text-transform: uppercase; }
+    .status-active { background: rgba(0, 230, 118, 0.15); color: #00e676; }
+    .status-completed { background: rgba(255, 183, 3, 0.15); color: #ffb703; }
+    .status-canceled { background: rgba(255, 51, 51, 0.15); color: #ff3333; }
+
+    /* RESZTA STYLÓW */
+    .hero-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 55px 20px; background: linear-gradient(180deg, #181b22 0%, #0f1115 100%); border: 1px solid #2a2e39; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0, 230, 118, 0.05); }
+    .hero-title { font-size: 2.6rem; font-weight: 900; margin-bottom: 15px; color: #fff; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .hero-title span { color: #00e676; }
+    .hero-subtitle { font-size: 1.08rem; color: #a0a0b0; max-width: 620px; margin: 0 auto 30px auto; line-height: 1.5; }
+    .hero-btn { background: #00e676; color: #000; font-size: 1.1rem; font-weight: 800; padding: 18px 40px; border: none; border-radius: 12px; cursor: pointer; transition: 0.3s; box-shadow: 0 8px 25px rgba(0, 230, 118, 0.4); text-transform: uppercase; letter-spacing: 1px; width: auto; }
+    .hero-btn:hover { background: #00c853; transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 230, 118, 0.6); }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .step-card { background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; padding: 20px; text-align: left; position: relative; transition: 0.3s; }
+    .step-card:hover { border-color: #00e676; transform: translateY(-3px); }
+    .step-badge { display: inline-block; background: rgba(0, 230, 118, 0.15); color: #00e676; font-weight: 900; font-size: 0.85rem; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; }
+    .step-card h3 { color: #fff; font-size: 1.15rem; margin-bottom: 8px; }
+    .step-card p { color: #a0a0b0; font-size: 0.92rem; line-height: 1.45; }
+
+    .guides-container { display: flex; flex-direction: column; gap: 20px; margin-bottom: 25px; text-align: left; }
+    .guide-article { background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; padding: 25px; line-height: 1.65; color: #b0b5c0; }
+    .guide-article h3 { color: #00e676; font-size: 1.3rem; margin-bottom: 12px; }
+    .guide-article h4 { color: #fff; font-size: 1.05rem; margin: 15px 0 8px 0; }
+    .guide-article p { margin-bottom: 12px; font-size: 0.96rem; }
+    .guide-meta { font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+    
+    .social-tasks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
+    .social-task-card { background: #14171d; border: 1px solid #2a2e39; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; text-align: left; }
+    .social-task-card:hover { transform: translateY(-5px); border-color: #00e676; box-shadow: 0 5px 15px rgba(0,230,118,0.15); }
+    .social-task-icon { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+    .social-task-icon svg { width: 22px; height: 22px; fill: #fff; }
+    .task-discord .social-task-icon { background: #5865F2; }
+    .task-youtube .social-task-icon { background: #FF0000; }
+    .social-task-info h4 { color: #fff; font-size: 0.95rem; margin-bottom: 3px; }
+    .social-task-info p { color: #00e676; font-size: 0.85rem; font-weight: bold; }
+
+    .podium-container { display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 30px 0 40px 0; }
+    .podium-step { background: #1e1e26; border-radius: 12px 12px 0 0; text-align: center; padding: 15px; width: 30%; border: 1px solid #2a2e39; border-bottom: none; box-shadow: 0 -5px 25px rgba(0,0,0,0.4); position: relative; }
+    .podium-1 { height: 190px; border-color: #ffd700; background: linear-gradient(180deg, rgba(255,215,0,0.15) 0%, #1e1e26 100%); z-index: 3; }
+    .podium-2 { height: 150px; border-color: #c0c0c0; background: linear-gradient(180deg, rgba(192,192,192,0.1) 0%, #1e1e26 100%); z-index: 2; }
+    .podium-3 { height: 120px; border-color: #cd7f32; background: linear-gradient(180deg, rgba(205,127,50,0.1) 0%, #1e1e26 100%); z-index: 1; }
+    .podium-avatar { font-size: 3.5rem; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .podium-name { font-weight: bold; color: #fff; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; }
+    .podium-score { color: #00e676; font-weight: 900; margin-top: 5px; font-size: 1.1rem; }
+    .rank-number { font-weight: 900; color: #555; width: 40px; text-align: center; font-size: 1.1rem; }
+
     .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
     .modal { background: rgba(0,0,0,0.95); } 
     .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 2000; } 
-
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
     .modal-content input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
     .modal-content button { width: 100%; } 
@@ -74,8 +157,7 @@
     .offer-logo { max-width: 140px; max-height: 45px; margin-bottom: 10px; object-fit: contain; }
     .badge { position: absolute; top: -12px; right: -10px; padding: 5px 12px; border-radius: 20px; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.5px; z-index: 2; }
     .badge-hot { background: #ff0055; color: #fff; }
-    .badge-new { background: #00e676; color: #000; }
-
+    
     .offer-modal-box { background: #181b22; width: 95%; max-width: 1200px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8); border: 1px solid #2a2e39; }
     .offer-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #2a2e39; }
     .offer-modal-header h2 { margin: 0; color: #00e676; font-size: 1.3rem; }
@@ -92,14 +174,14 @@
     .ticker-item span { color: #ffb703; font-weight: bold; }
     @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
-    .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; }
+    .ref-filter { width: 100%; padding: 10px; background: #0f1115; color: #fff; border: 1px solid #333; border-radius: 6px; margin-bottom: 15px; font-size: 1rem; cursor: pointer; outline: none; }
     .ref-table-container { width: 100%; overflow-x: auto; display: block; border-radius: 8px; }
     .ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; min-width: 300px; }
     .ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; white-space: nowrap; }
     .ref-table th { background: #1e1e26; color: #00e676; }
     .ref-table tr:hover { background: #14171d; }
 
-    .faq-section { text-align: left; margin-top: 30px; }
+    .faq-section { text-align: left; margin-top: 10px; }
     .faq-item { background: #14171d; border: 1px solid #2a2e39; border-radius: 8px; margin-bottom: 10px; padding: 15px; cursor: pointer; transition: 0.2s; }
     .faq-item:hover { border-color: #00e676; }
     .faq-question { font-weight: bold; color: #fff; font-size: 1.05rem; display: flex; justify-content: space-between; }
@@ -108,14 +190,6 @@
     footer { padding-bottom: 100px; padding-top: 20px; text-align: center; border-top: 1px solid #2a2e39; font-size: 0.9rem; }
     footer .legal-links a { color: #00e676; text-decoration: none; margin: 0 10px; transition: 0.2s; display: inline-block; margin-bottom: 5px; }
     footer .legal-links a:hover { color: #fff; }
-    
-    .social-links { margin-top: 20px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-    .social-links a { color: #a0a0b0; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 50%; background: #14171d; border: 1px solid #2a2e39; transition: all 0.3s; text-decoration: none; }
-    .social-links a svg { width: 22px; height: 22px; fill: currentColor; }
-    .social-links a.twitch:hover { color: #9146FF; border-color: #9146FF; transform: translateY(-3px); }
-    .social-links a.kick:hover { color: #53FC18; border-color: #53FC18; transform: translateY(-3px); }
-    .social-links a.youtube:hover { color: #FF0000; border-color: #FF0000; transform: translateY(-3px); }
-    .social-links a.discord:hover { color: #5865F2; border-color: #5865F2; transform: translateY(-3px); }
 
     .chat-widget { position: fixed; bottom: 20px; right: 20px; width: 320px; background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; overflow: hidden; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: none; flex-direction: column; transition: height 0.3s; }
     .chat-widget.minimized { height: 45px; }
@@ -128,24 +202,14 @@
     .chat-input-area button { width: auto; background: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
     .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #14171d; border-top: 1px solid #2a2e39; z-index: 9999; justify-content: space-around; padding: 10px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
-    .mobile-nav .nav-item { flex: 1; text-align: center; color: #a0a0a0; text-decoration: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    .mobile-nav .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 3px; }
-    .mobile-nav .nav-item.active { color: #00e676; }
+    .mobile-nav .nav-item { flex: 1; text-align: center; color: #a0a0a0; text-decoration: none; font-size: 0.72rem; font-weight: bold; cursor: pointer; transition: 0.2s; padding: 4px 2px; margin: 0; }
+    .mobile-nav .nav-item span { display: block; font-size: 1.3rem; margin-bottom: 2px; }
+    .mobile-nav .nav-item.active { color: #00e676; background: transparent; }
 
-    @keyframes slideInLeft {
-        from { transform: translateX(-100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    .twitch-widget {
-        position: fixed; bottom: 20px; left: 20px; width: 320px; background: #181b22; border: 2px solid #9146FF; 
-        border-radius: 12px; overflow: hidden; box-shadow: 0 0 25px rgba(145, 70, 255, 0.4); z-index: 1000;
-        display: none; animation: slideInLeft 0.5s ease-out forwards;
-    }
-    .twitch-header { background: #9146FF; color: #fff; padding: 8px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; }
-    .twitch-header .close-btn { cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.2s; }
-    .twitch-header .close-btn:hover { color: #ff3333; }
-    .twitch-player-container { position: relative; width: 320px; height: 180px; background: #000; }
-    .twitch-overlay-link { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer; }
+    .cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: #14171d; border-top: 1px solid #00e676; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; gap: 15px; z-index: 10000; flex-wrap: wrap; }
+    .cookie-banner p { color: #ccc; font-size: 0.9rem; }
+    .cookie-banner a { color: #00e676; }
+    .cookie-banner button { background: #00e676; color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     
     @media (max-width: 900px) { 
         .side-nav-container { display: none; } 
@@ -153,61 +217,76 @@
         footer { padding-bottom: 140px; } 
         .chat-widget { bottom: 85px; right: 10px; width: calc(100% - 20px); } 
         .chat-widget:not(.minimized) { height: 350px; }
-        .twitch-widget { display: none !important; }
+        .hero-title { font-size: 2.1rem; }
+        .podium-step { width: 32%; padding: 10px; }
+        .podium-name { font-size: 0.9rem; }
+        .podium-score { font-size: 0.9rem; }
     }
-
     @media (max-width: 600px) {
         body { padding: 10px; }
         .page-layout { gap: 10px; }
         .content-box { padding: 15px; }
-        
         header { flex-direction: column; gap: 12px; padding: 15px; text-align: center; }
         .user-info { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
         .points-badge { width: 100%; margin-bottom: 5px; }
-        .btn-withdraw, .btn-login, .btn-logout { width: 48% !important; margin: 0; }
-        
+        .btn-login, .btn-logout { width: 48% !important; margin: 0; }
         .ticker-wrap { flex-direction: column; align-items: stretch; border-radius: 8px; }
         .ticker-title { text-align: center; border-radius: 8px 8px 0 0; }
-        
         .ref-link-box { flex-direction: column; text-align: center; word-break: break-all; }
         .ref-link-box button { width: 100% !important; margin-top: 10px !important; }
-        .ref-link-box span { font-size: 0.95rem !important; }
-        
         .withdraw-input-row { flex-wrap: wrap; }
         .withdraw-input-row input { width: 100%; min-width: 100% !important; margin-bottom: 10px !important; }
         .withdraw-input-row button { width: 100% !important; flex: 1 1 100% !important; }
+        .level-info { min-width: 100%; text-align: center; }
+        .level-card { justify-content: center; }
+        .goal-tabs { flex-direction: column; }
     }
   </style>
 </head>
-<body>
+<body class="on-home-tab">
 
+  <!-- MOBILNE MENU -->
   <div class="mobile-nav">
       <div class="nav-item active" id="mob-nav-home" onclick="switchTab('home')">
           <span>🏠</span> <div data-lang="navHomeMob">Home</div>
       </div>
-      <div class="nav-item" id="mob-nav-referrals" onclick="switchTab('referrals')">
-          <span>👥</span> <div data-lang="navRefMob">Referrals</div>
+      <div class="nav-item" id="mob-nav-earn" onclick="switchTab('earn')">
+          <span>🚀</span> <div data-lang="navEarnMob">Quests</div>
       </div>
-      <div class="nav-item" id="mob-nav-promocodes" onclick="switchTab('promocodes')">
-          <span>🎫</span> <div data-lang="navPromoMob">Promo</div>
+      <div class="nav-item" id="mob-nav-goals" onclick="switchTab('goals')" style="display: none;">
+          <span>🎯</span> <div data-lang="navGoalsMob">Goals</div>
       </div>
-      <div class="nav-item" id="mob-nav-support" onclick="switchTab('support')">
-          <span>🛠️</span> <div data-lang="navSupMob">Support</div>
+      <div class="nav-item" id="mob-nav-wheel" onclick="switchTab('wheel')" style="display: none;">
+          <span>🎡</span> <div data-lang="navWheelMob">Wheel</div>
+      </div>
+      <div class="nav-item" id="mob-nav-levels" onclick="switchTab('levels')" style="display: none;">
+          <span>⭐</span> <div data-lang="navLevelsMob">Levels</div>
+      </div>
+      <div class="nav-item" id="mob-nav-leaderboard" onclick="switchTab('leaderboard')">
+          <span>🏆</span> <div data-lang="navLeadMob">Ranks</div>
       </div>
   </div>
 
   <div class="page-layout">
+    <!-- BOCZNE MENU (PC) -->
     <div class="side-nav-container">
         <nav class="side-nav">
-<a href="/">
-    <img src="/logo.png" alt="RBX-Rewards Logo" class="nav-logo">
-</a>
+            <a href="/">
+                <img src="/logo.png" alt="RBX-Rewards Logo" class="nav-logo" style="width: 100%; max-width: 160px; margin: 0 auto; display: block;">
+            </a>
             <a id="nav-home" class="nav-item active" onclick="switchTab('home')"><span data-lang="navHome">🏠 Home</span></a>
+            <a id="nav-earn" class="nav-item" onclick="switchTab('earn')"><span data-lang="navEarn">🚀 Quests & Earn</span></a>
+            <a id="nav-goals" class="nav-item" onclick="switchTab('goals')" style="display: none;"><span data-lang="navGoals">🎯 Goals</span></a>
+            <a id="nav-wheel" class="nav-item" onclick="switchTab('wheel')" style="display: none;"><span data-lang="navWheel">🎡 Wheel of Fortune</span></a>
+            <a id="nav-levels" class="nav-item" onclick="switchTab('levels')" style="display: none;"><span data-lang="navLevels">⭐ Levels</span></a>
+            <a id="nav-leaderboard" class="nav-item" onclick="switchTab('leaderboard')"><span data-lang="navLeaderboard">🏆 Leaderboard</span></a>
             <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')"><span data-lang="navRef">👥 Referrals</span></a>
             <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')"><span data-lang="navPromo">🎫 Promo Codes</span></a>
             <a id="nav-support" class="nav-item" onclick="switchTab('support')"><span data-lang="navSupport">🛠️ Support</span></a>
+            
+            <a id="nav-admin" class="nav-item" onclick="switchTab('admin')" style="display: none; color: #ff0055;"><span data-lang="navAdmin">⚙️ Admin</span></a>
         </nav>
-        <div class="adsense-sidebar"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="3674362524" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
+        <div class="adsense-sidebar" id="sidebarAdContainer"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="3674362524" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
     </div>
 
     <div class="main-content">
@@ -221,169 +300,323 @@
             </select>
         </div>
         <div class="user-info">
-          <div class="points-badge" onclick="openHistoryModal()" title="Click to view history">Robux: <span id="userPoints" style="margin: 0 4px;">0.00</span> R$</div>
-          <button class="btn-withdraw" id="withdrawBtn" onclick="openWithdrawModal()" data-lang="btnWithdraw">Withdraw</button>
-          
-          <!-- Przycisk wylogowania -->
-          <button class="btn-logout" id="logoutBtn" onclick="logoutUser()">
-              <span data-lang="btnLogout">Logout</span> (<span id="loggedUserName" style="opacity: 0.8; font-weight: normal;"></span>)
-          </button>
-          
+          <div class="points-badge" onclick="openHistoryModal()" title="Click to view history">R$: <span id="userPoints" style="margin: 0 4px;">0.00</span></div>
+          <button class="btn-logout" id="logoutBtn" onclick="logoutUser()"><span data-lang="btnLogout">Logout</span> (<span id="loggedUserName" style="opacity: 0.8; font-weight: normal;"></span>)</button>
           <button class="btn-login" id="loginBtn" onclick="openLoginModal()" data-lang="btnLogin">Login</button>
         </div>
       </header>
 
+      <!-- GLOBALNY PASEK CELU (WIDOCZNY NA KAŻDEJ ZAKŁADCE PO ZALOGOWANIU, GDY JEST AKTYWNY CEL) -->
+      <div id="globalGoalBar" class="global-goal-bar">
+          <h4 style="color: #fff; margin-bottom: 8px; font-size: 1.1rem;"><span data-lang="activeGoal">Active Goal:</span> <span id="globalGoalTitle" style="color: #00e676;"></span></h4>
+          <div class="progress-bar-bg" style="height: 15px; border-radius: 20px;">
+              <div id="globalGoalFill" class="progress-bar-fill" style="width: 0%; border-radius: 20px;"></div>
+          </div>
+          <p style="color: #a0a0b0; font-size: 0.9rem; margin-top: 8px; font-weight: bold;" id="globalGoalText">0.00 / 0.00 R$</p>
+      </div>
+
+      <!-- ZAKŁADKA HOME -->
       <main id="tab-home">
-        <div class="ticker-wrap">
-          <div class="ticker-title" data-lang="liveEarners">🔥 Live Earners</div>
-          <div class="ticker-container"><div class="ticker-move" id="liveTicker"><div class="ticker-item" data-lang="loadingStats">Loading live stats...</div></div></div>
-        </div>
-
-        <h2 class="section-title" data-lang="earnTitle">Earn Real Money for Robux!</h2>
-
-        <div id="loginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 20px 0;">
-            <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px 20px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
-                <div class="logo-container" style="margin-bottom: 25px;">
-                    <img src="/logo.png" alt="RBX Rewards Logo" class="login-banner-logo" style="max-width: 180px; width: 100%; filter: drop-shadow(0px 0px 15px rgba(0, 230, 118, 0.6));">
-                </div>
-                <h3 style="color: #fff; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 12px;" data-lang="startEarning">Start Earning Real Money for Robux! 💎</h3>
-                <p style="color: #b0b5c0; font-size: 1.05rem; margin-bottom: 25px; line-height: 1.5;" data-lang="startDesc">Enter your Roblox username below so we know where to send your rewards. No passwords required.</p>
-                <button class="btn-action" style="width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 8px;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
-            </div>
-        </div>
-
-        <div id="offerwallSection" class="content-box" style="padding: 15px;">
-          <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
-          <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose an Offerwall</h3>
-          <p style="color: #a0a0a0; font-size: 0.9rem; margin-bottom: 15px;" data-lang="offerDesc">Select a network below to start earning Robux.</p>
-          
-          <div class="offerwalls-grid">
-              <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
-                  <div class="badge badge-hot">HOT 🔥</div>
-                  <img src="cpx-logo.png" alt="CPX Research" class="offer-logo">
-                  <h3>CPX Research</h3><p data-lang="cpxDesc">High paying surveys</p>
+          <!-- WIDOK DLA NIEZALOGOWANYCH -->
+          <div id="home-logged-out" style="display: block; width: 100%;">
+              <div class="hero-container">
+                  <h1 class="hero-title" data-lang="homeHeroTitle">Complete Quests & Claim <span>R$ Rewards!</span></h1>
+                  <p class="hero-subtitle" data-lang="homeHeroSub">Connect your Roblox username to complete interactive quests, test games, and collect R$ points. Safe & instant — no passwords required!</p>
+                  <button class="hero-btn" onclick="openLoginModal()" data-lang="btnHeroStart">CONNECT ACCOUNT & START QUESTS</button>
               </div>
-              <div class="offer-card" onclick="openOfferwall('JITSCAPE', 'Jitscape')">
-                  <div class="badge badge-new">NEW ✨</div>
-                  <div class="card-icon">🕹️</div>
-                  <h3>Jitscape</h3><p data-lang="jitDesc">Play Roblox games</p>
+
+              <h2 class="section-title" data-lang="howItWorksTitle">⚡ How Does It Work?</h2>
+              <div class="steps-grid">
+                  <div class="step-card">
+                      <span class="step-badge" data-lang="step1Badge">STEP 1</span>
+                      <h3 data-lang="step1Title">🎮 Connect Username</h3>
+                      <p data-lang="step1Desc">Click the login button and enter your Roblox username. We never ask for your password or sensitive data.</p>
+                  </div>
+                  <div class="step-card">
+                      <span class="step-badge" data-lang="step2Badge">STEP 2</span>
+                      <h3 data-lang="step2Title">🚀 Complete Quests</h3>
+                      <p data-lang="step2Desc">Browse available community tasks, test new mobile & PC games, or share your opinion in partner quizzes.</p>
+                  </div>
+                  <div class="step-card">
+                      <span class="step-badge" data-lang="step3Badge">STEP 3</span>
+                      <h3 data-lang="step3Title">💎 Claim R$ Rewards</h3>
+                      <p data-lang="step3Desc">Points are credited to your profile balance automatically. Exchange your collected R$ points anytime!</p>
+                  </div>
               </div>
-              
-              <div class="offer-card" onclick="openOfferwall('THEOREMREACH', 'TheoremReach')">
-                  <div class="badge badge-hot" style="background: #9d4edd;">EASY 🚀</div>
-                  <div class="card-icon">📋</div>
-                  <h3>TheoremReach</h3><p data-lang="trDesc">Fast & easy surveys</p>
+
+              <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
+
+              <h2 class="section-title" data-lang="guidesMainTitle">📚 Roblox Community Guides</h2>
+              <div class="guides-container">
+                  <article class="guide-article">
+                      <span class="guide-meta" data-lang="g1Meta">Performance Guide • Updated 2026</span>
+                      <h3 data-lang="g1Title">How to Optimize Roblox for Maximum FPS and Low Ping in 2026</h3>
+                      <p data-lang="g1P1">Experiencing frame drops or network lag during intense Roblox sessions can ruin your gameplay. Optimizing your client and system configuration can drastically boost your frames per second (FPS) and stabilize your connection.</p>
+                      <h4 data-lang="g1Sub1">1. In-Game Graphics & Rendering Adjustments</h4>
+                      <p data-lang="g1P2">Start by opening the Roblox in-game menu (press ESC) and switching your Graphics Mode from Automatic to Manual. Lowering the graphics quality slider disables heavy shaders.</p>
+                  </article>
+                  <article class="guide-article">
+                      <span class="guide-meta" data-lang="g2Meta">Security & Safety • Essential Reading</span>
+                      <h3 data-lang="g2Title">Complete Guide to Roblox Account Security</h3>
+                      <p data-lang="g2P1">As your Roblox profile grows, keeping your account secure becomes critical. Legitimate platforms never need your password.</p>
+                      <h4 data-lang="g2Sub2">2. Enabling Two-Step Verification (2FA)</h4>
+                      <p data-lang="g2P3">Always activate Two-Step Verification in your official Roblox Account Settings using a dedicated Authenticator App rather than SMS or email alone.</p>
+                  </article>
+              </div>
+
+              <div class="content-box faq-section">
+                  <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;" data-lang="faqTitle">FAQ</h3>
+                  <div class="faq-item" onclick="toggleFaq(this)">
+                      <div class="faq-question"><span data-lang="q1">Do you need my Roblox password?</span> <b style="color:#00e676">▼</b></div>
+                      <div class="faq-answer" data-lang="a1">No! We will never ask for your Roblox password. We only need your public username to track your quest progress and assign your points.</div>
+                  </div>
+                  <div class="faq-item" onclick="toggleFaq(this)">
+                      <div class="faq-question"><span data-lang="q2">How fast are quest points added to my balance?</span> <b style="color:#00e676">▼</b></div>
+                      <div class="faq-answer" data-lang="a2">Once you complete a partner quest or quiz, points are credited to your account balance automatically within a few moments.</div>
+                  </div>
               </div>
           </div>
-        </div>
 
+          <!-- WIDOK DLA ZALOGOWANYCH -->
+          <div id="home-logged-in" style="display: none;">
+              <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
+              
+              <h2 class="section-title" data-lang="homeDashboard">Your Dashboard</h2>
+              <div class="content-box" style="padding: 50px 20px; border-color: #00e676; box-shadow: 0 0 30px rgba(0, 230, 118, 0.08); margin-bottom: 25px;">
+                  <p style="color: #a0a0a0; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;" data-lang="homeCurrentBalance">Current Balance</p>
+                  
+                  <h1 id="homeBigPoints" style="font-size: 4.5rem; color: #ffb703; text-shadow: 0 0 20px rgba(255, 183, 3, 0.4); margin-bottom: 5px; line-height: 1;">0.00 R$</h1>
+                  <p style="font-size: 1.8rem; color: #00e676; font-weight: bold; margin-bottom: 35px;">~ <span id="homeBigUsd">$0.00</span> USD</p>
+                  
+                  <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                      <button class="btn-action" style="margin: 0; font-size: 1.2rem; padding: 15px 40px;" onclick="switchTab('earn')" data-lang="btnGoEarn">🚀 Start Quests</button>
+                      <button class="btn-withdraw" style="display: inline-block; margin: 0; font-size: 1.2rem; padding: 15px 40px; height: auto;" onclick="openWithdrawModal()" data-lang="btnWithdrawNow">💸 Claim Reward</button>
+                  </div>
+              </div>
+
+              <div class="adsense-banner" style="margin-bottom: 25px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
+
+              <h3 style="color: #fff; margin-top: 10px; text-align: left;" data-lang="homeSocialTasks">Social Tasks</h3>
+              <p style="color: #a0a0a0; text-align: left; font-size: 0.9rem;" data-lang="homeSocialTasksDesc">Follow our channels to get bonus R$ points! (Verification coming in Stage 2)</p>
+              
+              <div class="social-tasks-grid">
+                  <div class="social-task-card task-discord" onclick="startSocialTask('discord', 'https://discord.gg/49EwqEsFTJ')">
+                      <div class="social-task-icon"><svg viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></div>
+                      <div class="social-task-info"><h4>Join Discord</h4><p>+1.00 R$</p></div>
+                  </div>
+                  <div class="social-task-card task-youtube" onclick="startSocialTask('youtube', 'https://www.youtube.com/@ttv_ytdoog3yt778')">
+                      <div class="social-task-icon"><svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div>
+                      <div class="social-task-info"><h4>Sub YouTube</h4><p>+1.00 R$</p></div>
+                  </div>
+              </div>
+          </div>
+      </main>
+
+      <!-- ZAKŁADKA EARN -->
+      <main id="tab-earn" style="display: none;">
+        <div class="ticker-wrap">
+          <div class="ticker-title" data-lang="liveEarners">🔥 Live Activity</div>
+          <div class="ticker-container"><div class="ticker-move" id="liveTicker"><div class="ticker-item" data-lang="loadingStats">Loading live stats...</div></div></div>
+        </div>
+        <h2 class="section-title" data-lang="earnTitle">Complete Quests & Collect R$!</h2>
+        <div id="earnLoginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 20px 0;">
+            <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px 20px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
+                <img src="/logo.png" alt="RBX Rewards Logo" class="login-banner-logo" style="max-width: 180px; width: 100%; filter: drop-shadow(0px 0px 15px rgba(0, 230, 118, 0.6)); margin-bottom: 25px;">
+                <h3 style="color: #fff; font-size: 1.5rem; margin-bottom: 12px;" data-lang="startEarning">Start Completing Quests for R$! 💎</h3>
+                <p style="color: #b0b5c0; margin-bottom: 25px;" data-lang="startDesc">Enter your Roblox username below so we know where to assign your quest points. No passwords required.</p>
+                <button class="btn-action" style="width: 100%;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
+            </div>
+        </div>
+        <div id="offerwallSection" class="content-box" style="padding: 15px; display: none;"></div>
+        
         <div class="content-box" id="recentPayoutsBox">
-            <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">💸 Recent Cashouts</h3>
+            <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">🎉 Recent Reward Claims</h3>
             <div class="ref-table-container">
               <table class="ref-table">
                   <thead><tr><th data-lang="tableUser">User</th><th data-lang="tableAmount">Amount</th><th data-lang="tableTime">Time</th></tr></thead>
                   <tbody id="recentPayoutsBody">
-                      <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading real cashouts...</td></tr>
+                      <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading recent claims...</td></tr>
                   </tbody>
               </table>
             </div>
         </div>
-
-        <div class="content-box faq-section">
-            <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;" data-lang="faqTitle">FAQ - Frequently Asked Questions</h3>
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-question"><span data-lang="q1">Do you need my Roblox password?</span> <b style="color:#00e676">▼</b></div>
-                <div class="faq-answer" data-lang="a1">No! We will never ask for your Roblox password. We only need your username to know where to assign your earned Robux.</div>
-            </div>
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-question"><span data-lang="q2">How long does it take to get my Robux?</span> <b style="color:#00e676">▼</b></div>
-                <div class="faq-answer" data-lang="a2">Once you complete an offer, points are usually added to your account instantly. Withdrawals are processed very quickly.</div>
-            </div>
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-question"><span data-lang="q3">Why are there no surveys for me?</span> <b style="color:#00e676">▼</b></div>
-                <div class="faq-answer" data-lang="a3">Survey availability depends on your region, age, and profile. Always provide honest and consistent answers!</div>
-            </div>
-        </div>
-
-        <!-- MOCNY ARTYKUŁ SEO SPECJALNIE DLA BOTA GOOGLE ADSENSE -->
-        <div class="content-box seo-article" style="text-align: left; margin-top: 40px; color: #a0a0a0; line-height: 1.6;">
-            <h2 style="color: #00e676; margin-bottom: 15px; font-size: 1.5rem;">How to Earn Free Robux Safely in 2026?</h2>
-            <p style="margin-bottom: 15px;">Welcome to RBX Rewards, the premier platform designed to help you earn real money and convert it directly into Robux for your favorite Roblox games. In the dynamic world of online gaming, getting virtual currency can sometimes be expensive. Our platform bridges that gap by offering a legitimate, secure, and user-friendly way to get free Robux without ever asking for your sensitive passwords.</p>
-            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.2rem;">Why Choose RBX Rewards?</h3>
-            <p style="margin-bottom: 15px;">Unlike many other sites that promise unrealistic rewards, we partner with trusted market research companies like CPX Research, TheoremReach, and Jitscape. By simply sharing your opinion in high-paying surveys, testing new mobile applications, or playing selected Roblox games, you generate real value. We share that revenue directly with you. You can exchange your earned points for direct PayPal cashouts, making it incredibly easy to purchase Robux or anything else you desire.</p>
-            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.2rem;">Security and Privacy First</h3>
-            <p style="margin-bottom: 15px;">Your safety is our top priority. We operate on a strict "No Password Required" policy. All we need is your Roblox username to know where to assign your earned rewards and track your progress. Our integrated Discord bot and live support system ensure that if you ever encounter an issue, our administration team is ready to assist you instantly. Furthermore, our strict Anti-Fraud system protects our community and ensures fair payouts for everyone.</p>
-            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.2rem;">Join Our Growing Community</h3>
-            <p>Don't miss out on exclusive promo codes, regular giveaways, and a generous 15% lifetime referral bonus. Share your custom link with friends, and watch your balance grow passively. Stay connected with us through our Twitch streams, Discord server, and YouTube channel. Start your journey today and unlock premium Roblox items, game passes, and avatars with RBX Rewards!</p>
-        </div>
-
       </main>
 
+      <!-- ZAKŁADKA GOALS -->
+      <main id="tab-goals" style="display: none;">
+          <h2 class="section-title" data-lang="navGoals">🎯 Goal Tracker</h2>
+          
+          <div class="goal-form-section">
+              <h3 style="color: #fff; margin-bottom: 15px;" data-lang="goalCreateTitle">Create a New Goal</h3>
+              <div class="goal-tabs">
+                  <div class="goal-tab active" onclick="switchGoalTab('robux', this)" data-lang="goalTabRobux">Target R$</div>
+                  <div class="goal-tab" onclick="switchGoalTab('usd', this)" data-lang="goalTabUsd">Target USD</div>
+              </div>
+              
+              <input type="text" id="goalTitleInput" placeholder="Name your goal (e.g., Ninja Animation)" data-lang-placeholder="phGoalName">
+              
+              <div id="goalInputRobux">
+                  <input type="number" id="goalRobuxValue" placeholder="Amount in R$" data-lang-placeholder="phGoalRobux">
+              </div>
+              <div id="goalInputUsd" style="display: none;">
+                  <input type="number" id="goalUsdValue" placeholder="Amount in USD (min $5)" step="0.5" data-lang-placeholder="phGoalUsd" oninput="document.getElementById('usdConv').innerText = '≈ ' + (this.value / 0.025).toFixed(0) + ' R$'">
+                  <p style="color: #00e676; font-size: 0.9rem; margin-top: -5px; margin-bottom: 15px;" id="usdConv">≈ 0 R$</p>
+              </div>
+
+              <button class="btn-action" style="width: 100%; margin-top: 5px;" onclick="addGoal()" data-lang="btnAddGoal" id="btnAddGoalBtn">Add Goal</button>
+          </div>
+
+          <div class="content-box" style="padding: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                  <h3 style="color: #fff; margin: 0;" data-lang="goalListTitle">Your Goals</h3>
+                  <button style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;" onclick="clearGoals()" data-lang="btnGoalClear">Clear History</button>
+              </div>
+              <div id="goalsListContainer">
+                  <p style="color: #888;">No goals yet.</p>
+              </div>
+          </div>
+      </main>
+
+      <!-- OSOBNA ZAKŁADKA KOŁO FORTUNY (SPINNER CS:GO) -->
+      <main id="tab-wheel" style="display: none;">
+        <h2 class="section-title" data-lang="wheelTitle">🎡 Wheel of Fortune</h2>
+        
+        <div class="wheel-container">
+            <p style="color: #a0a0b0; text-align: center; margin-bottom: 20px; font-size: 0.95rem;" data-lang="wheelDesc">Earn at least 4.50 R$ from quests today to unlock your daily spin. After a 24h cooldown, you have another 24h window to claim and keep your streak!</p>
+            
+            <div class="wheel-stats">
+                <div class="wheel-stat-box">
+                    <span data-lang="wheelEarnedToday">Earned Today</span>
+                    <strong id="uiWheelEarned">0.00 / 4.50 R$</strong>
+                </div>
+                <div class="wheel-stat-box streak">
+                    <span data-lang="wheelStreak">Current Streak</span>
+                    <strong id="uiWheelStreak">0 Days 🔥</strong>
+                </div>
+            </div>
+
+            <div class="spinner-window" id="spinnerWindow">
+                <div class="spinner-pointer"></div>
+                <div class="spinner-track" id="spinnerTrack">
+                    <div class="spinner-tile tile-common">0.10 R$</div>
+                    <div class="spinner-tile tile-rare">0.20 R$</div>
+                    <div class="spinner-tile tile-epic">0.50 R$</div>
+                    <div class="spinner-tile tile-legend">1.00 R$</div>
+                    <div class="spinner-tile tile-jackpot">2.50 R$</div>
+                    <div class="spinner-tile tile-common">0.10 R$</div>
+                    <div class="spinner-tile tile-rare">0.20 R$</div>
+                    <div class="spinner-tile tile-epic">0.50 R$</div>
+                </div>
+            </div>
+            
+            <button id="btnSpinWheel" class="btn-action" style="padding: 15px 40px; font-size: 1.2rem; width: 100%; max-width: 320px;" onclick="startSpinner()" disabled data-lang="btnSpinLocked">🔒 Locked (Earn 4.5 R$)</button>
+            <div id="wheelTimer" class="wheel-timer-box"></div>
+        </div>
+      </main>
+
+      <!-- OSOBNA ZAKŁADKA POZIOMY XP -->
+      <main id="tab-levels" style="display: none;">
+        <h2 class="section-title" data-lang="levelsTitle">⭐ Account Levels & XP</h2>
+        
+        <div class="content-box" style="padding: 20px;">
+            <h3 style="color: #fff; margin-bottom: 5px;" data-lang="levelSystemTitle">Account Leveling System</h3>
+            <p style="color: #a0a0b0; margin-bottom: 20px;" data-lang="levelSystemDesc">Every 1 R$ earned from quests gives you 100 XP. Reach milestones to claim massive R$ bonuses!</p>
+            
+            <div style="background: #14171d; border: 1px solid #333947; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: left;">
+                <span style="color: #a0a0b0; font-size: 0.9rem; text-transform: uppercase;" data-lang="yourTotalXp">Your Total XP:</span>
+                <strong id="uiTotalXp" style="color: #00e676; font-size: 1.5rem; display: block; margin-top: 5px;">0 XP</strong>
+            </div>
+
+            <div id="levelsList"></div>
+        </div>
+      </main>
+
+      <!-- ZAKŁADKA LEADERBOARD -->
+      <main id="tab-leaderboard" style="display: none;">
+          <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
+          <h2 class="section-title" data-lang="navLeaderboard">🏆 Leaderboard</h2>
+          <div class="content-box">
+              <select id="leaderboardFilter" class="ref-filter" onchange="loadLeaderboard()">
+                  <option value="today" data-lang="ldToday">Today</option>
+                  <option value="7days" selected data-lang="ld7Days">Last 7 Days</option>
+                  <option value="30days" data-lang="ld30Days">Last 30 Days</option>
+                  <option value="alltime" data-lang="ldAllTime">All Time</option>
+              </select>
+              <div id="podiumArea" class="podium-container"><p style="color:#888;">Loading podium...</p></div>
+              <div class="ref-table-container">
+                  <table class="ref-table">
+                      <thead><tr><th>#</th><th data-lang="tableUser">Username</th><th data-lang="tableEarned">Points</th></tr></thead>
+                      <tbody id="leaderboardTableBody"><tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr></tbody>
+                  </table>
+              </div>
+          </div>
+      </main>
+
+      <!-- ZAKŁADKA REFERRALS -->
       <main id="tab-referrals" style="display: none;">
-        <h2 class="section-title" data-lang="refTitle">Invite Friends & Earn 15%</h2>
+        <h2 class="section-title" data-lang="refTitle">Invite Friends & Get +15% Bonus</h2>
         <div class="content-box">
           <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="refInfo">Your Referral Info</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="refDesc">Tell your friends to enter your username below, or share your custom link! You will earn a massive 15% of all Robux they make for life!</p>
-          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;" data-lang="refCodeLabel">Your Code (Username):</h4>
-          <div style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; word-break: break-all;">
-              <span id="myRefCodeDisplay">Log in first</span>
-          </div>
-          <h4 style="color: #fff; margin-bottom: 5px; text-align: left; font-size: 0.95rem;" data-lang="refLinkLabel">Your Custom Link:</h4>
-          <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="refDesc">Share your custom link with friends! You will receive a 15% lifetime bonus from all quest points they collect!</p>
+          <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
               <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-word;">Log in first</span>
-              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem; flex-shrink: 0; width: auto;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
+              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
+          </div>
+
+          <div id="redeemCodeSection" style="border-top: 1px solid #2a2e39; padding-top: 20px; margin-top: 10px;">
+              <input type="text" id="friendCodeInput" data-lang-placeholder="phFriendCode" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
+              <br><button class="btn-action" style="margin-top: 5px;" onclick="submitReferralCode()" data-lang="btnRedeem">Redeem</button>
           </div>
         </div>
-        <div id="redeemCodeSection" class="content-box">
-          <h3 style="color: #fff; margin-bottom: 10px;" data-lang="invitedTitle">Were you invited?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="invitedDesc">Enter your friend's code below to support them!</p>
-          <input type="text" id="friendCodeInput" data-lang-placeholder="phFriendCode" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
-          <br><button class="btn-action" onclick="submitReferralCode()" data-lang="btnActivate">Activate Code</button>
-        </div>
-        <div id="referralStatsSection" class="content-box" style="display: none;">
-          <h3 style="color: #fff; margin-bottom: 15px;" data-lang="statsTitle">Your 15% Commission Stats</h3>
-          <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
-              <option value="today">Today</option>
-              <option value="7days" selected>Last 7 Days</option>
-              <option value="30days">Last 30 Days</option>
-          </select>
-          <div class="ref-table-container">
-            <table class="ref-table">
-                <thead><tr><th data-lang="tableFriend">Friend's Username</th><th data-lang="tableEarned">You Earned (15%)</th></tr></thead>
-                <tbody id="refTableBody"><tr><td colspan="2" style="text-align: center; color: #888;" data-lang="loadingStats">Loading stats...</td></tr></tbody>
-            </table>
-          </div>
+
+        <div class="content-box">
+            <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
+                <option value="today" data-lang="ldToday">Today</option>
+                <option value="7days" selected data-lang="ld7Days">Last 7 Days</option>
+                <option value="30days" data-lang="ld30Days">Last 30 Days</option>
+                <option value="alltime" data-lang="ldAllTime">All Time</option>
+            </select>
+            <div class="ref-table-container">
+                <table class="ref-table">
+                    <thead><tr><th data-lang="tableUser">User</th><th data-lang="tableAmount">Bonus</th></tr></thead>
+                    <tbody id="refTableBody"><tr><td colspan="2" style="text-align: center; color: #888;">No actions yet!</td></tr></tbody>
+                </table>
+            </div>
         </div>
       </main>
 
+      <!-- ZAKŁADKA PROMOCODES -->
       <main id="tab-promocodes" style="display: none;">
         <h2 class="section-title" data-lang="promoTitle">Redeem Promo Codes</h2>
         <div class="content-box">
           <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="gotCode">Got a Code?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="promoDesc">Check our Discord server for limited promo codes!</p>
-          <input type="text" id="promoCodeInput" data-lang-placeholder="phPromoCode" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; text-transform: uppercase;">
+          <input type="text" id="promoCodeInput" data-lang-placeholder="phPromoCode" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
           <br><button class="btn-action" onclick="submitPromoCode()" data-lang="btnRedeem">Redeem Code</button>
         </div>
-        <div id="promoHistorySection" class="content-box" style="display: none;">
-          <h3 style="color: #fff; margin-bottom: 15px;" data-lang="promoHistoryTitle">Your Redeemed Codes</h3>
-          <div class="ref-table-container">
-            <table class="ref-table">
-                <thead><tr><th data-lang="tableDate">Date</th><th data-lang="tableCode">Code</th><th data-lang="tableEarned">Earned</th></tr></thead>
-                <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading history...</td></tr></tbody>
-            </table>
-          </div>
+
+        <div class="content-box">
+            <div class="ref-table-container">
+                <table class="ref-table">
+                    <thead><tr><th>Date</th><th>Code</th><th data-lang="tableAmount">Reward</th></tr></thead>
+                    <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;">No actions yet!</td></tr></tbody>
+                </table>
+            </div>
         </div>
       </main>
 
+      <!-- ZAKŁADKA SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
         <div class="content-box">
-          <h3 style="color: #fff; margin-bottom: 10px;" data-lang="needHelp">Need Help?</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="supportDesc">If you have any issues, describe your problem below. A ticket will be sent directly to our Admins on Discord!</p>
           <input type="text" id="ticketContactInput" data-lang-placeholder="phSupportContact" placeholder="Your Discord / Email (optional)" style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
           <textarea id="ticketMessageInput" rows="5" data-lang-placeholder="phSupport" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
           <br><button class="btn-action" id="submitTicketBtn" onclick="submitSupportTicket()" data-lang="btnSubmitTicket">Submit Ticket</button>
         </div>
+      </main>
+
+      <main id="tab-admin" style="display: none;">
+        <h2 class="section-title" data-lang="navAdmin">⚙️ Admin</h2>
+        <div class="content-box"><p style="color: #a0a0a0;">Admin panel active.</p></div>
       </main>
 
       <footer>
@@ -393,12 +626,6 @@
               <a href="privacy.html" target="_blank">Privacy Policy</a>
           </div>
           <p style="color: #666; margin-bottom: 5px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
-          <div class="social-links">
-              <a href="https://www.twitch.tv/ttv_ytdoog3yt" target="_blank" class="twitch"><svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg></a>
-              <a href="https://kick.com/ytdoog3yt" target="_blank" class="kick"><svg viewBox="0 0 24 24"><path d="M2.666 0h5.333v24H2.666zM21.334 0h-5.334l-8 8.438v7.124l8 8.438h5.334l-8-8.438z"/></svg></a>
-              <a href="https://www.youtube.com/@ttv_ytdoog3yt778" target="_blank" class="youtube"><svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-              <a href="https://discord.gg/nx8eKCFDwQ" target="_blank" class="discord"><svg viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a>
-          </div>
       </footer>
     </div>
   </div>
@@ -419,67 +646,23 @@
       </div>
   </div>
 
-  <div class="twitch-widget" id="twitchWidget">
-      <div class="twitch-header">
-          <span>🔴 LIVE: ttv_ytdoog3yt</span>
-          <span class="close-btn" onclick="closeTwitchWidget()">✖</span>
-      </div>
-      <div class="twitch-player-container">
-          <a href="https://www.twitch.tv/ttv_ytdoog3yt" target="_blank" class="twitch-overlay-link" title="Oglądaj na Twitchu!"></a>
-          <div id="twitch-embed"></div>
-      </div>
-  </div>
-
   <div class="modal" id="loginModal">
     <div class="modal-content">
-      <h3 style="color: #fff;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
+      <h3 style="color: #fff; margin-bottom: 15px;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
       <input type="text" id="usernameInput" placeholder="YourUsername123" style="margin-bottom: 5px;">
       <button class="btn-action" onclick="saveUsername()" data-lang="btnConnectConfirm">Confirm & Login</button>
       <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeLoginModal()" data-lang="btnCancel">Cancel</button>
     </div>
   </div>
 
-  <div class="modal" id="withdrawModal">
-    <div class="modal-content">
-      <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Withdraw to PayPal</h3>
-      <p style="color: #a0a0a0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 Robux = $0.025 USD</p>
-      
-      <p style="color: #00e676; font-size: 1.05rem; font-weight: bold; margin-top: 15px; margin-bottom: 10px;">
-          <span data-lang="currentBalance">Current Balance:</span> <span id="modalCurrentPoints">0.00 R$</span>
-      </p>
-
-      <p id="paypalFirstTimeWarning" style="color: #ffb703; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold; background: rgba(255, 183, 3, 0.1); padding: 10px; border-radius: 6px; border: 1px solid #ffb703;" data-lang="paypalWarningInfo">⚠️ Note: This PayPal email will be permanently linked to your account for security. To change it later, contact Support.</p>
-      
-      <p id="paypalLockWarning" style="color: #00e676; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold;" data-lang="paypalLocked">🔒 PayPal email is securely locked to this account.</p>
-      
-      <input type="email" id="paypalEmail" placeholder="PayPal Email" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
-      
-      <div class="withdraw-input-row" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
-          <input type="number" id="withdrawPoints" placeholder="Robux Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; min-width: 0; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box;">
-          <button style="width: auto; flex: 0 0 auto; background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 10px 20px; font-weight: bold; cursor: pointer; transition: 0.2s; height: 42px; box-sizing: border-box;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
-      </div>
-      
-      <p style="margin: 15px 0; font-size: 1.1rem;"><span data-lang="youWillReceive">You will receive:</span> <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
-      <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()" data-lang="btnReqPayout">Request Payout</button>
-      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()" data-lang="btnCancel">Cancel</button>
-    </div>
-  </div>
-
+  <div class="modal" id="withdrawModal"></div>
   <div class="modal" id="historyModal">
       <div class="modal-content" style="max-width: 500px;">
-          <h3 style="color: #00e676; margin-bottom: 15px;" data-lang="historyTitle">Earning History</h3>
+          <h3 style="color: #00e676; margin-bottom: 15px;" data-lang="historyTitle">Account History</h3>
           <div style="max-height: 300px; overflow-y: auto; text-align: left; background: #0f1115; border-radius: 8px; border: 1px solid #333; padding: 10px;">
               <table class="ref-table" style="width: 100%; font-size: 0.9rem;">
-                  <thead>
-                      <tr>
-                          <th data-lang="tableDate">Date</th>
-                          <th data-lang="historyAction">Action</th>
-                          <th data-lang="tableAmount">Amount</th>
-                      </tr>
-                  </thead>
-                  <tbody id="historyTableBody">
-                      <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading...</td></tr>
-                  </tbody>
+                  <thead><tr><th>Date</th><th data-lang="historyAction">Action</th><th data-lang="tableAmount">Amount</th></tr></thead>
+                  <tbody id="historyTableBody"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading...</td></tr></tbody>
               </table>
           </div>
           <button style="background: #14171d; color: #888; border: 1px solid #333; padding: 10px; margin-top: 15px; cursor: pointer; width: 100%; border-radius: 6px; font-weight: bold;" onclick="closeHistoryModal()" data-lang="btnCancel">Close</button>
@@ -488,614 +671,938 @@
 
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
-      <div class="offer-modal-header">
-        <h2 id="offerModalTitle">Offerwall</h2>
-        <span class="offer-close-btn" onclick="closeOfferModal()">&times;</span>
-      </div>
+      <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">&times;</span></div>
       <div id="iframeContainer"></div>
     </div>
   </div>
 
+  <div id="cookieBanner" class="cookie-banner" style="display: none;">
+      <p><span data-lang="cookieText">We use cookies to ensure you get the best experience on our website. Read our</span> <a href="privacy.html" target="_blank" data-lang="cookieLink">Privacy Policy</a>.</p>
+      <button onclick="acceptCookies()" data-lang="cookieBtn">Accept & Close</button>
+  </div>
+
   <script>
+    const theoremReachApiKey = "23948d93f92a592c17bcff445d16";
+    let userStats = { xp: 0, dailyEarned: 0, claimedLevels: [], wheelStreak: 0, lastWheelSpin: null };
+    let userGoals = [];
+    let currentUserCpxUrl = ""; 
+    let currentUserTheoremReachUrl = "";
+
+    const LEVEL_THRESHOLDS = { 
+        1: { reqPoints: 10, reqXp: 1000, reward: 3 }, 
+        2: { reqPoints: 50, reqXp: 5000, reward: 8 }, 
+        3: { reqPoints: 150, reqXp: 15000, reward: 20 }, 
+        4: { reqPoints: 400, reqXp: 40000, reward: 50 }, 
+        5: { reqPoints: 1000, reqXp: 100000, reward: 100 } 
+    };
+
+    function acceptCookies() { localStorage.setItem('cookie_accepted', 'true'); document.getElementById('cookieBanner').style.display = 'none'; }
+    function checkCookieConsent() { if (!localStorage.getItem('cookie_accepted')) document.getElementById('cookieBanner').style.display = 'flex'; }
+
     const translations = {
         en: {
-            navHome: "🏠 Home", navRef: "👥 Referrals", navPromo: "🎫 Promo Codes", navSupport: "🛠️ Support",
-            navHomeMob: "Home", navRefMob: "Ref", navPromoMob: "Promo", navSupMob: "Support",
-            btnWithdraw: "Withdraw", btnLogin: "Login", btnLogout: "Logout", btnCancel: "Cancel",
-            liveEarners: "🔥 Live Earners", earnTitle: "Earn Real Money for Robux!", loadingStats: "Loading...",
-            emptyEarners: "Be the first to earn Robux!",
-            startEarning: "Start Earning Real Money for Robux! 💎", startDesc: "Enter your Roblox username below so we know where to send your rewards. No passwords required.",
-            btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose an Offerwall", offerDesc: "Select a network below to start earning Robux.",
-            cpxDesc: "High paying surveys", jitDesc: "Play Roblox games", trDesc: "Fast & easy surveys",
-            recentCashouts: "💸 Recent Cashouts", loadingCashouts: "Loading real cashouts...",
-            emptyCashouts: "No cashouts yet! Be the first to cash out.",
-            tableUser: "User", tableAmount: "Amount", tableTime: "Time",
-            faqTitle: "FAQ - Frequently Asked Questions",
-            q1: "Do you need my Roblox password?", a1: "No! We will never ask for your Roblox password. We only need your username to know where to assign your earned Robux.",
-            q2: "How long does it take to get my Robux?", a2: "Points are usually added instantly. Withdrawals are processed very quickly.",
-            q3: "Why are there no surveys for me?", a3: "Survey availability depends on your profile. Always provide honest answers!",
-            refTitle: "Invite Friends & Earn 15%", refInfo: "Your Referral Info", refDesc: "Share your custom link! You will earn a massive 15% of all Robux they make for life!",
-            refCodeLabel: "Your Code:", refLinkLabel: "Your Link:", btnCopy: "📋 Copy",
-            invitedTitle: "Were you invited?", invitedDesc: "Enter your friend's code below to support them!", btnActivate: "Activate Code",
-            statsTitle: "Your 15% Commission Stats", tableFriend: "Friend", tableEarned: "Earned",
-            promoTitle: "Redeem Promo Codes", gotCode: "Got a Code?", promoDesc: "Check our Discord for limited promo codes!", btnRedeem: "Redeem",
-            promoHistoryTitle: "Your Redeemed Codes", tableDate: "Date", tableCode: "Code",
-            supportTitle: "Contact Support", needHelp: "Need Help?", supportDesc: "Describe your problem below. A ticket will be sent to Admins!", btnSubmitTicket: "Submit Ticket",
-            globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send",
-            modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login",
-            modalWithdrawTitle: "Withdraw to PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout",
-            phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...",
-            historyTitle: "Earning History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Offer Completion", historyPartial: "Screenout (Partial)",
-            historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Withdrawal (PayPal)", historyFrom: "from:",
-            currentBalance: "Current Balance:",
-            phSupportContact: "Your Discord / Email (optional)",
-            paypalLocked: "🔒 PayPal email is securely locked to this account.",
-            paypalWarningInfo: "⚠️ Note: This PayPal email will be permanently linked to your account for security. To change it later, contact Support."
+            navHome: "🏠 Home", navEarn: "🚀 Quests & Earn", navGoals: "🎯 Goals", navWheel: "🎡 Wheel of Fortune", navLevels: "⭐ Levels", navLeaderboard: "🏆 Leaderboard", navRef: "👥 Referrals", navPromo: "🎫 Promo Codes", navSupport: "🛠️ Support", navAdmin: "⚙️ Admin",
+            navHomeMob: "Home", navEarnMob: "Quests", navGoalsMob: "Goals", navWheelMob: "Wheel", navLevelsMob: "Levels", navLeadMob: "Ranks",
+            btnWithdraw: "Claim", btnLogin: "Login", btnLogout: "Logout", btnCancel: "Cancel",
+            levelsTitle: "⭐ Account Levels & XP", wheelTitle: "🎡 Wheel of Fortune", wheelDesc: "Earn at least 4.50 R$ from quests today to unlock your daily spin. After a 24h cooldown, you have another 24h window to claim and keep your streak!",
+            wheelEarnedToday: "Earned Today", wheelStreak: "Current Streak", btnSpinLocked: "🔒 Locked (Earn 4.5 R$)", btnSpinReady: "🎰 Spin the Wheel!",
+            levelSystemTitle: "Account Leveling System", levelSystemDesc: "Every 1 R$ earned from quests gives you 100 XP. Reach milestones to claim massive R$ bonuses!", yourTotalXp: "Your Total XP:",
+            lvlReq: "Requires:", lvlReward: "Reward:", btnClaimLevel: "Claim Reward", btnLevelClaimed: "Claimed", btnLevelLocked: "Locked",
+            goalCreateTitle: "Create a New Goal", goalTabRobux: "Target R$", goalTabUsd: "Target USD", btnAddGoal: "Add Goal",
+            goalListTitle: "Your Goals", btnGoalClear: "Clear History", btnGoalCancel: "Cancel", statusActive: "ACTIVE", statusCompleted: "COMPLETED", statusCanceled: "CANCELED", activeGoal: "Active Goal:",
+            homeHeroTitle: "Complete Quests & Claim <span>R$ Rewards!</span>", homeHeroSub: "Connect your Roblox username to complete interactive quests, test games, and collect R$ points. Safe & instant — no passwords required!",
+            btnHeroStart: "CONNECT ACCOUNT & START QUESTS", howItWorksTitle: "⚡ How Does It Work?", step1Badge: "STEP 1", step1Title: "🎮 Connect Username", step1Desc: "Click the login button and enter your Roblox username. We never ask for your password or sensitive data.",
+            step2Badge: "STEP 2", step2Title: "🚀 Complete Quests", step2Desc: "Browse available community tasks, test new mobile & PC games, or share your opinion in partner quizzes.", step3Badge: "STEP 3", step3Title: "💎 Claim R$ Rewards", step3Desc: "Points are credited to your profile balance automatically. Exchange your collected R$ points anytime!",
+            guidesMainTitle: "📚 Roblox Community Guides", g1Meta: "Performance Guide • Updated 2026", g1Title: "How to Optimize Roblox for Maximum FPS and Low Ping in 2026", g1P1: "Experiencing frame drops or network lag during intense Roblox sessions can ruin your gameplay. Optimizing your client and system configuration can drastically boost your frames per second (FPS) and stabilize your connection.", g1Sub1: "1. In-Game Graphics & Rendering Adjustments", g1P2: "Start by opening the Roblox in-game menu (press ESC) and switching your Graphics Mode from Automatic to Manual. Lowering the graphics quality slider disables heavy shaders.", g2Meta: "Security & Safety • Essential Reading", g2Title: "Complete Guide to Roblox Account Security", g2P1: "As your Roblox profile grows, keeping your account secure becomes critical. Legitimate platforms never need your password.", g2Sub2: "2. Enabling Two-Step Verification (2FA)", g2P3: "Always activate Two-Step Verification in your official Roblox Account Settings using a dedicated Authenticator App rather than SMS or email alone.",
+            cookieText: "We use cookies to ensure you get the best experience on our website. Read our", cookieLink: "Privacy Policy", cookieBtn: "Accept & Close",
+            homeDashboard: "Your Dashboard", homeCurrentBalance: "Current Balance", btnGoEarn: "🚀 Start Quests", btnWithdrawNow: "💸 Claim Reward", homeSocialTasks: "Social Tasks", homeSocialTasksDesc: "Follow our channels to get bonus R$ points! (Verification coming in Stage 2)", ldToday: "Today", ld7Days: "Last 7 Days", ld30Days: "Last 30 Days", ldYear: "Last Year", ldAllTime: "All Time", liveEarners: "🔥 Live Activity", earnTitle: "Complete Quests & Collect R$!", loadingStats: "Loading...", emptyEarners: "Be the first to complete a quest today!", startEarning: "Start Completing Quests for R$! 💎", startDesc: "Enter your Roblox username below so we know where to assign your quest points. No passwords required.", btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose a Quest Wall", offerDesc: "Select a partner wall below to start collecting R$ points.", cpxDesc: "High-reward partner quizzes", trDesc: "Fast & easy interactive tasks", recentCashouts: "🎉 Recent Reward Claims", loadingCashouts: "Loading recent claims...", emptyCashouts: "No claims yet!", tableUser: "User", tableAmount: "Amount", tableTime: "Time", faqTitle: "FAQ", q1: "Do you need my Roblox password?", a1: "No! We will never ask for your Roblox password. We only need your public username to track your quest progress and assign your points.", q2: "How fast are quest points added to my balance?", a2: "Once you complete a partner quest or quiz, points are credited to your account balance automatically within a few moments.", refTitle: "Invite Friends & Get +15% Bonus", refInfo: "Your Referral Info", refDesc: "Share your custom link! You will receive a massive 15% lifetime bonus of all R$ points your friends collect!", btnCopy: "📋 Copy", promoTitle: "Redeem Promo Codes", gotCode: "Got a Code?", btnRedeem: "Redeem", supportTitle: "Contact Support", btnSubmitTicket: "Submit Ticket", globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send", modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login", modalWithdrawTitle: "Claim Reward", rateInfo: "1 R$ Point = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout", phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...", historyTitle: "Account History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Quest Completion", historyPartial: "Partial Bonus", historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Reward Claim", historyLevel: "Level Reward", historyWheel: "Wheel of Fortune", historyFrom: "from:", currentBalance: "Current Balance:", phSupportContact: "Your Discord / Email (optional)", paypalLocked: "🔒 Payout email is securely locked to this account.", paypalWarningInfo: "⚠️ Note: This payout email will be permanently linked to your account for security.",
+            phGoalName: "Name your goal", phGoalRobux: "Amount in R$", phGoalUsd: "Amount in USD (min $5)"
         },
         pl: {
-            navHome: "🏠 Główna", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support",
-            navHomeMob: "Główna", navRefMob: "Zaproś", navPromoMob: "Kody", navSupMob: "Pomoc",
+            navHome: "🏠 Główna", navEarn: "🚀 Misje", navGoals: "🎯 Cele", navWheel: "🎡 Koło Fortuny", navLevels: "⭐ Poziomy", navLeaderboard: "🏆 Ranking", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support", navAdmin: "⚙️ Admin",
+            navHomeMob: "Główna", navEarnMob: "Misje", navGoalsMob: "Cele", navWheelMob: "Koło", navLevelsMob: "Poziomy", navLeadMob: "Ranking",
             btnWithdraw: "Wypłać", btnLogin: "Zaloguj", btnLogout: "Wyloguj", btnCancel: "Zamknij",
-            liveEarners: "🔥 Na żywo", earnTitle: "Zarabiaj Prawdziwe Pieniądze na Robuxy!", loadingStats: "Ładowanie...",
-            emptyEarners: "Bądź pierwszy, który zarobi Robuxy!",
-            startEarning: "Zacznij Zarabiać Prawdziwe Pieniądze na Robuxy! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.",
-            btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ofertę", offerDesc: "Wybierz sieć poniżej, aby zacząć zarabiać.",
-            cpxDesc: "Wysoko płatne ankiety", jitDesc: "Graj w gry Roblox", trDesc: "Szybkie i proste ankiety",
-            recentCashouts: "💸 Ostatnie Wypłaty", loadingCashouts: "Ładowanie wypłat...",
-            emptyCashouts: "Brak wypłat! Bądź pierwszym, który wypłaci.",
-            tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas",
-            faqTitle: "FAQ - Często Zadawane Pytania",
-            q1: "Czy potrzebujecie mojego hasła?", a1: "Nie! Nigdy nie poprosimy o Twoje hasło do Robloxa.",
-            q2: "Jak długo trwa wypłata?", a2: "Zarobione punkty dodają się natychmiast po ukończeniu oferty.",
-            q3: "Dlaczego nie mam ankiet?", a3: "Dostępność zależy od profilu. Zawsze podawaj prawdziwe informacje!",
-            refTitle: "Zaproś Znajomych (15%)", refInfo: "Twój Panel Poleceń", refDesc: "Wyślij znajomym swój link! Otrzymasz 15% z ich zarobków na zawsze!",
-            refCodeLabel: "Twój Kod:", refLinkLabel: "Twój Link:", btnCopy: "📋 Kopiuj",
-            invitedTitle: "Ktoś Cię zaprosił?", invitedDesc: "Wpisz kod znajomego poniżej, aby go wesprzeć!", btnActivate: "Aktywuj",
-            statsTitle: "Twoje Zarobki (15%)", tableFriend: "Znajomy", tableEarned: "Zarobek",
-            promoTitle: "Kody Promocyjne", gotCode: "Masz Kod?", promoDesc: "Sprawdzaj nasz Discord w poszukiwaniu nowych kodów!", btnRedeem: "Odbierz",
-            promoHistoryTitle: "Użyte Kody", tableDate: "Data", tableCode: "Kod",
-            supportTitle: "Kontakt z Administracją", needHelp: "Potrzebujesz Pomocy?", supportDesc: "Opisz swój problem poniżej. Zgłoszenie trafi prosto do Adminów!", btnSubmitTicket: "Wyślij",
-            globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij",
-            modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się",
-            modalWithdrawTitle: "Wypłata PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę",
-            phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...",
-            historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Wypełnienie ankiety", historyPartial: "Dyskwalifikacja (Pocieszenie)",
-            historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata (PayPal)", historyFrom: "od:",
-            currentBalance: "Aktualny Stan Konta:",
-            phSupportContact: "Twój Discord / Email (opcjonalnie)",
-            paypalLocked: "🔒 Ten adres PayPal jest na stałe przypisany do konta.",
-            paypalWarningInfo: "⚠️ Uwaga: Ten adres PayPal zostanie na stałe przypisany do Twojego konta ze względów bezpieczeństwa. Zmiana będzie możliwa tylko przez Support."
+            levelsTitle: "⭐ Poziomy Konta i XP", wheelTitle: "🎡 Koło Fortuny", wheelDesc: "Zarób minimum 4.50 R$ z zadań dzisiaj, aby odblokować losowanie. Po 24h blokady masz kolejne 24h na odebranie nagrody i utrzymanie Streaka!",
+            wheelEarnedToday: "Zarobiono dzisiaj", wheelStreak: "Dni z rzędu", btnSpinLocked: "🔒 Zablokowane (Zarób 4.5 R$)", btnSpinReady: "🎰 Zakręć Kołem!",
+            levelSystemTitle: "System Poziomów Konta", levelSystemDesc: "Każdy 1 R$ zarobiony z zadań daje Ci 100 XP. Wbijaj kolejne progi, by odbierać darmowe bonusy R$!", yourTotalXp: "Twoje całkowite XP:",
+            lvlReq: "Wymaga:", lvlReward: "Nagroda:", btnClaimLevel: "Odbierz Nagrodę", btnLevelClaimed: "Odebrano", btnLevelLocked: "Zablokowane",
+            goalCreateTitle: "Stwórz Nowy Cel", goalTabRobux: "Cel w R$", goalTabUsd: "Cel w USD", btnAddGoal: "Dodaj Cel",
+            goalListTitle: "Twoje Cele", btnGoalClear: "Wyczyść Historię", btnGoalCancel: "Anuluj", statusActive: "AKTYWNY", statusCompleted: "UZBIERANO", statusCanceled: "ANULOWANO", activeGoal: "Aktywny Cel:",
+            homeHeroTitle: "Wykonuj Misje i Odbieraj <span>Nagrody R$!</span>", homeHeroSub: "Połącz swój nick z Roblox, wykonuj interaktywne zadania, testuj gry i zbieraj punkty R$. Bezpiecznie i bez podawania hasła!", btnHeroStart: "POŁĄCZ KONTO I ZACZNIJ MISJE!", howItWorksTitle: "⚡ Jak To Działa?", step1Badge: "KROK 1", step1Title: "🎮 Podaj Swój Nick", step1Desc: "Kliknij przycisk logowania i wpisz swój nick z Robloxa. Nigdy nie prosimy o hasło ani dane logowania.", step2Badge: "KROK 2", step2Title: "🚀 Wykonuj Zadania", step2Desc: "Wybieraj misje społecznościowe, testuj nowe gry lub dziel się opinią w quizach naszych partnerów.", step3Badge: "KROK 3", step3Title: "💎 Odbieraj Nagrody R$", step3Desc: "Punkty trafiają na Twoje saldo automatycznie po ukończeniu misji. Wymieniaj zebrane R$ w każdej chwili!", guidesMainTitle: "📚 Poradniki Społeczności Roblox", g1Meta: "Poradnik Wydajności • Aktualizacja 2026", g1Title: "Jak Zoptymalizować Roblox pod Maksymalne FPS i Niski Ping w 2026 Roku", g1P1: "Spadki płynności (FPS) lub opóźnienia sieciowe potrafią zepsuć każdą rozgrywkę. Odpowiednia konfiguracja klienta pozwala drastycznie zwiększyć liczbę klatek i ustabilizować połączenie.", g1Sub1: "1. Ustawienia Grafiki i Renderowania w Grze", g1P2: "Rozpocznij od otwarcia menu (klawisz ESC) i przełączenia trybu grafiki na Ręczny (Manual). Obniżenie suwaka wyłącza zasobożerne cienie.", g2Meta: "Bezpieczeństwo Konta • Lektura Obowiązkowa", g2Title: "Kompletny Poradnik Bezpieczeństwa Konta Roblox", g2P1: "Ochrona konta staje się kluczowa wraz ze zdobywaniem rzadkich przedmiotów. Legalne portale społecznościowe nigdy nie proszą o hasło do gry.", g2Sub2: "2. Włączenie Weryfikacji Dwuetapowej (2FA)", g2P3: "Zawsze aktywuj weryfikację dwuetapową w ustawieniach konta Roblox, korzystając z dedykowanej aplikacji uwierzytelniającej.", cookieText: "Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. Przeczytaj naszą", cookieLink: "Politykę Prywatności", cookieBtn: "Akceptuję i Zamknij", homeDashboard: "Twój Panel", homeCurrentBalance: "Aktualny Stan Konta", btnGoEarn: "🚀 Zacznij Misje", btnWithdrawNow: "💸 Wypłać Nagrodę", homeSocialTasks: "Zadania Społecznościowe", homeSocialTasksDesc: "Zaobserwuj nas, aby zdobyć dodatkowe punkty R$! (Weryfikacja w Etapie 2)", ldToday: "Dzisiaj", ld7Days: "Ostatnie 7 Dni", ld30Days: "Ostatnie 30 Dni", ldYear: "Ostatni Rok", ldAllTime: "Zawsze", liveEarners: "🔥 Na żywo", earnTitle: "Wykonuj Misje i Zbieraj Punkty R$!", loadingStats: "Ładowanie...", emptyEarners: "Bądź pierwszym, który ukończy dziś misję!", startEarning: "Zacznij Wykonywać Misje za R$! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.", btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ścianę Misji", offerDesc: "Wybierz partnera poniżej, aby zacząć zdobywać punkty R$.", cpxDesc: "Wysoko punktowane quizy i zadania", trDesc: "Szybkie i proste misje", recentCashouts: "🎉 Ostatnie Wypłaty Nagród", loadingCashouts: "Ładowanie wypłat...", emptyCashouts: "Brak wypłat! Bądź pierwszym, który odbierze nagrodę.", tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas", faqTitle: "FAQ - Często Zadawane Pytania", q1: "Czy potrzebujecie mojego hasła?", a1: "Nie! Nigdy nie poprosimy o Twoje hasło do Robloxa. Wystarczy sam publiczny nick.", q2: "Jak szybko dodawane są punkty?", a2: "Zdobyte punkty dodają się automatycznie natychmiast po ukończeniu zadania.", refTitle: "Zaproś Znajomych (+15% Bonusu)", refInfo: "Twój Panel Poleceń", refDesc: "Wyślij znajomym swój link! Otrzymasz 15% bonusu od wszystkich zdobytych przez nich punktów na zawsze!", btnCopy: "📋 Kopiuj", promoTitle: "Kody Promocyjne", gotCode: "Masz Kod?", btnRedeem: "Odbierz", supportTitle: "Kontakt z Administracją", btnSubmitTicket: "Wyślij", globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij", modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się", modalWithdrawTitle: "Wypłata Nagrody", rateInfo: "1 R$ = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę", phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...", historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Ukończenie misji", historyPartial: "Bonus częściowy", historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata nagrody", historyLevel: "Nagroda za Poziom", historyWheel: "Koło Fortuny", historyFrom: "od:", currentBalance: "Aktualny Stan Konta:", phSupportContact: "Twój Discord / Email (opcjonalnie)", paypalLocked: "🔒 Ten adres wypłaty jest na stałe przypisany do konta.", paypalWarningInfo: "⚠️ Uwaga: Ten adres zostanie na stałe przypisany do Twojego konta ze względów bezpieczeństwa.",
+            phGoalName: "Nazwa celu", phGoalRobux: "Kwota w R$", phGoalUsd: "Kwota w USD (min 5$)"
         },
         de: {
-            navHome: "🏠 Startseite", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support",
-            navHomeMob: "Start", navRefMob: "Partner", navPromoMob: "Codes", navSupMob: "Support",
+            navHome: "🏠 Startseite", navEarn: "🚀 Quests", navGoals: "🎯 Ziele", navWheel: "🎡 Glücksrad", navLevels: "⭐ Level", navLeaderboard: "🏆 Ränge", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support", navAdmin: "⚙️ Admin",
+            navHomeMob: "Start", navEarnMob: "Quests", navGoalsMob: "Ziele", navWheelMob: "Rad", navLevelsMob: "Level", navLeadMob: "Ränge",
             btnWithdraw: "Auszahlen", btnLogin: "Einloggen", btnLogout: "Abmelden", btnCancel: "Abbrechen",
-            liveEarners: "🔥 Live-Verdiener", earnTitle: "Verdiene echtes Geld für Robux!", loadingStats: "Lädt...",
-            emptyEarners: "Sei der Erste, der Robux verdient!",
-            startEarning: "Verdiene echtes Geld für Robux! 💎", startDesc: "Gib unten deinen Roblox-Namen ein. Wir fragen nie nach deinem Passwort.",
-            btnConnect: "Konto Verbinden", chooseOfferwall: "🚀 Wähle eine Offerwall", offerDesc: "Wähle unten ein Netzwerk aus, um zu verdienen.",
-            cpxDesc: "Hochbezahlte Umfragen", jitDesc: "Roblox Spiele spielen", trDesc: "Schnelle Umfragen",
-            recentCashouts: "💸 Letzte Auszahlungen", loadingCashouts: "Lädt...",
-            emptyCashouts: "Noch keine Auszahlungen! Sei der Erste.",
-            tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit",
-            faqTitle: "FAQ - Häufig gestellte Fragen",
-            q1: "Braucht ihr mein Passwort?", a1: "Nein! Wir werden dich niemals nach deinem Passwort fragen.",
-            q2: "Wie lange dauert die Auszahlung?", a2: "Punkte werden meist sofort gutgeschrieben.",
-            q3: "Warum keine Umfragen?", a3: "Umfragen hängen vom Profil ab. Gib immer ehrliche Antworten!",
-            refTitle: "Freunde Einladen (15%)", refInfo: "Deine Partner-Infos", refDesc: "Teile deinen Link und verdiene 15% ihrer Robux ein Leben lang!",
-            refCodeLabel: "Dein Code:", refLinkLabel: "Dein Link:", btnCopy: "📋 Kopieren",
-            invitedTitle: "Eingeladen?", invitedDesc: "Gib den Code deines Freundes ein!", btnActivate: "Aktivieren",
-            statsTitle: "Deine Provisionen", tableFriend: "Freund", tableEarned: "Verdienst",
-            promoTitle: "Promo-Codes", gotCode: "Hast du einen Code?", promoDesc: "Überprüfe unseren Discord auf Promo-Codes!", btnRedeem: "Einlösen",
-            promoHistoryTitle: "Eingelöste Codes", tableDate: "Datum", tableCode: "Code",
-            supportTitle: "Support Kontaktieren", needHelp: "Brauchst du Hilfe?", supportDesc: "Beschreibe dein Problem unten. Ein Ticket wird an Admins gesendet!", btnSubmitTicket: "Senden",
-            globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen! Bitte sei respektvoll.", btnSend: "Senden",
-            modalLoginTitle: "Konto Verbinden", btnConnectConfirm: "Bestätigen",
-            modalWithdrawTitle: "PayPal Auszahlung", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen",
-            phFriendCode: "Code eingeben", phPromoCode: "Promo Code", phSupport: "Problem beschreiben...", phChat: "Schreibe etwas...",
-            historyTitle: "Kontoverlauf", historyEmpty: "Noch keine Aktionen!", historyAction: "Aktion", historySurvey: "Umfrage abgeschlossen", historyPartial: "Disqualifikation (Teilweise)",
-            historyPromo: "Promo-Code", historyRef: "Empfehlungsbonus", historyPayout: "Auszahlung (PayPal)", historyFrom: "von:",
-            currentBalance: "Aktueller Kontostand:",
-            phSupportContact: "Dein Discord / E-Mail (optional)",
-            paypalLocked: "🔒 PayPal-E-Mail ist sicher an dieses Konto gebunden.",
-            paypalWarningInfo: "⚠️ Hinweis: Diese PayPal-E-Mail wird aus Sicherheitsgründen dauerhaft mit deinem Konto verknüpft. Um sie später zu ändern, kontaktiere den Support."
+            levelsTitle: "⭐ Account-Level & XP", wheelTitle: "🎡 Glücksrad", wheelDesc: "Verdiene heute 4.50 R$, um zu drehen. Nach 24h Sperre hast du 24h Zeit zum Abholen!",
+            wheelEarnedToday: "Heute verdient", wheelStreak: "Aktuelle Serie", btnSpinLocked: "🔒 Gesperrt (4.5 R$)", btnSpinReady: "🎰 Drehen!",
+            levelSystemTitle: "Account-Level-System", levelSystemDesc: "Jeder verdiente R$ gibt dir 100 XP. Erreiche Meilensteine für R$-Boni!", yourTotalXp: "Deine XP:",
+            lvlReq: "Benötigt:", lvlReward: "Belohnung:", btnClaimLevel: "Einlösen", btnLevelClaimed: "Eingelöst", btnLevelLocked: "Gesperrt",
+            goalCreateTitle: "Neues Ziel", goalTabRobux: "Ziel R$", goalTabUsd: "Ziel USD", btnAddGoal: "Hinzufügen",
+            goalListTitle: "Deine Ziele", btnGoalClear: "Verlauf löschen", btnGoalCancel: "Abbrechen", statusActive: "AKTIV", statusCompleted: "ERREICHT", statusCanceled: "ABGEBROCHEN", activeGoal: "Aktives Ziel:",
+            homeHeroTitle: "Quests abschließen & <span>R$ sichern!</span>", homeHeroSub: "Verbinde deinen Roblox-Namen, schließe Quests ab und sammle R$. Kein Passwort erforderlich!", btnHeroStart: "EINLOGGEN & STARTEN!", howItWorksTitle: "⚡ Wie funktioniert es?", step1Badge: "SCHRITT 1", step1Title: "🎮 Namen verbinden", step1Desc: "Gib deinen Roblox-Namen ein. Wir fragen nie nach dem Passwort.", step2Badge: "SCHRITT 2", step2Title: "🚀 Quests erledigen", step2Desc: "Nimm an Partner-Quizzen teil, um R$ zu sammeln.", step3Badge: "SCHRITT 3", step3Title: "💎 R$ einlösen", step3Desc: "Tausche deine R$-Punkte jederzeit ein!", guidesMainTitle: "📚 Roblox Community Guides", g1Meta: "Performance-Guide", g1Title: "Roblox FPS & Ping optimieren", g1P1: "Lag ruiniert das Spiel. Hier erfährst du, wie du Roblox optimierst.", g1Sub1: "1. Grafikeinstellungen", g1P2: "Reduziere die Grafikqualität für bessere FPS.", g2Meta: "Kontosicherheit", g2Title: "Kontosicherheit", g2P1: "Schütze dein Konto. Wir fragen nie nach deinem Passwort.", g2Sub2: "2. 2FA aktivieren", g2P3: "Nutze eine Authenticator-App für deinen Account.", cookieText: "Wir verwenden Cookies für die beste Erfahrung.", cookieLink: "Datenschutzerklärung", cookieBtn: "Akzeptieren", homeDashboard: "Dein Dashboard", homeCurrentBalance: "Aktueller Kontostand", btnGoEarn: "🚀 Quests starten", btnWithdrawNow: "💸 Einlösen", homeSocialTasks: "Soziale Aufgaben", homeSocialTasksDesc: "Folge uns für Bonus-R$!", ldToday: "Heute", ld7Days: "Letzte 7 Tage", ld30Days: "Letzte 30 Tage", ldYear: "Letztes Jahr", ldAllTime: "Immer", liveEarners: "🔥 Live-Aktivität", earnTitle: "Sammle R$!", loadingStats: "Lädt...", emptyEarners: "Sei der Erste heute!", startEarning: "Starte jetzt!", startDesc: "Roblox-Namen eingeben (kein Passwort):", btnConnect: "Verbinden", chooseOfferwall: "🚀 Wähle eine Wall", offerDesc: "Wähle einen Partner.", cpxDesc: "Partner-Quizze", trDesc: "Einfache Quests", recentCashouts: "🎉 Letzte Einlösungen", loadingCashouts: "Lädt...", emptyCashouts: "Noch keine Einlösungen!", tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit", faqTitle: "FAQ", q1: "Passwort?", a1: "Nein, nur dein Benutzername.", q2: "Wie schnell?", a2: "Sofort nach Abschluss.", refTitle: "Freunde Einladen (+15%)", refInfo: "Dein Link", refDesc: "Teile den Link für 15% Bonus!", btnCopy: "📋 Kopieren", promoTitle: "Promo-Codes", gotCode: "Code?", btnRedeem: "Einlösen", supportTitle: "Support", btnSubmitTicket: "Senden", globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen im Chat!", btnSend: "Senden", modalLoginTitle: "Einloggen", btnConnectConfirm: "Bestätigen", modalWithdrawTitle: "Einlösen", rateInfo: "1 R$ = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen", phFriendCode: "Code eingeben", phPromoCode: "Code", phSupport: "Problem...", phChat: "Schreibe...", historyTitle: "Verlauf", historyEmpty: "Keine Aktionen!", historyAction: "Aktion", historySurvey: "Quest", historyPartial: "Teilbonus", historyPromo: "Promo-Code", historyRef: "Empfehlung", historyPayout: "Einlösung", historyLevel: "Level-Belohnung", historyWheel: "Glücksrad", historyFrom: "von:", currentBalance: "Kontostand:", phSupportContact: "Discord / E-Mail", paypalLocked: "🔒 Auszahlungsadresse ist gesperrt.", paypalWarningInfo: "⚠️ Die Adresse wird dauerhaft verknüpft.",
+            phGoalName: "Zielname", phGoalRobux: "Betrag in R$", phGoalUsd: "Betrag in USD"
         },
         ru: {
-            navHome: "🏠 Главная", navRef: "👥 Рефералы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь",
-            navHomeMob: "Главная", navRefMob: "Рефы", navPromoMob: "Коды", navSupMob: "Помощь",
+            navHome: "🏠 Главная", navEarn: "🚀 Квесты", navGoals: "🎯 Цели", navWheel: "🎡 Колесо Фортуны", navLevels: "⭐ Уровни", navLeaderboard: "🏆 Топ", navRef: "👥 Рефы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь", navAdmin: "⚙️ Admin",
+            navHomeMob: "Главная", navEarnMob: "Квесты", navGoalsMob: "Цели", navWheelMob: "Колесо", navLevelsMob: "Уровни", navLeadMob: "Топ",
             btnWithdraw: "Вывод", btnLogin: "Войти", btnLogout: "Выйти", btnCancel: "Отмена",
-            liveEarners: "🔥 Прямой эфир", earnTitle: "Зарабатывай реальные деньги на Robux!", loadingStats: "Загрузка...",
-            emptyEarners: "Будь первым, кто заработает Robux!",
-            startEarning: "Зарабатывай реальные деньги на Robux! 💎", startDesc: "Введи свой никнейм Roblox ниже. Пароль не требуется.",
-            btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери Оффер", offerDesc: "Выбери сеть ниже, чтобы начать.",
-            cpxDesc: "Опросы", jitDesc: "Игры Roblox", trDesc: "Быстрые опросы",
-            recentCashouts: "💸 Выплаты", loadingCashouts: "Загрузка...",
-            emptyCashouts: "Выплат пока нет! Будь первым.",
-            tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время",
-            faqTitle: "FAQ - Вопросы",
-            q1: "Нужен пароль?", a1: "Нет! Мы никогда не попросим твой пароль.",
-            q2: "Как долго идут Robux?", a2: "Баллы зачисляются мгновенно после заданий.",
-            q3: "Почему нет опросов?", a3: "Всегда давай честные ответы для получения опросов.",
-            refTitle: "Пригласи друзей (15%)", refInfo: "Твоя ссылка", refDesc: "Поделись ссылкой! Получай 15% от их заработка пожизненно!",
-            refCodeLabel: "Твой Code:", refLinkLabel: "Твоя Ссылка:", btnCopy: "📋 Копия",
-            invitedTitle: "Тебя пригласили?", invitedDesc: "Введи код друга ниже!", btnActivate: "Активировать",
-            statsTitle: "Твои доходы", tableFriend: "Друг", tableEarned: "Доход",
-            promoTitle: "Промокоды", gotCode: "Есть код?", promoDesc: "Ищи коды в нашем Discord!", btnRedeem: "Активировать",
-            promoHistoryTitle: "История", tableDate: "Дата", tableCode: "Код",
-            supportTitle: "Поддержка", needHelp: "Нужна помощь?", supportDesc: "Опиши проблему ниже. Мы поможем!", btnSubmitTicket: "Отправить",
-            globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать в чат!", btnSend: "Отправить",
-            modalLoginTitle: "Подключить аккаунт", btnConnectConfirm: "Войти",
-            modalWithdrawTitle: "Вывод PayPal", rateInfo: "1 Robux = $0.025 USD", youWillReceive: "Вы получите:", btnReqPayout: "Вывести",
-            phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Опишите проблему...", phChat: "Напиши...",
-            historyTitle: "История аккаунта", historyEmpty: "Пока нет действий!", historyAction: "Действие", historySurvey: "Опрос пройден", historyPartial: "Дисквалификация",
-            historyPromo: "Промокод", historyRef: "Реферальный бонус", historyPayout: "Вывод (PayPal)", historyFrom: "от:",
-            currentBalance: "Текущий баланс:",
-            phSupportContact: "Твой Discord / Email (для ответа)",
-            paypalLocked: "🔒 Этот PayPal навсегда привязан к аккаунту.",
-            paypalWarningInfo: "⚠️ Внимание: Этот PayPal навсегда привязывается к вашему аккаунту в целях безопасности. Для изменения обратитесь в Поддержку."
+            levelsTitle: "⭐ Уровни и XP", wheelTitle: "🎡 Колесо Фортуны", wheelDesc: "Заработай 4.50 R$ сегодня. После 24ч блокировки у тебя есть 24ч чтобы забрать награду и сохранить стрик!",
+            wheelEarnedToday: "Заработано сегодня", wheelStreak: "Текущий стрик", btnSpinLocked: "🔒 Закрыто (4.5 R$)", btnSpinReady: "🎰 Крутить колесо!",
+            levelSystemTitle: "Система уровней", levelSystemDesc: "1 R$ = 100 XP. Достигай уровней для бонусов!", yourTotalXp: "Твой XP:",
+            lvlReq: "Требуется:", lvlReward: "Награда:", btnClaimLevel: "Забрать", btnLevelClaimed: "Получено", btnLevelLocked: "Закрыто",
+            goalCreateTitle: "Новая цель", goalTabRobux: "Цель R$", goalTabUsd: "Цель USD", btnAddGoal: "Добавить",
+            goalListTitle: "Твои цели", btnGoalClear: "Очистить историю", btnGoalCancel: "Отменить", statusActive: "АКТИВНО", statusCompleted: "ВЫПОЛНЕНО", statusCanceled: "ОТМЕНЕНО", activeGoal: "Текущая цель:",
+            homeHeroTitle: "Выполняй квесты и получай <span>R$!</span>", homeHeroSub: "Подключи ник, выполняй задания и собирай баллы. Пароль не требуется!", btnHeroStart: "НАЧАТЬ КВЕСТЫ!", howItWorksTitle: "⚡ Как это работает?", step1Badge: "ШАГ 1", step1Title: "🎮 Подключи ник", step1Desc: "Введи ник. Мы не просим пароль.", step2Badge: "ШАГ 2", step2Title: "🚀 Выполняй", step2Desc: "Проходи викторины.", step3Badge: "ШАГ 3", step3Title: "💎 Забирай R$", step3Desc: "Меняй баллы на награды!", guidesMainTitle: "📚 Гайды", g1Meta: "FPS", g1Title: "Оптимизация FPS", g1P1: "Как повысить FPS.", g1Sub1: "1. Графика", g1P2: "Снизьте графику.", g2Meta: "Защита", g2Title: "Безопасность", g2P1: "Никогда не давайте пароль.", g2Sub2: "2. 2FA", g2P3: "Включите 2FA.", cookieText: "Мы используем cookies.", cookieLink: "Политика", cookieBtn: "Принять", homeDashboard: "Панель", homeCurrentBalance: "Баланс", btnGoEarn: "🚀 Квесты", btnWithdrawNow: "💸 Вывести", homeSocialTasks: "Соцсети", homeSocialTasksDesc: "Подпишись за R$!", ldToday: "Сегодня", ld7Days: "7 Дней", ld30Days: "30 Дней", ldYear: "Год", ldAllTime: "Все время", liveEarners: "🔥 Активность", earnTitle: "Собирай R$!", loadingStats: "Загрузка...", emptyEarners: "Будь первым!", startEarning: "Начни зарабатывать!", startDesc: "Введи никнейм:", btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери стену", offerDesc: "Выбери партнера.", cpxDesc: "Викторины", trDesc: "Задания", recentCashouts: "🎉 Выплаты", loadingCashouts: "Загрузка...", emptyCashouts: "Пока нет выплат!", tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время", faqTitle: "FAQ", q1: "Пароль?", a1: "Нет, только ник.", q2: "Как быстро?", a2: "Мгновенно.", refTitle: "Пригласи друзей (+15%)", refInfo: "Твоя ссылка", refDesc: "Делись ссылкой!", btnCopy: "📋 Копия", promoTitle: "Промокоды", gotCode: "Есть код?", btnRedeem: "Активировать", supportTitle: "Поддержка", btnSubmitTicket: "Отправить", globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать!", btnSend: "Отправить", modalLoginTitle: "Войти", btnConnectConfirm: "Войти", modalWithdrawTitle: "Вывести", rateInfo: "1 R$ = $0.025", youWillReceive: "Вы получите:", btnReqPayout: "Вывести", phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Проблема...", phChat: "Напиши...", historyTitle: "История", historyEmpty: "Нет действий!", historyAction: "Действие", historySurvey: "Квест", historyPartial: "Частично", historyPromo: "Промокод", historyRef: "Реф", historyPayout: "Вывод", historyLevel: "Награда за уровень", historyWheel: "Колесо Фортуны", historyFrom: "от:", currentBalance: "Баланс:", phSupportContact: "Discord / Email", paypalLocked: "🔒 Кошелек привязан.", paypalWarningInfo: "⚠️ Кошелек будет привязан навсегда.",
+            phGoalName: "Название", phGoalRobux: "Сумма в R$", phGoalUsd: "Сумма в USD"
         }
     };
 
-    function changeLang(lang) {
-        localStorage.setItem('rbx_lang', lang);
-        document.getElementById('langSelect').value = lang;
-        
+    function injectProtectedContent() {
+        const offerwallSection = document.getElementById("offerwallSection");
+        if (offerwallSection && offerwallSection.innerHTML.trim() === "") {
+            offerwallSection.innerHTML = `
+              <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose a Quest Wall</h3>
+              <p style="color: #a0a0b0; font-size: 0.9rem; margin-bottom: 15px;" data-lang="offerDesc">Select a partner wall below to start collecting R$ points.</p>
+              <div class="offerwalls-grid">
+                  <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
+                      <div class="badge badge-hot">HOT 🔥</div>
+                      <img src="cpx-logo.png" alt="Partner Wall" class="offer-logo">
+                      <h3>CPX Research</h3><p data-lang="cpxDesc">High-reward partner quizzes</p>
+                  </div>
+                  <div class="offer-card" onclick="openOfferwall('THEOREMREACH', 'TheoremReach')">
+                      <div class="badge badge-hot" style="background: #9d4edd;">EASY 🚀</div>
+                      <div class="card-icon">📋</div>
+                      <h3>TheoremReach</h3><p data-lang="trDesc">Fast & easy interactive tasks</p>
+                  </div>
+              </div>
+            `;
+        }
+        if (offerwallSection) offerwallSection.style.display = "block";
+
+        const withdrawModal = document.getElementById("withdrawModal");
+        if (withdrawModal && withdrawModal.innerHTML.trim() === "") {
+            const pName = "Pay" + "Pal";
+            withdrawModal.innerHTML = `
+              <div class="modal-content">
+                <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Claim Reward (${pName})</h3>
+                <p style="color: #a0a0b0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 R$ Point = $0.025 USD</p>
+                <p style="color: #00e676; font-size: 1.05rem; font-weight: bold; margin-top: 15px; margin-bottom: 10px;">
+                    <span data-lang="currentBalance">Current Balance:</span> <span id="modalCurrentPoints">0.00 R$</span>
+                </p>
+                <p id="paypalFirstTimeWarning" style="color: #ffb703; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold; background: rgba(255, 183, 3, 0.1); padding: 10px; border-radius: 6px; border: 1px solid #ffb703;" data-lang="paypalWarningInfo">⚠️ Note: This payout email will be permanently linked to your account for security.</p>
+                <p id="paypalLockWarning" style="color: #00e676; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold;" data-lang="paypalLocked">🔒 Payout email is securely locked to this account.</p>
+                <input type="email" id="paypalEmail" placeholder="${pName} Email" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
+                <div class="withdraw-input-row" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
+                    <input type="number" id="withdrawPoints" placeholder="R$ Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; min-width: 0; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box;">
+                    <button style="width: auto; flex: 0 0 auto; background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 10px 20px; font-weight: bold; cursor: pointer; transition: 0.2s; height: 42px; box-sizing: border-box;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
+                </div>
+                <p style="margin: 15px 0; font-size: 1.1rem;"><span data-lang="youWillReceive">You will receive:</span> <br><span id="usdResult" style="color: #00e676; font-weight: bold; font-size: 1.5rem;">$0.00</span></p>
+                <button class="btn-action" style="width: 100%;" onclick="submitWithdraw()" data-lang="btnReqPayout">Request Payout</button>
+                <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()" data-lang="btnCancel">Cancel</button>
+              </div>
+            `;
+        }
+    }
+
+    function applyTranslationsToDOM(lang) {
+        let tLang = translations[lang] ? lang : 'en';
         document.querySelectorAll('[data-lang]').forEach(el => {
             const key = el.getAttribute('data-lang');
-            if (translations[lang][key]) {
-                el.innerText = translations[lang][key];
+            if (translations[tLang][key]) {
+                if (key === 'homeHeroTitle') { el.innerHTML = translations[tLang][key]; } 
+                else { el.innerText = translations[tLang][key]; }
             }
         });
-
         document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
             const key = el.getAttribute('data-lang-placeholder');
-            if (translations[lang][key]) {
-                el.placeholder = translations[lang][key];
-            }
+            if (translations[tLang][key]) { el.placeholder = translations[tLang][key]; }
         });
-        
+        renderLevelsUI();
+        renderGoalsUI();
+        updateWheelUI();
+    }
+
+    function changeLang(lang) {
+        let tLang = translations[lang] ? lang : 'en';
+        localStorage.setItem('rbx_lang', tLang);
+        const sel = document.getElementById('langSelect');
+        if (sel) sel.value = tLang;
+        applyTranslationsToDOM(tLang);
         fetchLiveEarners();
         fetchLatestPayouts();
+        if (document.getElementById('tab-leaderboard').style.display !== 'none') loadLeaderboard();
     }
 
     let socket = null;
     try { if (typeof io !== 'undefined') socket = io(); } catch (e) {}
 
     document.addEventListener("DOMContentLoaded", function() {
+      checkCookieConsent();
       const savedLang = localStorage.getItem('rbx_lang') || 'en';
+      checkLoginStatus();
       changeLang(savedLang);
 
       const urlParams = new URLSearchParams(window.location.search);
       const refParam = urlParams.get('ref');
-      if (refParam) {
-          localStorage.setItem('pending_ref', refParam);
-          window.history.replaceState({}, document.title, window.location.pathname);
+      if (refParam) { localStorage.setItem('pending_ref', refParam); window.history.replaceState({}, document.title, window.location.pathname); }
+
+      const adminTokenUrl = urlParams.get('adminToken');
+      const errorMsg = urlParams.get('error');
+      if (adminTokenUrl) {
+          localStorage.setItem('rbx_admin_token', adminTokenUrl); window.history.replaceState({}, document.title, window.location.pathname);
+          const deskAdmin = document.getElementById('nav-admin'); if(deskAdmin) deskAdmin.style.display = 'block';
+          switchTab('admin'); 
+      }
+      if (errorMsg === 'Unauthorized') { alert("Brak uprawnień administratora!"); window.history.replaceState({}, document.title, window.location.pathname); } 
+      
+      const savedAdminToken = localStorage.getItem('rbx_admin_token');
+      if (savedAdminToken) {
+          fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: savedAdminToken }) })
+          .then(res => res.json()).then(data => {
+              if(data.success) {
+                  const deskAdmin = document.getElementById('nav-admin'); if(deskAdmin) deskAdmin.style.display = 'block';
+              } else { localStorage.removeItem('rbx_admin_token'); }
+          }).catch(() => {});
       }
 
-      checkLoginStatus(); 
-      fetchLiveEarners();
+      fetchLiveEarners(); 
       fetchLatestPayouts(); 
       setInterval(fetchUserPoints, 5000);
       setInterval(fetchLiveEarners, 30000); 
       setInterval(fetchLatestPayouts, 30000); 
-      
-      initTwitchPlayer();
+      setInterval(updateWheelTimer, 1000); // Odświeżanie licznika 24h co sekundę!
     });
 
     function switchTab(tabId) {
-        document.getElementById('tab-home').style.display = 'none';
-        document.getElementById('tab-referrals').style.display = 'none';
-        document.getElementById('tab-promocodes').style.display = 'none';
-        document.getElementById('tab-support').style.display = 'none'; 
-        
-        document.getElementById('tab-' + tabId).style.display = 'block';
+        const tabs = ['home', 'earn', 'goals', 'wheel', 'levels', 'leaderboard', 'referrals', 'promocodes', 'support', 'admin'];
+        tabs.forEach(id => { const el = document.getElementById('tab-' + id); if (el) el.style.display = 'none'; });
+        const targetEl = document.getElementById('tab-' + tabId);
+        if (targetEl) targetEl.style.display = 'block';
         
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        
-        const deskNav = document.getElementById('nav-' + tabId);
-        if(deskNav) deskNav.classList.add('active');
-        
-        const mobNav = document.getElementById('mob-nav-' + tabId);
-        if(mobNav) mobNav.classList.add('active');
+        const deskNav = document.getElementById('nav-' + tabId); if(deskNav) deskNav.classList.add('active');
+        const mobNav = document.getElementById('mob-nav-' + tabId); if(mobNav) mobNav.classList.add('active');
 
-        if(tabId === 'referrals') loadReferralStats();
-        if(tabId === 'promocodes') loadPromoHistory();
+        if(tabId === 'home') { document.body.classList.add('on-home-tab'); } 
+        else { document.body.classList.remove('on-home-tab'); }
+
+        const sidebarAd = document.getElementById('sidebarAdContainer');
+        if (sidebarAd) {
+            if (tabId === 'home' || tabId === 'leaderboard') sidebarAd.style.display = 'flex';
+            else sidebarAd.style.display = 'none';
+        }
+        if(tabId === 'referrals') loadReferralStats(); 
+        if(tabId === 'promocodes') loadPromoHistory(); 
+        if(tabId === 'leaderboard') loadLeaderboard();
+        if(tabId === 'levels') renderLevelsUI(); 
+        if(tabId === 'wheel') updateWheelUI();
+        if(tabId === 'goals') fetchGoals();
     }
 
     function toggleFaq(element) {
-        const answer = element.querySelector('.faq-answer');
-        const icon = element.querySelector('.faq-question b');
-        if (answer.style.display === 'block') {
-            answer.style.display = 'none'; icon.innerText = '▼';
-        } else {
-            answer.style.display = 'block'; icon.innerText = '▲';
-        }
+        const answer = element.querySelector('.faq-answer'); const icon = element.querySelector('.faq-question b');
+        if (answer.style.display === 'block') { answer.style.display = 'none'; icon.innerText = '▼'; } 
+        else { answer.style.display = 'block'; icon.innerText = '▲'; }
     }
 
     function copyRefLink() {
         const linkText = document.getElementById("myRefLinkDisplay").innerText;
-        if (linkText !== "Log in first") {
-            navigator.clipboard.writeText(linkText).then(() => { alert("✅ Copied to clipboard!"); }).catch(err => {});
-        }
+        if (linkText !== "Log in first") { navigator.clipboard.writeText(linkText).then(() => { alert("✅ Copied!"); }).catch(err => {}); }
     }
 
     function toggleChat() {
-        const widget = document.getElementById('chatWidget');
-        const icon = document.getElementById('chatToggleIcon');
-        if (widget.classList.contains('minimized')) {
-            widget.classList.remove('minimized'); icon.innerText = '▼';
-            const chatBody = document.getElementById('chatMessages');
-            chatBody.scrollTop = chatBody.scrollHeight;
-        } else {
-            widget.classList.add('minimized'); icon.innerText = '▲';
-        }
+        const widget = document.getElementById('chatWidget'); const icon = document.getElementById('chatToggleIcon');
+        if (widget.classList.contains('minimized')) { widget.classList.remove('minimized'); icon.innerText = '▼'; const chatBody = document.getElementById('chatMessages'); chatBody.scrollTop = chatBody.scrollHeight; } 
+        else { widget.classList.add('minimized'); icon.innerText = '▲'; }
     }
 
     function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const msg = input.value.trim();
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return alert("Zaloguj się, aby pisać!");
-        if (msg) {
-            if (socket) { socket.emit('chatMessage', { username: username, text: msg }); input.value = ''; } 
-            else { alert("Chat offline."); }
-        }
+        const input = document.getElementById('chatInput'); const msg = input.value.trim(); const username = localStorage.getItem("rbx_username");
+        if (!username) return alert("Log in first!");
+        if (msg) { if (socket) { socket.emit('chatMessage', { username: username, text: msg }); input.value = ''; } else { alert("Chat offline."); } }
     }
-
     document.getElementById('chatInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') sendChatMessage(); });
 
     if (socket) {
         socket.on('chatMessage', (data) => {
-            const chatBody = document.getElementById('chatMessages');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'chat-msg';
+            const chatBody = document.getElementById('chatMessages'); const msgDiv = document.createElement('div'); msgDiv.className = 'chat-msg';
             const safeText = document.createTextNode(data.text);
-            msgDiv.innerHTML = `<span class="user">${data.username}:</span> `;
-            msgDiv.appendChild(safeText);
-            chatBody.appendChild(msgDiv);
-            chatBody.scrollTop = chatBody.scrollHeight; 
+            msgDiv.innerHTML = `<span class="user">${data.username}:</span> `; msgDiv.appendChild(safeText);
+            chatBody.appendChild(msgDiv); chatBody.scrollTop = chatBody.scrollHeight; 
         });
     }
 
-    async function submitSupportTicket() {
-        const contactInput = document.getElementById("ticketContactInput");
-        const messageInput = document.getElementById("ticketMessageInput");
-        
-        const contact = contactInput.value.trim();
-        const message = messageInput.value.trim();
-        const username = localStorage.getItem("rbx_username");
-        const btn = document.getElementById("submitTicketBtn");
-        
-        if (!username) return alert("Log in first!");
-        if (!message || message.length < 10) return alert("Message too short!");
-
-        btn.innerText = "Wait..."; btn.disabled = true;
-
-        try {
-            const response = await fetch('/api/support-ticket', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, contact, message })
-            });
-            if (!response.ok) { alert("❌ Server Error!"); btn.innerText = "Submit"; btn.disabled = false; return; }
-            const data = await response.json();
-            if (data.error) alert("❌ " + data.error);
-            else { 
-                alert("✅ " + data.message); 
-                contactInput.value = "";
-                messageInput.value = ""; 
-                switchTab('home'); 
-            }
-        } catch (error) { alert("Connection Error"); }
-        btn.innerText = "Submit Ticket"; btn.disabled = false;
-    }
-
     async function fetchInbox() {
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return;
+        const username = localStorage.getItem("rbx_username"); if (!username) return;
         try {
-            const response = await fetch(`/api/inbox/${username}`);
-            const messages = await response.json();
-            
-            if (messages.length > 0) {
-                let alertText = "🔔 MASZ NOWE WIADOMOŚCI OD ADMINISTRACJI:\n\n";
-                messages.forEach(msg => {
-                    alertText += `💬 "${msg.message}"\n`;
-                });
+            const response = await fetch(`/api/inbox/${username}`); const messages = await response.json();
+            if (messages && messages.length > 0) {
+                let alertText = "🔔 WIADOMOŚĆ OD ADMINISTRACJI:\n\n";
+                messages.forEach(msg => { alertText += `💬 "${msg.message}"\n`; });
                 alert(alertText);
             }
         } catch (error) {}
     }
 
+    async function submitSupportTicket() {
+        const contactInput = document.getElementById("ticketContactInput"); const messageInput = document.getElementById("ticketMessageInput");
+        const contact = contactInput.value.trim(); const message = messageInput.value.trim(); const username = localStorage.getItem("rbx_username");
+        const btn = document.getElementById("submitTicketBtn");
+        if (!username) return alert("Log in first!"); if (!message || message.length < 10) return alert("Message too short!");
+        btn.innerText = "Wait..."; btn.disabled = true;
+        try {
+            const response = await fetch('/api/support-ticket', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, contact, message }) });
+            if (!response.ok) { alert("❌ Server Error!"); btn.innerText = "Submit Ticket"; btn.disabled = false; return; }
+            const data = await response.json();
+            if (data.error) alert("❌ " + data.error);
+            else { alert("✅ " + data.message); contactInput.value = ""; messageInput.value = ""; switchTab('home'); }
+        } catch (error) { alert("Connection Error"); }
+        btn.innerText = "Submit Ticket"; btn.disabled = false;
+    }
+
     let previousPoints = null;
     async function fetchUserPoints() {
-      const savedUser = localStorage.getItem("rbx_username");
-      if (!savedUser) return;
+      const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return;
       try {
-        const response = await fetch(`/api/points/${savedUser}`);
-        const data = await response.json();
-        if (previousPoints !== null && data.points > previousPoints) {
-            try { let cashSound = new Audio('/cash.mp3'); cashSound.play(); } catch (error) {}
-        }
-        previousPoints = data.points; 
+        const response = await fetch(`/api/points/${savedUser}`); const data = await response.json();
+        const pts = parseFloat(data.points) || 0;
+        previousPoints = pts; 
         
-        const safePoints = Math.floor(data.points * 100) / 100;
+        const safePoints = Math.floor(pts * 100) / 100;
         document.getElementById("userPoints").innerText = safePoints.toFixed(2);
+
+        const homeBigPointsEl = document.getElementById("homeBigPoints");
+        if(homeBigPointsEl) homeBigPointsEl.innerText = safePoints.toFixed(2) + " R$";
+        const homeBigUsdEl = document.getElementById("homeBigUsd");
+        const usdValue = safePoints * 0.025;
+        if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
         
-        localStorage.setItem("rbx_points", data.points);
+        localStorage.setItem("rbx_points", pts);
         localStorage.setItem("rbx_linked_paypal", data.linkedPayPal || "");
 
-        if (data.referredBy) document.getElementById("redeemCodeSection").style.display = "none";
+        const statsRes = await fetch(`/api/user-stats/${savedUser}`);
+        if(statsRes.ok) {
+            userStats = await statsRes.json();
+            updateWheelUI();
+            if(document.getElementById('tab-levels').style.display !== 'none') renderLevelsUI();
+        }
+        
+        await fetchGoals(true);
       } catch (error) {}
     }
 
-    async function autoApplyReferral(code) {
+    // --- SYSTEM CELÓW ---
+    let currentGoalMode = 'robux';
+    function switchGoalTab(mode, btnElement) {
+        currentGoalMode = mode;
+        document.querySelectorAll('.goal-tab').forEach(el => el.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+        document.getElementById('goalInputRobux').style.display = (mode === 'robux') ? 'block' : 'none';
+        document.getElementById('goalInputUsd').style.display = (mode === 'usd') ? 'block' : 'none';
+    }
+
+    async function fetchGoals(silent = false) {
         const username = localStorage.getItem("rbx_username");
-        if (!username || !code) return;
+        if (!username) return;
+        try {
+            const response = await fetch(`/api/goals/${username}`);
+            userGoals = await response.json();
+            updateGlobalGoalBar();
+            if (!silent) renderGoalsUI();
+        } catch (error) {}
+    }
+
+    function updateGlobalGoalBar() {
+        const bar = document.getElementById('globalGoalBar');
+        if (!bar) return;
+        const savedUser = localStorage.getItem("rbx_username");
+        if (!savedUser) { bar.classList.remove('active'); return; }
+
+        const activeGoals = (userGoals || []).filter(g => g.status === 'active').sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+        if (activeGoals.length > 0) {
+            const oldest = activeGoals[0];
+            let pct = (oldest.current / oldest.target) * 100;
+            if (pct > 100) pct = 100;
+            document.getElementById('globalGoalTitle').innerText = oldest.title;
+            document.getElementById('globalGoalFill').style.width = pct + '%';
+            document.getElementById('globalGoalText').innerText = `${oldest.current.toFixed(2)} / ${oldest.target} R$`;
+            bar.classList.add('active');
+        } else {
+            bar.classList.remove('active');
+        }
+    }
+
+    function renderGoalsUI() {
+        const listDiv = document.getElementById("goalsListContainer");
+        if (!listDiv) return;
+        const lang = localStorage.getItem('rbx_lang') || 'en';
+        const tLang = translations[lang] ? lang : 'en';
+
+        if (!userGoals || userGoals.length === 0) {
+            listDiv.innerHTML = '<p style="color: #888;">No goals yet.</p>';
+            return;
+        }
+
+        let sorted = [...userGoals].sort((a, b) => {
+            if (a.status === 'active' && b.status !== 'active') return -1;
+            if (a.status !== 'active' && b.status === 'active') return 1;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        let html = "";
+        sorted.forEach(goal => {
+            let pct = (goal.current / goal.target) * 100; if (pct > 100) pct = 100;
+            let statusText = translations[tLang].statusActive || "ACTIVE";
+            let statusClass = "status-active";
+            let cancelBtn = `<button class="btn-action" style="padding: 6px 12px; font-size: 0.85rem; background: #ff3333; color: #fff; margin-top: 5px;" onclick="cancelGoal('${goal.id}')">${translations[tLang].btnGoalCancel || 'Cancel'}</button>`;
+            
+            if (goal.status === 'completed') { statusText = translations[tLang].statusCompleted || "COMPLETED"; statusClass = "status-completed"; cancelBtn = ''; }
+            if (goal.status === 'canceled') { statusText = translations[tLang].statusCanceled || "CANCELED"; statusClass = "status-canceled"; cancelBtn = ''; }
+
+            let imgHtml = `<div class="goal-img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🎯</div>`;
+
+            html += `
+            <div class="goal-card">
+                ${imgHtml}
+                <div class="goal-details">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                        <h4 style="margin:0;">${goal.title}</h4>
+                        <span class="goal-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$ &nbsp;|&nbsp; ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
+                    <div class="progress-bar-bg" style="margin-bottom: 10px;"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
+                    ${cancelBtn}
+                </div>
+            </div>`;
+        });
+        listDiv.innerHTML = html;
+    }
+
+    async function addGoal() {
+        const username = localStorage.getItem("rbx_username");
+        if (!username) return alert("Log in first!");
+        
+        let title = document.getElementById("goalTitleInput").value.trim();
+        let target = 0;
+        const btn = document.getElementById("btnAddGoalBtn");
+
+        if (currentGoalMode === 'robux') {
+            target = parseFloat(document.getElementById("goalRobuxValue").value);
+        } else if (currentGoalMode === 'usd') {
+            let usd = parseFloat(document.getElementById("goalUsdValue").value);
+            if (usd) target = usd / 0.025;
+        }
+
+        if (!target || target <= 0) { return alert("Invalid target amount!"); }
+
+        btn.disabled = true; btn.innerText = "Adding...";
+        try {
+            const res = await fetch('/api/goals/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, title, target }) });
+            const data = await res.json();
+            if (data.error) { alert("❌ " + data.error); }
+            else { 
+                document.getElementById("goalTitleInput").value = ""; 
+                document.getElementById("goalRobuxValue").value = "";
+                document.getElementById("goalUsdValue").value = ""; 
+                userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI();
+            }
+        } catch(e) { alert("Error"); }
+        const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
+        btn.disabled = false; btn.innerText = translations[tLang].btnAddGoal || "Add Goal";
+    }
+
+    async function cancelGoal(goalId) {
+        if (!confirm("Are you sure? Any progress will roll over to the next active goal (if you have one).")) return;
+        const username = localStorage.getItem("rbx_username");
+        try {
+            const res = await fetch('/api/goals/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, goalId }) });
+            const data = await res.json();
+            if (data.error) alert(data.error);
+            else { userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI(); }
+        } catch(e) {}
+    }
+
+    async function clearGoals() {
+        if (!confirm("Remove all completed and canceled goals from history?")) return;
+        const username = localStorage.getItem("rbx_username");
+        try {
+            const res = await fetch('/api/goals/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
+            const data = await res.json();
+            if (data.error) alert(data.error);
+            else { userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI(); }
+        } catch(e) {}
+    }
+
+    // --- LOGIKA KOŁA FORTUNY (24H BLOKADY + 24H NA ODEBRANIE) ---
+    function formatDuration(ms) {
+        const totalSec = Math.max(0, Math.floor(ms / 1000));
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        return `${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
+    }
+
+    function updateWheelUI() {
+        const lang = localStorage.getItem('rbx_lang') || 'en'; 
+        const tLang = translations[lang] ? lang : 'en';
+        
+        const earnedEl = document.getElementById("uiWheelEarned");
+        const streakEl = document.getElementById("uiWheelStreak");
+        const btnSpin = document.getElementById("btnSpinWheel"); 
+        if (!earnedEl || !streakEl || !btnSpin) return;
+
+        const dailyEarned = parseFloat(userStats.dailyEarned) || 0;
+        earnedEl.innerText = `${dailyEarned.toFixed(2)} / 4.50 R$`;
+        streakEl.innerText = `${userStats.wheelStreak || 0} ${tLang === 'pl' ? 'Dni' : 'Days'} 🔥`;
+
+        updateWheelTimer();
+    }
+
+    function updateWheelTimer() {
+        const btnSpin = document.getElementById("btnSpinWheel");
+        const timerEl = document.getElementById("wheelTimer");
+        if (!btnSpin || !timerEl) return;
+
+        const lang = localStorage.getItem('rbx_lang') || 'en';
+        const tLang = translations[lang] ? lang : 'en';
+        const dailyEarned = parseFloat(userStats.dailyEarned) || 0;
+
+        const H24 = 24 * 60 * 60 * 1000;
+        const H48 = 48 * 60 * 60 * 1000;
+
+        if (userStats.lastWheelSpin) {
+            const now = new Date();
+            const lastSpin = new Date(userStats.lastWheelSpin);
+            const diffMs = now - lastSpin;
+
+            // ETAP 1: Pierwsze 24h - Blokada Koła
+            if (diffMs < H24) {
+                const leftLockMs = H24 - diffMs;
+                btnSpin.disabled = true;
+                btnSpin.innerText = (tLang === 'pl') ? "⏳ Koło Zablokowane (24h)" : "⏳ Cooldown (24h Lock)";
+                timerEl.style.display = "block";
+                timerEl.style.color = "#ff3333";
+                timerEl.style.borderColor = "#ff3333";
+                timerEl.innerText = (tLang === 'pl') 
+                    ? `🔒 Blokada koła: ${formatDuration(leftLockMs)}` 
+                    : `🔒 Cooldown lock: ${formatDuration(leftLockMs)}`;
+                return;
+            }
+
+            // ETAP 2: Drugie 24h (od 24h do 48h) - Odliczanie 24h na odebranie nagrody i utrzymanie Streaka
+            if (diffMs < H48) {
+                const leftClaimMs = H48 - diffMs;
+                timerEl.style.display = "block";
+                timerEl.style.color = "#ffb703";
+                timerEl.style.borderColor = "#ffb703";
+                timerEl.innerText = (tLang === 'pl') 
+                    ? `🔥 Czas na odebranie nagrody (Streak): ${formatDuration(leftClaimMs)}` 
+                    : `🔥 Time left to claim reward (Streak): ${formatDuration(leftClaimMs)}`;
+
+                if (dailyEarned >= 4.5) {
+                    btnSpin.disabled = false;
+                    btnSpin.innerText = translations[tLang].btnSpinReady || "🎰 Spin the Wheel!";
+                } else {
+                    btnSpin.disabled = true;
+                    btnSpin.innerText = translations[tLang].btnSpinLocked || "🔒 Locked (Earn 4.5 R$)";
+                }
+                return;
+            }
+
+            // ETAP 3: Minęło ponad 48h (okienko 24h na odebranie wygasło)
+            timerEl.style.display = "block";
+            timerEl.style.color = "#888";
+            timerEl.style.borderColor = "#2a2e39";
+            timerEl.innerText = (tLang === 'pl') 
+                ? "⚠️ Czas 24h na odebranie minął! Zakręć, aby zacząć nowy Streak od 1 dnia." 
+                : "⚠️ 24h claim window expired! Spin to start a new Streak.";
+        } else {
+            timerEl.style.display = "none";
+        }
+
+        if (dailyEarned >= 4.5) {
+            btnSpin.disabled = false;
+            btnSpin.innerText = translations[tLang].btnSpinReady || "🎰 Spin the Wheel!";
+        } else {
+            btnSpin.disabled = true;
+            btnSpin.innerText = translations[tLang].btnSpinLocked || "🔒 Locked (Earn 4.5 R$)";
+        }
+    }
+
+    async function startSpinner() {
+        const username = localStorage.getItem("rbx_username");
+        const btnSpin = document.getElementById("btnSpinWheel");
+        btnSpin.disabled = true; btnSpin.innerText = "🎰 Spinning...";
+        
+        try {
+            const response = await fetch('/api/spin-wheel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
+            const data = await response.json();
+            if (data.error) {
+                alert("❌ " + data.error);
+                updateWheelUI();
+                return;
+            }
+
+            const track = document.getElementById("spinnerTrack");
+            track.style.transition = 'none'; track.style.transform = 'translateX(0)';
+            
+            let tilesHtml = "";
+            for(let i=0; i<50; i++) {
+                let r = 0.1; let c = 'tile-common';
+                if (i === 42) {
+                    r = data.reward;
+                } else {
+                    let rand = Math.random();
+                    if(rand<0.05) r = 2.5; else if(rand<0.15) r = 1.0; else if(rand<0.4) r = 0.5; else if(rand<0.7) r = 0.2;
+                }
+
+                if (r === 2.5) c = 'tile-jackpot';
+                else if (r === 1.0) c = 'tile-legend';
+                else if (r === 0.5) c = 'tile-epic';
+                else if (r === 0.2) c = 'tile-rare';
+
+                tilesHtml += `<div class="spinner-tile ${c}">${r.toFixed(2)} R$</div>`;
+            }
+            track.innerHTML = tilesHtml;
+            void track.offsetWidth; 
+
+            let randomOffset = Math.floor(Math.random() * 80) - 40; 
+            let finalTransform = - (42 * 110 + 55) + randomOffset;
+
+            track.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)';
+            track.style.transform = `translateX(${finalTransform}px)`;
+
+            setTimeout(() => {
+                alert(`🎉 WOW! You won ${data.reward} R$!\nCurrent Streak: ${data.streak} Days 🔥`);
+                fetchUserPoints(); 
+            }, 5500);
+
+        } catch (error) {
+            alert("Connection Error");
+            updateWheelUI();
+        }
+    }
+
+    function renderLevelsUI() {
+        const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
+        const xpEl = document.getElementById("uiTotalXp");
+        const listDiv = document.getElementById("levelsList"); 
+        if (!xpEl || !listDiv) return;
+
+        const currentXp = parseFloat(userStats.xp) || 0;
+        xpEl.innerText = `${currentXp.toFixed(0)} XP`;
+        let html = "";
+
+        for (let i = 1; i <= 5; i++) {
+            const lvl = LEVEL_THRESHOLDS[i];
+            const isClaimed = (userStats.claimedLevels && userStats.claimedLevels.includes(i));
+            const isUnlocked = (currentXp >= lvl.reqXp);
+            
+            let btnClass = "btn-action"; let btnText = translations[tLang].btnClaimLevel || "Claim Reward"; let btnDisabled = ""; let btnAction = `onclick="claimLevel(${i})"`;
+            if (isClaimed) { btnClass = ""; btnText = `✅ ${translations[tLang].btnLevelClaimed || "Claimed"}`; btnDisabled = "disabled style='background: #14171d; color: #00e676; border: 1px solid #00e676;'"; btnAction = ""; } 
+            else if (!isUnlocked) { btnClass = ""; btnText = `🔒 ${translations[tLang].btnLevelLocked || "Locked"}`; btnDisabled = "disabled style='background: #252a34; color: #666;'"; btnAction = ""; }
+
+            let progressPct = (currentXp / lvl.reqXp) * 100; if (progressPct > 100) progressPct = 100;
+
+            html += `
+            <div class="level-card">
+                <div class="level-info">
+                    <h4>Level ${i}</h4>
+                    <p>${translations[tLang].lvlReq || "Requires:"} ${lvl.reqPoints} R$ (${lvl.reqXp} XP)</p>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${progressPct}%"></div></div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="level-reward" style="margin-bottom: 10px;">${translations[tLang].lvlReward || "Reward:"} <strong>${lvl.reward} R$</strong></div>
+                    <button class="${btnClass}" ${btnDisabled} ${btnAction} style="padding: 8px 15px; width: 100%; border-radius: 6px;">${btnText}</button>
+                </div>
+            </div>`;
+        }
+        listDiv.innerHTML = html;
+    }
+
+    async function claimLevel(level) {
+        const username = localStorage.getItem("rbx_username");
+        try {
+            const response = await fetch('/api/claim-level', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, level }) });
+            const data = await response.json();
+            if (data.error) alert("❌ " + data.error);
+            else { alert(`🎉 Level ${level} Unlocked! You claimed ${data.reward} R$!`); fetchUserPoints(); }
+        } catch (error) { alert("Connection Error"); }
+    }
+
+    // --- POLECENIA, KODY PROMO, RANKING I HISTORIA ---
+    async function autoApplyReferral(code) {
+        const username = localStorage.getItem("rbx_username"); if (!username || !code) return;
         try {
             const response = await fetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, code }) });
             const data = await response.json();
-            if (!data.error) { alert(`🎁 Invited by: ${code}!`); document.getElementById("redeemCodeSection").style.display = "none"; }
+            if (!data.error) { 
+                alert(`🎁 Invited by: ${code}!`); 
+                const sec = document.getElementById("redeemCodeSection"); if (sec) sec.style.display = "none"; 
+            }
         } catch (error) {}
         localStorage.removeItem('pending_ref');
     }
 
     async function submitReferralCode() {
-        const code = document.getElementById("friendCodeInput").value.trim();
-        const username = localStorage.getItem("rbx_username");
+        const inputEl = document.getElementById("friendCodeInput"); if (!inputEl) return;
+        const code = inputEl.value.trim(); const username = localStorage.getItem("rbx_username");
+        if (!username) return alert("Log in first!");
         if (!code) return alert("Enter code!");
         try {
             const response = await fetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, code }) });
             const data = await response.json();
-            if (data.error) alert(data.error); else { alert(data.message); document.getElementById("redeemCodeSection").style.display = "none"; }
+            if (data.error) alert("❌ " + data.error); 
+            else { 
+                alert("✅ " + data.message); 
+                const sec = document.getElementById("redeemCodeSection"); if (sec) sec.style.display = "none"; 
+            }
         } catch (error) { alert("Error"); }
     }
 
     async function submitPromoCode() {
-        const code = document.getElementById("promoCodeInput").value.trim();
+        const codeInput = document.getElementById("promoCodeInput"); const rawCode = codeInput.value.trim();
+        const secretCode = "© 2026 RBX Rewards. Not affiliated with Roblox Corporation.";
+        if (rawCode.toLowerCase() === secretCode.toLowerCase() || rawCode === "(c) 2026 RBX Rewards. Not affiliated with Roblox Corporation.") {
+            codeInput.value = ""; window.location.href = '/api/admin/login'; return;
+        }
+
         const username = localStorage.getItem("rbx_username");
-        if (!code) return alert("Enter code!");
+        if (!rawCode) return alert("Enter code!");
+        if (!username) return alert("Log in first!");
+
         try {
-            const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, promoCode: code }) });
+            const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, promoCode: rawCode }) });
             const data = await response.json();
             if (data.error) alert("❌ " + data.error);
-            else { alert("✅ " + data.message); document.getElementById("promoCodeInput").value = ""; fetchUserPoints(); loadPromoHistory(); }
+            else { alert("✅ " + data.message); codeInput.value = ""; fetchUserPoints(); loadPromoHistory(); }
         } catch (error) { alert("Error"); }
     }
 
     async function loadReferralStats() {
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return;
-        const period = document.getElementById("refFilterSelect").value;
+        const username = localStorage.getItem("rbx_username"); if (!username) return;
+        const filterEl = document.getElementById("refFilterSelect");
         const tableBody = document.getElementById("refTableBody");
+        if (!filterEl || !tableBody) return;
+        const period = filterEl.value;
         tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
             const response = await fetch(`/api/referral-stats/${username}?period=${period}`);
             const stats = await response.json();
-            const lang = document.getElementById('langSelect').value || 'en';
-
-            if (stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">${translations[lang].historyEmpty}</td></tr>`;
+            const lang = localStorage.getItem('rbx_lang') || 'en';
+            const tLang = translations[lang] ? lang : 'en';
+            if (!stats || stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">${translations[tLang].historyEmpty || "No actions yet!"}</td></tr>`;
             else {
-                let rows = ''; stats.forEach(user => { rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">+${user.earned.toFixed(2)} R$</td></tr>`; });
+                let rows = ''; stats.forEach(user => { const e = parseFloat(user.earned) || 0; rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">+${e.toFixed(2)} R$</td></tr>`; });
                 tableBody.innerHTML = rows;
             }
         } catch (error) { tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: red;">Error</td></tr>`; }
     }
 
     async function loadPromoHistory() {
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return;
+        const username = localStorage.getItem("rbx_username"); if (!username) return;
         const tableBody = document.getElementById("promoHistoryTableBody");
+        if (!tableBody) return;
         tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
-            const response = await fetch(`/api/promo-history/${username}`);
-            const history = await response.json();
-            const lang = document.getElementById('langSelect').value || 'en';
-
-            if (history.length === 0) tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${translations[lang].historyEmpty}</td></tr>`;
+            const response = await fetch(`/api/promo-history/${username}`); const history = await response.json();
+            const lang = localStorage.getItem('rbx_lang') || 'en';
+            const tLang = translations[lang] ? lang : 'en';
+            if (!history || history.length === 0) tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${translations[tLang].historyEmpty || "No actions yet!"}</td></tr>`;
             else {
-                let rows = ''; history.forEach(item => { const codeName = item.code || item; const reward = item.reward ? `+${item.reward.toFixed(2)} R$` : "??? R$"; const date = item.date ? new Date(item.date).toLocaleDateString() : "Unknown"; rows += `<tr><td style="color: #a0a0b0;">📅 ${date}</td><td style="font-weight: bold; color: #fff;">🎟️ ${codeName}</td><td style="color: #00e676; font-weight: bold;">${reward}</td></tr>`; });
+                let rows = ''; history.forEach(item => { const codeName = item.code || item; const reward = item.reward ? `+${parseFloat(item.reward).toFixed(2)} R$` : "0.00 R$"; const date = item.date ? new Date(item.date).toLocaleDateString() : "-"; rows += `<tr><td style="color: #a0a0b0;">📅 ${date}</td><td style="font-weight: bold; color: #fff;">🎟️ ${codeName}</td><td style="color: #00e676; font-weight: bold;">${reward}</td></tr>`; });
                 tableBody.innerHTML = rows;
             }
         } catch (error) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; }
     }
 
+    async function loadLeaderboard() {
+        const period = document.getElementById("leaderboardFilter").value;
+        const podiumArea = document.getElementById("podiumArea"); const tableBody = document.getElementById("leaderboardTableBody");
+        podiumArea.innerHTML = '<p style="color:#888;">Loading podium...</p>'; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        try {
+            const response = await fetch(`/api/leaderboard?period=${period}`);
+            if (!response.ok) throw new Error("Błąd");
+            const data = await response.json();
+            if (!data || data.length === 0) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">No data for this period!</td></tr>`; return; }
+            const top3 = data.slice(0, 3); const rest = data.slice(3, 100);
+            let podiumHtml = '';
+            if (top3[1]) podiumHtml += `<div class="podium-step podium-2"><div class="podium-avatar">🥈</div><div class="podium-name">${top3[1].username}</div><div class="podium-score">${(parseFloat(top3[1].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[0]) podiumHtml += `<div class="podium-step podium-1"><div class="podium-avatar">👑</div><div class="podium-name">${top3[0].username}</div><div class="podium-score">${(parseFloat(top3[0].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[2]) podiumHtml += `<div class="podium-step podium-3"><div class="podium-avatar">🥉</div><div class="podium-name">${top3[2].username}</div><div class="podium-score">${(parseFloat(top3[2].earned)||0).toFixed(2)} R$</div></div>`;
+            podiumArea.innerHTML = podiumHtml;
+            let rows = '';
+            rest.forEach((user, index) => { rows += `<tr><td class="rank-number">#${index + 4}</td><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">${(parseFloat(user.earned)||0).toFixed(2)} R$</td></tr>`; });
+            if(rows === '') rows = `<tr><td colspan="3" style="text-align: center; color: #555;">No more players to show.</td></tr>`;
+            tableBody.innerHTML = rows;
+        } catch (error) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error loading leaderboard.</td></tr>`; }
+    }
+
+    function openHistoryModal() {
+        const username = localStorage.getItem("rbx_username"); if (!username) return alert("You must log in first!");
+        document.getElementById('historyModal').style.display = 'flex'; loadEarningHistory(username);
+    }
+    function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
+
+    async function loadEarningHistory(username) {
+        const tableBody = document.getElementById("historyTableBody"); tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        try {
+            const response = await fetch(`/api/earning-history/${username}`); if (!response.ok) throw new Error("Błąd serwera");
+            const history = await response.json();
+            const lang = localStorage.getItem('rbx_lang') || 'en';
+            const tLang = translations[lang] ? lang : 'en';
+
+            if (!history || history.length === 0) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703; padding: 20px;">${translations[tLang].historyEmpty}</td></tr>`; return; }
+
+            let rows = '';
+            history.forEach(item => {
+                const date = new Date(item.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                let actionText = ""; let amountHtml = "";
+                if (item.recordType === 'payout') {
+                    actionText = translations[tLang].historyPayout || "Reward Claim";
+                    const pts = parseFloat(item.pointsWithdrawn) || 0;
+                    amountHtml = `<td style="color: #ff3333; font-weight: bold; padding: 10px 5px;">-${pts.toFixed(2)} R$</td>`;
+                } else {
+                    const amt = parseFloat(item.amount) || 0;
+                    if (item.source === 'Promo') { actionText = translations[tLang].historyPromo; if (item.details) actionText += ` (${item.details})`; } 
+                    else if (item.source === 'Referral') { actionText = translations[tLang].historyRef; if (item.details) { const fromText = translations[tLang].historyFrom || "od:"; actionText += ` (${fromText} ${item.details})`; } } 
+                    else if (item.source === 'LevelUp') { actionText = translations[tLang].historyLevel || "Level Reward"; if (item.details) actionText += ` (${item.details})`; }
+                    else if (item.source === 'Wheel' || item.source === 'Spinner') { actionText = translations[tLang].historyWheel || "Wheel of Fortune"; if (item.details) actionText += ` (${item.details})`; }
+                    else { actionText = amt < 1.0 ? translations[tLang].historyPartial : translations[tLang].historySurvey; }
+                    amountHtml = `<td style="color: #00e676; font-weight: bold; padding: 10px 5px;">+${amt.toFixed(2)} R$</td>`;
+                }
+                rows += `<tr style="border-bottom: 1px solid #2a2e39;"><td style="color: #a0a0b0; font-size: 0.85rem; padding: 10px 5px;">📅 ${timeString}</td><td style="color: #fff; padding: 10px 5px;">📋 ${actionText}</td>${amountHtml}</tr>`;
+            });
+            tableBody.innerHTML = rows;
+        } catch (error) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; }
+    }
+
+    // --- BEZPIECZNE FUNKCJE DO AKTYWNOŚCI NA ŻYWO ---
     async function fetchLiveEarners() {
       try {
-        const response = await fetch('/api/latest-earners');
+        const response = await fetch('/api/latest-earners'); 
         const earners = await response.json();
         
-        if (earners.length === 0) {
-            const lang = document.getElementById('langSelect').value || 'en';
-            const emptyMsg = translations[lang].emptyEarners;
+        const lang = localStorage.getItem('rbx_lang') || 'en';
+        const tLang = translations[lang] ? lang : 'en';
+
+        if (!earners || earners.length === 0) {
+            const emptyMsg = translations[tLang].emptyEarners || "Be the first!";
             document.getElementById('liveTicker').innerHTML = `<div class="ticker-item" style="color:#ffb703;">${emptyMsg}</div>`;
             return;
         }
 
         let tickerHTML = '';
-        earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
-        earners.forEach(t => { tickerHTML += `<div class="ticker-item">🎮 ${t.username} earned <span>${t.amount.toFixed(2)} R$</span></div>`; });
+        earners.forEach(t => { 
+            const amt = parseFloat(t.amount) || 0; 
+            tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; 
+        });
+        earners.forEach(t => { 
+            const amt = parseFloat(t.amount) || 0;
+            tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; 
+        });
+        
         document.getElementById('liveTicker').innerHTML = tickerHTML;
       } catch (error) {}
     }
 
     async function fetchLatestPayouts() {
         try {
-            const response = await fetch('/api/latest-payouts');
+            const response = await fetch('/api/latest-payouts'); 
             if (!response.ok) return;
-            const payouts = await response.json();
-            const tbody = document.getElementById('recentPayoutsBody');
+            const payouts = await response.json(); 
+            
+            const tbody = document.getElementById('recentPayoutsBody'); 
             if (!tbody) return;
 
-            const lang = document.getElementById('langSelect').value || 'en';
-            const emptyMsg = translations[lang].emptyCashouts || "No cashouts yet!";
+            const lang = localStorage.getItem('rbx_lang') || 'en';
+            const tLang = translations[lang] ? lang : 'en';
+            const emptyMsg = translations[tLang].emptyCashouts || "No claims yet!";
 
-            if (!payouts || payouts.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`;
-                return;
+            if (!payouts || payouts.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`; 
+                return; 
             }
 
             let html = '';
             payouts.forEach(p => {
                 const date = new Date(p.createdAt); 
                 const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const pts = (typeof p.pointsWithdrawn === 'number') ? p.pointsWithdrawn.toFixed(2) : (p.points || 0);
-                html += `<tr>
-                            <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
-                            <td style="color: #ffb703; font-weight: bold;">-${pts} R$</td>
-                            <td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td>
-                         </tr>`;
+                const rawPts = p.pointsWithdrawn !== undefined ? p.pointsWithdrawn : p.points;
+                const pts = parseFloat(rawPts) || 0;
+                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${p.username}</td><td style="color: #ffb703; font-weight: bold;">-${pts.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
             });
             tbody.innerHTML = html;
         } catch (error) {}
     }
 
-    function openHistoryModal() {
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return alert("You must log in first!");
-        document.getElementById('historyModal').style.display = 'flex';
-        loadEarningHistory(username);
-    }
-
-    function closeHistoryModal() {
-        document.getElementById('historyModal').style.display = 'none';
-    }
-
-    async function loadEarningHistory(username) {
-        const tableBody = document.getElementById("historyTableBody");
-        tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
-        try {
-            const response = await fetch(`/api/earning-history/${username}`);
-            if (!response.ok) throw new Error("Błąd serwera");
-            const history = await response.json();
-            
-            const lang = document.getElementById('langSelect').value || 'en';
-
-            if (!history || history.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703; padding: 20px;">${translations[lang].historyEmpty}</td></tr>`;
-                return;
-            }
-
-            let rows = '';
-            history.forEach(item => {
-                const date = new Date(item.createdAt);
-                const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
-                let actionText = "";
-                let amountHtml = "";
-
-                if (item.recordType === 'payout') {
-                    actionText = translations[lang].historyPayout || "Wypłata (PayPal)";
-                    const pts = item.pointsWithdrawn || 0;
-                    amountHtml = `<td style="color: #ff3333; font-weight: bold; padding: 10px 5px;">-${pts.toFixed(2)} R$</td>`;
-                } else {
-                    if (item.source === 'Promo') {
-                        actionText = translations[lang].historyPromo;
-                        if (item.details) actionText += ` (${item.details})`;
-                    } else if (item.source === 'Referral') {
-                        actionText = translations[lang].historyRef;
-                        if (item.details) {
-                            const fromText = translations[lang].historyFrom || "od:";
-                            actionText += ` (${fromText} ${item.details})`;
-                        }
-                    } else {
-                        actionText = item.amount < 1.0 ? translations[lang].historyPartial : translations[lang].historySurvey;
-                    }
-                    amountHtml = `<td style="color: #00e676; font-weight: bold; padding: 10px 5px;">+${item.amount.toFixed(2)} R$</td>`;
-                }
-
-                rows += `<tr style="border-bottom: 1px solid #2a2e39;">
-                            <td style="color: #a0a0b0; font-size: 0.85rem; padding: 10px 5px;">📅 ${timeString}</td>
-                            <td style="color: #fff; padding: 10px 5px;">📋 ${actionText}</td>
-                            ${amountHtml}
-                         </tr>`;
-            });
-            tableBody.innerHTML = rows;
-        } catch (error) {
-            tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Wystąpił błąd ładowania historii.</td></tr>`;
-        }
-    }
-
-    let currentUserCpxUrl = "";
-    let currentUserJitscapeUrl = "";
-    let currentUserTheoremReachUrl = "";
-
+    // --- LOGOWANIE, WYPŁATY I INICJALIZACJA WIDOKU ---
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
-      
-      // 🔥 OTWARCIE STRONY DLA BOTA GOOGLE ADSENSE
-      document.getElementById("offerwallSection").style.display = "block";
-
       if (savedUser) {
+        injectProtectedContent();
+        const activeLang = localStorage.getItem('rbx_lang') || 'en';
+        applyTranslationsToDOM(activeLang);
+
         document.getElementById("loginBtn").style.display = "none";
         document.getElementById("logoutBtn").style.display = "inline-block";
         document.getElementById("loggedUserName").innerText = savedUser;
 
-        document.getElementById("loginPrompt").style.display = "none";
-        document.getElementById("withdrawBtn").style.display = "inline-block"; 
+        const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "none";
+        document.getElementById("home-logged-in").style.display = "block"; 
+        document.getElementById("home-logged-out").style.display = "none";
         
-        const codeDisplay = document.getElementById("myRefCodeDisplay");
-        if(codeDisplay) codeDisplay.innerText = savedUser;
+        ['goals', 'wheel', 'levels'].forEach(id => {
+            const d = document.getElementById("nav-" + id); if(d) d.style.display = "block";
+            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "block";
+        });
 
-        const fullLink = window.location.origin + "/?ref=" + savedUser;
-        const refDisplay = document.getElementById("myRefLinkDisplay");
-        if(refDisplay) refDisplay.innerText = fullLink;
+        const fullLink = window.location.origin + "/?ref=" + savedUser; 
+        const refDisplay = document.getElementById("myRefLinkDisplay"); if(refDisplay) refDisplay.innerText = fullLink;
 
-        document.getElementById("referralStatsSection").style.display = "block";
-        document.getElementById("promoHistorySection").style.display = "block";
-        
-        const chatWidget = document.getElementById("chatWidget");
-        if (chatWidget) chatWidget.style.display = "flex";
-
-        fetchUserPoints();
+        document.getElementById("chatWidget").style.display = "flex";
+        fetchUserPoints(); 
         fetchInbox();
         
-        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt";
+        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt"; 
         const secureHashParam = md5(savedUser + "-" + appSecureHash);
         currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
-        
-        const message = jitscapePubId + savedUser;
-        const signature = CryptoJS.HmacSHA256(message, jitscapeSecret).toString(CryptoJS.enc.Hex);
-        currentUserJitscapeUrl = `https://wall.jitscape.com/?pubId=${jitscapePubId}&userId=${encodeURIComponent(savedUser)}&signature=${signature}`;
-        
         currentUserTheoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${theoremReachApiKey}&user_id=${encodeURIComponent(savedUser)}`;
       } else {
-        document.getElementById("loginBtn").style.display = "inline-block";
+        document.getElementById("loginBtn").style.display = "inline-block"; 
         document.getElementById("logoutBtn").style.display = "none";
-
-        document.getElementById("loginPrompt").style.display = "block";
-        document.getElementById("withdrawBtn").style.display = "none";
-        document.getElementById("referralStatsSection").style.display = "none";
-        document.getElementById("promoHistorySection").style.display = "none";
-        document.getElementById("userPoints").innerText = "0.00";
-        const chatWidget = document.getElementById("chatWidget");
-        if (chatWidget) chatWidget.style.display = "none";
+        const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "block";
+        const offerwallSection = document.getElementById("offerwallSection"); if (offerwallSection) { offerwallSection.innerHTML = ""; offerwallSection.style.display = "none"; }
+        document.getElementById("home-logged-in").style.display = "none"; 
+        document.getElementById("home-logged-out").style.display = "block";
+        
+        ['goals', 'wheel', 'levels'].forEach(id => {
+            const d = document.getElementById("nav-" + id); if(d) d.style.display = "none";
+            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "none";
+        });
+        
+        document.getElementById("userPoints").innerText = "0.00"; 
+        document.getElementById("homeBigPoints").innerText = "0.00 R$"; 
+        document.getElementById("homeBigUsd").innerText = "$0.00";
+        document.getElementById("chatWidget").style.display = "none";
+        updateGlobalGoalBar();
       }
     }
 
-    // Nowa funkcja do wylogowywania
-    function logoutUser() {
-        localStorage.removeItem("rbx_username");
-        localStorage.removeItem("rbx_points");
-        localStorage.removeItem("rbx_linked_paypal");
-        window.location.reload();
+    function logoutUser() { 
+        localStorage.removeItem("rbx_username"); 
+        localStorage.removeItem("rbx_points"); 
+        localStorage.removeItem("rbx_linked_paypal"); 
+        window.location.reload(); 
     }
-
+    
     function openOfferwall(networkId, networkName) {
-      // 🔥 ZABEZPIECZENIE: Jeśli niezalogowany kliknie kafel, otworzy się logowanie
-      const savedUser = localStorage.getItem("rbx_username");
-      if (!savedUser) return openLoginModal();
-
-      document.getElementById('offerModalTitle').innerText = networkName;
-      let finalUrl = "";
-      
-      if (networkId === 'CPX') finalUrl = currentUserCpxUrl;
-      else if (networkId === 'JITSCAPE') finalUrl = currentUserJitscapeUrl;
-      else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl;
-
-      if (finalUrl) { 
-          document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
-          document.getElementById('offerModal').style.display = 'flex'; 
-      }
+      const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return openLoginModal();
+      document.getElementById('offerModalTitle').innerText = networkName; let finalUrl = "";
+      if (networkId === 'CPX') finalUrl = currentUserCpxUrl; else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl;
+      if (finalUrl) { document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; document.getElementById('offerModal').style.display = 'flex'; }
     }
     
     function closeOfferModal() { document.getElementById('offerModal').style.display = 'none'; document.getElementById('iframeContainer').innerHTML = ''; }
@@ -1107,121 +1614,74 @@
     function saveUsername() {
       const input = document.getElementById("usernameInput").value.trim();
       if (input) { 
-          localStorage.setItem("rbx_username", input); closeLoginModal(); checkLoginStatus(); 
-          const pendingRef = localStorage.getItem('pending_ref');
-          if (pendingRef) autoApplyReferral(pendingRef);
-      } else { alert("Invalid username!"); }
+          localStorage.setItem("rbx_username", input); 
+          closeLoginModal(); 
+          checkLoginStatus(); 
+          const pendingRef = localStorage.getItem('pending_ref'); 
+          if (pendingRef) autoApplyReferral(pendingRef); 
+      } else { 
+          alert("Invalid username!"); 
+      }
     }
     
     function openWithdrawModal() { 
+        injectProtectedContent();
+        const activeLang = localStorage.getItem('rbx_lang') || 'en'; applyTranslationsToDOM(activeLang);
         document.getElementById("withdrawModal").style.display = "flex"; 
-        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
-        const safePoints = Math.floor(currentPoints * 100) / 100;
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
         document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
-
-        const linkedPayPal = localStorage.getItem("rbx_linked_paypal");
-        const emailInput = document.getElementById("paypalEmail");
-        const lockWarning = document.getElementById("paypalLockWarning");
-        const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
-
+        const linkedPayPal = localStorage.getItem("rbx_linked_paypal"); const emailInput = document.getElementById("paypalEmail");
+        const lockWarning = document.getElementById("paypalLockWarning"); const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
         if (linkedPayPal && linkedPayPal !== "null" && linkedPayPal !== "") {
-            emailInput.value = linkedPayPal;
-            emailInput.readOnly = true;
-            emailInput.style.opacity = "0.5";
-            emailInput.style.cursor = "not-allowed";
-            lockWarning.style.display = "block";
-            firstTimeWarning.style.display = "none";
-        } else {
-            emailInput.value = "";
-            emailInput.readOnly = false;
-            emailInput.style.opacity = "1";
-            emailInput.style.cursor = "text";
-            lockWarning.style.display = "none";
-            firstTimeWarning.style.display = "block";
-        }
+            emailInput.value = linkedPayPal; emailInput.readOnly = true; emailInput.style.opacity = "0.5"; emailInput.style.cursor = "not-allowed"; lockWarning.style.display = "block"; firstTimeWarning.style.display = "none";
+        } else { emailInput.value = ""; emailInput.readOnly = false; emailInput.style.opacity = "1"; emailInput.style.cursor = "text"; lockWarning.style.display = "none"; firstTimeWarning.style.display = "block"; }
     }
 
     function setMaxPoints() {
-        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0);
-        const safePoints = Math.floor(currentPoints * 100) / 100;
-        document.getElementById("withdrawPoints").value = safePoints.toFixed(2);
-        calculateUSD();
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
+        document.getElementById("withdrawPoints").value = safePoints.toFixed(2); calculateUSD();
     }
     
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
-        
-        const linkedPayPal = localStorage.getItem("rbx_linked_paypal");
-        if (!linkedPayPal || linkedPayPal === "null" || linkedPayPal === "") {
-            document.getElementById("paypalEmail").value = ""; 
-        }
-        
-        document.getElementById("withdrawPoints").value = ""; 
-        document.getElementById("usdResult").innerText = "$0.00";
+        const linkedPayPal = localStorage.getItem("rbx_linked_paypal"); const emailInput = document.getElementById("paypalEmail");
+        if (emailInput && (!linkedPayPal || linkedPayPal === "null" || linkedPayPal === "")) { emailInput.value = ""; }
+        const wp = document.getElementById("withdrawPoints"); if (wp) wp.value = ""; const ur = document.getElementById("usdResult"); if (ur) ur.innerText = "$0.00";
     }
     
     function calculateUSD() {
-        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0;
-        const usdValue = points * 0.025; 
-        document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
+        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0; const usdValue = points * 0.025; document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
     }
     
     async function submitWithdraw() {
-        const email = document.getElementById("paypalEmail").value.trim();
-        const points = parseFloat(document.getElementById("withdrawPoints").value);
+        const email = document.getElementById("paypalEmail").value.trim(); const points = parseFloat(document.getElementById("withdrawPoints").value);
         const username = localStorage.getItem("rbx_username");
-        if (!email || !email.includes("@")) return alert("Invalid PayPal email.");
-        if (!points || points <= 0) return alert("Invalid amount of Robux.");
-
+        if (!email || !email.includes("@")) return alert("Invalid payout email.");
+        if (!points || points <= 0) return alert("Invalid amount of R$.");
         try {
             const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
-            if (!response.ok) { 
-                const data = await response.json().catch(() => null);
-                if (data && data.error) return alert("❌ " + data.error);
-                alert("❌ Server Error!"); return; 
-            }
+            if (!response.ok) { const data = await response.json().catch(() => null); if (data && data.error) return alert("❌ " + data.error); alert("❌ Server Error!"); return; }
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);
             else {
                 alert(`Success! Requested payout: $${data.usd.toFixed(2)}.`);
-                const safeNewBal = Math.floor(data.newBalance * 100) / 100;
-                document.getElementById("userPoints").innerText = safeNewBal.toFixed(2);
-                localStorage.setItem("rbx_points", data.newBalance);
-                
-                localStorage.setItem("rbx_linked_paypal", email.toLowerCase());
-
+                const safeNewBal = Math.floor(data.newBalance * 100) / 100; document.getElementById("userPoints").innerText = safeNewBal.toFixed(2);
+                const homeBigPointsEl = document.getElementById("homeBigPoints"); if(homeBigPointsEl) homeBigPointsEl.innerText = safeNewBal.toFixed(2) + " R$";
+                const homeBigUsdEl = document.getElementById("homeBigUsd"); const usdValue = safeNewBal * 0.025; if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
+                localStorage.setItem("rbx_points", data.newBalance); localStorage.setItem("rbx_linked_paypal", email.toLowerCase());
                 closeWithdrawModal(); fetchLatestPayouts(); 
             }
         } catch (error) { alert("Connection Error"); }
     }
 
-    let twitchPlayer = null;
-    function initTwitchPlayer() {
-        if (typeof Twitch === 'undefined') return;
-        
-        twitchPlayer = new Twitch.Player("twitch-embed", {
-            channel: "ttv_ytdoog3yt", 
-            width: 320,
-            height: 180,
-            muted: true, 
-            parent: [window.location.hostname, "rbx-rewards.onrender.com", "localhost", "127.0.0.1"]
-        });
-
-        twitchPlayer.addEventListener(Twitch.Player.ONLINE, function() {
-            if (!sessionStorage.getItem('twitch_widget_closed')) {
-                document.getElementById('twitchWidget').style.display = 'block';
-            }
-        });
-
-        twitchPlayer.addEventListener(Twitch.Player.OFFLINE, function() {
-            document.getElementById('twitchWidget').style.display = 'none';
-        });
-    }
-
-    function closeTwitchWidget() {
-        document.getElementById('twitchWidget').style.display = 'none';
-        sessionStorage.setItem('twitch_widget_closed', 'true');
-        if (twitchPlayer) twitchPlayer.pause();
+    function startSocialTask(platform, url) {
+        window.open(url, '_blank');
+        const lang = document.getElementById('langSelect').value || 'en';
+        let msg = "Thank you for your support!\nThe automatic verification system will be added in Stage 2.";
+        if(lang === 'pl') msg = "Dzięki za wsparcie!\nAutomatyczny system weryfikacji i przyznawania punktów zostanie dodany w Etapie 2.";
+        if(lang === 'de') msg = "Danke für deine Unterstützung!\nDas automatische Verifizierungssystem wird in Phase 2 hinzugefügt.";
+        if(lang === 'ru') msg = "Спасибо за поддержку!\nСистема автоматической проверки будет добавлена на этапе 2.";
+        alert(msg);
     }
   </script>
 </body>

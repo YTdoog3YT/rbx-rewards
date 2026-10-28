@@ -3,59 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog & Guides - RBX Rewards</title>
+    <title>Blog & Gaming Guides - RBX Rewards</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <style>
-        body { background-color: #0f1115; color: #a0a0b0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px 20px; line-height: 1.6; }
+        * { box-sizing: border-box; }
+        body { background-color: #0f1115; color: #a0a0b0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px 20px; line-height: 1.7; margin: 0; }
         .container { max-width: 850px; margin: 0 auto; }
-        header { background: #181b22; padding: 30px; border-radius: 12px; border: 1px solid #2a2e39; text-align: center; margin-bottom: 30px; }
-        header h1 { color: #00e676; margin: 0; font-size: 2.5rem; }
-        header p { margin-top: 10px; font-size: 1.1rem; }
-        .article-card { background: #181b22; padding: 40px; border-radius: 12px; border: 1px solid #2a2e39; margin-bottom: 30px; }
-        .article-card h2 { color: #fff; margin-top: 0; font-size: 1.8rem; border-bottom: 2px solid #333947; padding-bottom: 15px; margin-bottom: 20px; }
-        .article-card h3 { color: #ffb703; margin-top: 25px; margin-bottom: 10px; }
-        .article-card p { margin-bottom: 15px; font-size: 1.05rem; }
-        .nav-back { display: inline-block; padding: 10px 20px; background: #00e676; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; margin-bottom: 20px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .nav-back { display: inline-block; padding: 10px 20px; background: #00e676; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.2s; }
         .nav-back:hover { background: #00c853; }
+        .lang-selector select { background: #181b22; color: #fff; border: 1px solid #333947; padding: 10px 14px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; font-size: 0.95rem; }
+        header { background: #181b22; padding: 35px 30px; border-radius: 12px; border: 1px solid #2a2e39; text-align: center; margin-bottom: 30px; }
+        header h1 { color: #00e676; margin: 0; font-size: 2.4rem; }
+        header p { margin-top: 10px; font-size: 1.1rem; color: #c0c5d0; }
+        .article-card { background: #181b22; padding: 35px; border-radius: 12px; border: 1px solid #2a2e39; margin-bottom: 30px; }
+        .article-meta { font-size: 0.8rem; color: #00e676; text-transform: uppercase; letter-spacing: 1.2px; font-weight: bold; display: block; margin-bottom: 8px; }
+        .article-card h2 { color: #fff; margin-top: 0; font-size: 1.75rem; border-bottom: 2px solid #333947; padding-bottom: 15px; margin-bottom: 20px; }
+        .article-card h3 { color: #ffb703; margin-top: 25px; margin-bottom: 10px; font-size: 1.25rem; }
+        .article-card p { margin-bottom: 15px; font-size: 1.02rem; }
+        .article-card ul, .article-card ol { margin-bottom: 15px; padding-left: 22px; }
+        .article-card li { margin-bottom: 8px; }
+        footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #2a2e39; font-size: 0.9rem; color: #666; }
+        footer a { color: #00e676; text-decoration: none; margin: 0 10px; }
+        @media (max-width: 600px) {
+            body { padding: 20px 12px; }
+            .article-card { padding: 20px; }
+            header h1 { font-size: 1.9rem; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/" class="nav-back">&larr; Back to Rewards Dashboard</a>
+        <div class="top-bar">
+            <a href="/" class="nav-back" data-lang="navBack">&larr; Back to Community Hub</a>
+            <div class="lang-selector">
+                <select id="langSelect" onchange="changeLang(this.value)">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="pl">🇵🇱 Polski</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                </select>
+            </div>
+        </div>
         
         <header>
-            <h1>Guides & Articles</h1>
-            <p>Learn how to safely navigate the online reward ecosystem and protect your digital assets.</p>
+            <h1 data-lang="headerTitle">Roblox Community Blog & Guides</h1>
+            <p data-lang="headerSub">In-depth tutorials, performance optimization tips, game development insights, and digital safety guides for Roblox players.</p>
         </header>
 
         <article class="article-card">
-            <h2>The Ultimate Guide to Earning Rewards Online Safely in 2026</h2>
-            <p>The digital landscape has evolved significantly over the past few years. Earning online rewards, participating in surveys, and completing micro-tasks have become mainstream methods for gamers and internet users to supplement their digital wallets. However, navigating this space requires a foundational understanding of digital safety, privacy, and recognizing legitimate platforms.</p>
+            <span class="article-meta" data-lang="a1Meta">Game Development • Updated October 2026</span>
+            <h2 data-lang="a1Title">Getting Started with Roblox Studio and Luau Scripting in 2026</h2>
+            <p data-lang="a1P1">Roblox has evolved from a simple sandbox game into one of the world's most powerful game creation ecosystems. At the heart of this transformation is Roblox Studio, a comprehensive development environment that allows creators to build 3D worlds, script complex mechanics using Luau, and publish experiences across PC, mobile, and console platforms simultaneously.</p>
             
-            <h3>Understanding the Offerwall Ecosystem</h3>
-            <p>At the core of the online rewards industry are "Offerwalls." These are third-party monetization tools seamlessly integrated into platforms like RBX Rewards. When a user interacts with an offerwall, they are essentially providing value to market researchers or app developers. Market research companies (like CPX Research) pay for accurate consumer opinions, which help shape future products and services.</p>
-            <p>In return for your time and honest feedback, these companies compensate the platform, which then passes the majority of that revenue back to you in the form of virtual points or cashouts. It is a mutually beneficial ecosystem, provided users engage honestly and provide high-quality data.</p>
+            <h3 data-lang="a1Sub1">1. Understanding the Client-Server Model</h3>
+            <p data-lang="a1P2">One of the most important concepts for new developers to master in Roblox Studio is the distinction between the Client (the player's device) and the Server (Roblox's cloud infrastructure). Modern Roblox experiences rely on FilteringEnabled architecture to prevent cheating and maintain a synchronized world state:</p>
+            <ul>
+                <li data-lang="a1L1">LocalScripts: Run directly on the player's device. They are ideal for handling user interface (UI) animations, camera movements, and raw input detection (keyboard, mouse, or touch).</li>
+                <li data-lang="a1L2">Server Scripts: Execute on the game server. Any critical game logic—such as inventory management, leaderboards, damage calculation, and data persistence via DataStoreService—must be validated on the server.</li>
+                <li data-lang="a1L3">RemoteEvents and RemoteFunctions: Act as secure communication bridges between the client and the server, allowing local actions to request server-side verification.</li>
+            </ul>
+
+            <h3 data-lang="a1Sub2">2. Optimizing 3D Assets and Memory Usage</h3>
+            <p data-lang="a1P3">To ensure your experience runs smoothly on lower-end mobile devices as well as high-end gaming PCs, developers should enable StreamingEnabled in the Workspace properties. This feature dynamically loads and unloads 3D meshes and terrain chunks based on the player's distance, significantly reducing initial join times and client RAM consumption.</p>
+        </article>
+
+        <article class="article-card">
+            <span class="article-meta" data-lang="a2Meta">Digital Safety • Cybersecurity Guide</span>
+            <h2 data-lang="a2Title">The Ultimate Guide to Protecting Your Gaming Accounts and Digital Inventory</h2>
+            <p data-lang="a2P1">As virtual ecosystems expand, player profiles often accumulate years of progress, rare seasonal badges, and customized avatars. Consequently, account security should be every gamer's top priority. Understanding how authentication works—and how social engineering schemes operate—will keep your profile safe from unauthorized access.</p>
             
-            <h3>Top 3 Safety Rules for Reward Platforms</h3>
-            <p>While the opportunity to earn is vast, it is crucial to protect your personal information. Follow these golden rules:</p>
+            <h3 data-lang="a2Sub1">Top 3 Golden Rules of Account Protection</h3>
             <ol>
-                <li><strong>Never Share Your Main Passwords:</strong> Legitimate reward platforms will never ask for your gaming account passwords. If a website requires the password to your actual Roblox, Steam, or Epic Games account, it is likely a phishing scam.</li>
-                <li><strong>Provide Honest Demographics:</strong> Attempting to use VPNs or proxies to change your location usually results in immediate bans. Survey providers utilize advanced tracking algorithms to detect inconsistencies. Honesty is the most sustainable way to earn.</li>
-                <li><strong>Use Dedicated Email Addresses:</strong> When signing up for newsletters or external offers to earn points, it is good practice to use a secondary email address to keep your primary inbox free of promotional clutter.</li>
+                <li data-lang="a2L1">Never Share Passwords or Browser Cookies: Legitimate community hubs, stat trackers, and interactive quest platforms will never ask for your account password or browser cookies. Public APIs only require your public username to look up your profile.</li>
+                <li data-lang="a2L2">Use App-Based Two-Step Verification (2FA): While email verification offers basic protection, configuring an authenticator application (such as Google Authenticator or Authy) generates time-sensitive codes stored locally on your smartphone, making remote unauthorized logins virtually impossible.</li>
+                <li data-lang="a2L3">Beware of Malicious Browser Extensions: Only install browser plugins from verified developers. Fraudulent extensions often claim to enhance marketplace trading while silently reading session tokens in the background.</li>
             </ol>
         </article>
 
         <article class="article-card">
-            <h2>Understanding Virtual Economies: From Gaming to Real-World Value</h2>
-            <p>Virtual economies are no longer isolated to the games they exist in. Today, digital currencies, skins, and virtual real estate hold tangible real-world value. This shift has created an entire secondary market where time spent in-game or participating in online communities translates to actual financial benefits.</p>
+            <span class="article-meta" data-lang="a3Meta">Technical Hardware & Networking • Tutorial</span>
+            <h2 data-lang="a3Title">Understanding Network Latency, Tick Rates, and FPS Optimization</h2>
+            <p data-lang="a3P1">In competitive Roblox experiences—ranging from tactical shooters to rhythm games and obbies—every millisecond counts. Players frequently confuse low FPS (Frames Per Second) with high Ping (Network Latency), even though they stem from completely different hardware systems.</p>
             
-            <h3>The Rise of In-Game Currencies</h3>
-            <p>Currencies like Robux have set the standard for how digital economies operate. They allow developers to monetize their creations and give players the freedom to customize their avatars and experiences. Because these currencies are in such high demand, platforms that offer alternative ways to earn them—such as taking surveys or playing sponsored games—have seen massive growth.</p>
-            
-            <h3>How to Maximize Your Earnings</h3>
-            <p>If you want to be efficient with your time on reward sites, strategy matters. Daily surveys often reset every 24 hours and provide the most consistent payout for the time invested. Secondly, engaging with the referral system is an excellent passive income strategy. By inviting friends, you can earn a percentage of their lifetime earnings, scaling your point accumulation without actively completing offers yourself.</p>
-            <p>Ultimately, patience and consistency are key. Treat reward platforms as a slow and steady accumulation process, and always ensure you are cashing out via secure methods like PayPal.</p>
+            <h3 data-lang="a3Sub1">Diagnosing FPS Drops vs. Network Lag</h3>
+            <p data-lang="a3P2">You can inspect your real-time performance metrics inside any Roblox experience by pressing Shift + F5 or enabling the Performance Stats panel in the Esc menu:</p>
+            <ul>
+                <li data-lang="a3L1">CPU and GPU Frame Time: If characters move smoothly on other players' screens but your own screen stutters or freezes, your graphics card or processor is bottlenecked. Lowering manual graphics quality to level 3–5 disables expensive shadow rendering and post-processing effects.</li>
+                <li data-lang="a3L2">Network Ping (ms): Ping measures the round-trip time it takes for data packets to travel from your router to the Roblox server and back. Switching from Wi-Fi to a wired Ethernet cable and closing background downloads will immediately eliminate packet loss and rubber-banding.</li>
+            </ul>
         </article>
+
+        <article class="article-card">
+            <span class="article-meta" data-lang="a4Meta">Gaming Culture • Community Overview</span>
+            <h2 data-lang="a4Title">The Evolution of Virtual Economies and Community Loyalty Programs</h2>
+            <p data-lang="a4P1">Modern online gaming extends far beyond the game client itself. Today's players engage in vibrant external communities—participating in Discord servers, watching live broadcasts on Twitch and Kick, and competing on community leaderboards. Loyalty hubs like RBX Rewards bridge these activities together by offering gamified quests, community rankings, and interactive challenges.</p>
+            <p data-lang="a4P2">By participating in moderated community events, testing new applications, or sharing feedback in research quizzes, gamers can actively engage with the broader digital ecosystem while climbing seasonal ranks alongside friends.</p>
+        </article>
+
+        <footer>
+            <p><a href="/" data-lang="fHome">Home</a> | <a href="/terms.html" data-lang="fTerms">Terms of Service</a> | <a href="/privacy.html" data-lang="fPrivacy">Privacy Policy</a></p>
+            <p>&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
+        </footer>
     </div>
+
+    <script>
+        const translations = {
+            en: {
+                navBack: "← Back to Community Hub",
+                headerTitle: "Roblox Community Blog & Guides",
+                headerSub: "In-depth tutorials, performance optimization tips, game development insights, and digital safety guides for Roblox players.",
+                a1Meta: "Game Development • Updated October 2026",
+                a1Title: "Getting Started with Roblox Studio and Luau Scripting in 2026",
+                a1P1: "Roblox has evolved from a simple sandbox game into one of the world's most powerful game creation ecosystems. At the heart of this transformation is Roblox Studio, a comprehensive development environment that allows creators to build 3D worlds, script complex mechanics using Luau, and publish experiences across PC, mobile, and console platforms simultaneously.",
+                a1Sub1: "1. Understanding the Client-Server Model",
+                a1P2: "One of the most important concepts for new developers to master in Roblox Studio is the distinction between the Client (the player's device) and the Server (Roblox's cloud infrastructure). Modern Roblox experiences rely on FilteringEnabled architecture to prevent cheating and maintain a synchronized world state:",
+                a1L1: "LocalScripts: Run directly on the player's device. They are ideal for handling user interface (UI) animations, camera movements, and raw input detection (keyboard, mouse, or touch).",
+                a1L2: "Server Scripts: Execute on the game server. Any critical game logic—such as inventory management, leaderboards, damage calculation, and data persistence via DataStoreService—must be validated on the server.",
+                a1L3: "RemoteEvents and RemoteFunctions: Act as secure communication bridges between the client and the server, allowing local actions to request server-side verification.",
+                a1Sub2: "2. Optimizing 3D Assets and Memory Usage",
+                a1P3: "To ensure your experience runs smoothly on lower-end mobile devices as well as high-end gaming PCs, developers should enable StreamingEnabled in the Workspace properties. This feature dynamically loads and unloads 3D meshes and terrain chunks based on the player's distance, significantly reducing initial join times and client RAM consumption.",
+                a2Meta: "Digital Safety • Cybersecurity Guide",
+                a2Title: "The Ultimate Guide to Protecting Your Gaming Accounts and Digital Inventory",
+                a2P1: "As virtual ecosystems expand, player profiles often accumulate years of progress, rare seasonal badges, and customized avatars. Consequently, account security should be every gamer's top priority. Understanding how authentication works—and how social engineering schemes operate—will keep your profile safe from unauthorized access.",
+                a2Sub1: "Top 3 Golden Rules of Account Protection",
+                a2L1: "Never Share Passwords or Browser Cookies: Legitimate community hubs, stat trackers, and interactive quest platforms will never ask for your account password or browser cookies. Public APIs only require your public username to look up your profile.",
+                a2L2: "Use App-Based Two-Step Verification (2FA): While email verification offers basic protection, configuring an authenticator application (such as Google Authenticator or Authy) generates time-sensitive codes stored locally on your smartphone, making remote unauthorized logins virtually impossible.",
+                a2L3: "Beware of Malicious Browser Extensions: Only install browser plugins from verified developers. Fraudulent extensions often claim to enhance marketplace trading while silently reading session tokens in the background.",
+                a3Meta: "Technical Hardware & Networking • Tutorial",
+                a3Title: "Understanding Network Latency, Tick Rates, and FPS Optimization",
+                a3P1: "In competitive Roblox experiences—ranging from tactical shooters to rhythm games and obbies—every millisecond counts. Players frequently confuse low FPS (Frames Per Second) with high Ping (Network Latency), even though they stem from completely different hardware systems.",
+                a3Sub1: "Diagnosing FPS Drops vs. Network Lag",
+                a3P2: "You can inspect your real-time performance metrics inside any Roblox experience by pressing Shift + F5 or enabling the Performance Stats panel in the Esc menu:",
+                a3L1: "CPU and GPU Frame Time: If characters move smoothly on other players' screens but your own screen stutters or freezes, your graphics card or processor is bottlenecked. Lowering manual graphics quality to level 3–5 disables expensive shadow rendering and post-processing effects.",
+                a3L2: "Network Ping (ms): Ping measures the round-trip time it takes for data packets to travel from your router to the Roblox server and back. Switching from Wi-Fi to a wired Ethernet cable and closing background downloads will immediately eliminate packet loss and rubber-banding.",
+                a4Meta: "Gaming Culture • Community Overview",
+                a4Title: "The Evolution of Virtual Economies and Community Loyalty Programs",
+                a4P1: "Modern online gaming extends far beyond the game client itself. Today's players engage in vibrant external communities—participating in Discord servers, watching live broadcasts on Twitch and Kick, and competing on community leaderboards. Loyalty hubs like RBX Rewards bridge these activities together by offering gamified quests, community rankings, and interactive challenges.",
+                a4P2: "By participating in moderated community events, testing new applications, or sharing feedback in research quizzes, gamers can actively engage with the broader digital ecosystem while climbing seasonal ranks alongside friends.",
+                fHome: "Home", fTerms: "Terms of Service", fPrivacy: "Privacy Policy"
+            },
+            pl: {
+                navBack: "← Powrót na Stronę Główną",
+                headerTitle: "Blog i Poradniki Społeczności Roblox",
+                headerSub: "Szczegółowe poradniki, optymalizacja wydajności, tworzenie gier w Roblox Studio oraz bezpieczeństwo cyfrowe dla graczy.",
+                a1Meta: "Tworzenie Gier • Aktualizacja Październik 2026",
+                a1Title: "Jak Zacząć z Roblox Studio i Skryptami Luau w 2026 Roku",
+                a1P1: "Roblox ewoluował z prostej gry sandboxowej w jeden z najpotężniejszych na świecie ekosystemów do tworzenia gier. Sercem tej transformacji jest Roblox Studio – kompleksowe środowisko deweloperskie, które pozwala budować światy 3D, programować zaawansowane mechaniki w języku Luau i publikować gry jednocześnie na PC, telefonach oraz konsolach.",
+                a1Sub1: "1. Zrozumienie Modelu Klient-Serwer",
+                a1P2: "Jednym z najważniejszych pojęć dla początkujących twórców w Roblox Studio jest rozróżnienie pomiędzy Klientem (urządzeniem gracza) a Serwerem (chmurą obliczeniową Roblox). Nowoczesne gry opierają się na architekturze FilteringEnabled, aby zapobiegać oszustwom i synchronizować świat gry:",
+                a1L1: "LocalScripts (Skrypty lokalne): Działają bezpośrednio na urządzeniu gracza. Są idealne do obsługi animacji interfejsu (UI), pracy kamery oraz wykrywania wciśnięć klawiszy lub dotyku.",
+                a1L2: "Server Scripts (Skrypty serwerowe): Wykonują się po stronie serwera. Każda kluczowa logika – zarządzanie ekwipunkiem, tabela wyników, naliczanie obrażeń oraz zapis danych przez DataStoreService – musi być weryfikowana na serwerze.",
+                a1L3: "RemoteEvents i RemoteFunctions: Działają jak bezpieczne mosty komunikacyjne między klientem a serwerem, pozwalając akcjom gracza prosić serwer o autoryzację.",
+                a1Sub2: "2. Optymalizacja Modeli 3D i Pamięci RAM",
+                a1P3: "Aby gra działała płynnie zarówno na słabszych smartfonach, jak i komputerach gamingowych, twórcy powinni włączyć opcję StreamingEnabled we właściwościach Workspace. Funkcja ta dynamicznie doczytuje i ukrywa obiekty 3D w zależności od odległości gracza, co drastycznie skraca czas ładowania i zmniejsza zużycie pamięci RAM.",
+                a2Meta: "Bezpieczeństwo Cyfrowe • Poradnik",
+                a2Title: "Kompletny Poradnik Ochrony Konta Gamingowego i Cyfrowego Ekwipunku",
+                a2P1: "Wraz z rozwojem wirtualnych światów profile graczy gromadzą lata postępów, rzadkie odznaki sezonowe i unikalne przedmioty. Z tego powodu bezpieczeństwo konta powinno być priorytetem każdego gracza. Zrozumienie zasad autoryzacji uchroni Twój profil przed nieautoryzowanym dostępem.",
+                a2Sub1: "3 Złote Zasady Ochrony Konta",
+                a2L1: "Nigdy nie podawaj haseł ani plików cookie: Legalne portale społecznościowe, statystyki oraz platformy z misjami nigdy nie proszą o hasło do gry ani pliki cookie przeglądarki. Publiczne systemy potrzebują wyłącznie Twojego nicku (Username), aby przypisać postępy.",
+                a2L2: "Używaj weryfikacji dwuetapowej (2FA) przez aplikację: Zamiast polegać wyłącznie na kodach e-mail, skonfiguruj aplikację uwierzytelniającą (np. Google Authenticator lub Authy), która generuje jednorazowe kody bezpośrednio na Twoim telefonie.",
+                a2L3: "Uważaj na podejrzane wtyczki do przeglądarki: Instaluj rozszerzenia wyłącznie od zweryfikowanych twórców. Fałszywe wtyczki często obiecują ułatwienia w handlu, a w tle wykradają sesję logowania.",
+                a3Meta: "Sprzęt i Sieć • Poradnik Techniczny",
+                a3Title: "Opóźnienia Sieciowe (Ping), Tick Rate i Optymalizacja FPS",
+                a3P1: "W dynamicznych grach na platformie Roblox – od strzelanek po gry rytmiczne i obby – liczy się każda milisekunda. Gracze często mylą niską liczbę klatek (FPS) z wysokim pingiem (opóźnieniem sieciowym), mimo że odpowiadają za nie zupełnie inne elementy komputera.",
+                a3Sub1: "Jak Odróżnić Spadki FPS od Lagów Sieciowych?",
+                a3P2: "Możesz sprawdzić parametry wydajności na żywo w każdej grze Roblox, wciskając kombinację Shift + F5 lub włączając panel Performance Stats w menu ESC:",
+                a3L1: "Czas klatki CPU i GPU (FPS): Jeśli postacie innych graczy poruszają się płynnie, ale Twój obraz przycina się podczas obracania kamery, ograniczeniem jest karta graficzna lub procesor. Obniżenie suwaka grafiki do poziomu 3–5 wyłącza zasobożerne cienie i odciąża sprzęt.",
+                a3L2: "Ping sieciowy (ms): Ping określa czas, w jakim pakiety danych docierają z Twojego routera do serwera gry i z powrotem. Przejście z Wi-Fi na kabel Ethernet oraz zamknięcie pobierania w tle natychmiast wyeliminuje cofanie postaci (tzw. rubber-banding).",
+                a4Meta: "Kultura Gamingowa • Społeczność",
+                a4Title: "Ewolucja Wirtualnej Ekonomii i Społecznościowych Programów Lojalnościowych",
+                a4P1: "Współczesny gaming wykracza daleko poza samą aplikację gry. Gracze tworzą aktywne społeczności na serwerach Discord, oglądają transmisje na żywo na Twitchu i Kicku oraz rywalizują w rankingach. Portale takie jak RBX Rewards łączą te aktywności, oferując systemy misji, rankingi sezonowe i wyzwania dla społeczności.",
+                a4P2: "Biorąc udział w wydarzeniach społecznościowych, testując nowe gry czy dzieląc się opinią w quizach partnerskich, gracze mogą aktywnie rozwijać swój profil i wspinać się w tabeli liderów razem ze znajomymi.",
+                fHome: "Strona Główna", fTerms: "Regulamin", fPrivacy: "Polityka Prywatności"
+            },
+            de: {
+                navBack: "← Zurück zum Community Hub",
+                headerTitle: "Roblox Community Blog & Guides",
+                headerSub: "Ausführliche Tutorials, Tipps zur Leistungsoptimierung, Einblicke in die Spieleentwicklung und Sicherheitsleitfäden für Roblox-Spieler.",
+                a1Meta: "Spieleentwicklung • Aktualisiert Oktober 2026",
+                a1Title: "Einstieg in Roblox Studio und Luau-Scripting im Jahr 2026",
+                a1P1: "Roblox hat sich von einem einfachen Sandbox-Spiel zu einem der weltweit leistungsstärksten Ökosysteme für die Spieleentwicklung entwickelt. Das Herzstück ist Roblox Studio – eine umfassende Entwicklungsumgebung, mit der Ersteller 3D-Welten bauen, komplexe Mechaniken mit Luau programmieren und Spiele gleichzeitig für PC, Mobilgeräte und Konsolen veröffentlichen können.",
+                a1Sub1: "1. Das Client-Server-Modell verstehen",
+                a1P2: "Eines der wichtigsten Konzepte für neue Entwickler in Roblox Studio ist die Unterscheidung zwischen dem Client (dem Gerät des Spielers) und dem Server (der Cloud-Infrastruktur von Roblox). Moderne Spiele nutzen die FilteringEnabled-Architektur, um Cheating zu verhindern:",
+                a1L1: "LocalScripts: Laufen direkt auf dem Gerät des Spielers. Sie sind ideal für UI-Animationen, Kamerabewegungen und die Erkennung von Tastatur-, Maus- oder Touch-Eingaben.",
+                a1L2: "Server Scripts: Werden auf dem Spielserver ausgeführt. Jede kritische Spiellogik – wie Inventarverwaltung, Bestenlisten, Schadensberechnung und Datenspeicherung über DataStoreService – muss auf dem Server validiert werden.",
+                a1L3: "RemoteEvents und RemoteFunctions: Fungieren als sichere Kommunikationsbrücken zwischen Client und Server.",
+                a1Sub2: "2. Optimierung von 3D-Assets und Speichernutzung",
+                a1P3: "Damit dein Spiel sowohl auf älteren Smartphones als auch auf Gaming-PCs flüssig läuft, sollten Entwickler StreamingEnabled in den Workspace-Eigenschaften aktivieren. Dadurch werden 3D-Objekte dynamisch nach Entfernung geladen, was Ladezeiten und RAM-Verbrauch drastisch reduziert.",
+                a2Meta: "Digitale Sicherheit • Cybersecurity-Guide",
+                a2Title: "Der ultimative Leitfaden zum Schutz deiner Gaming-Konten und deines Inventars",
+                a2P1: "Mit dem Wachstum virtueller Welten sammeln Spielerprofile oft jahrelangen Fortschritt, seltene Abzeichen und angepasste Avatare. Daher sollte Kontosicherheit oberste Priorität haben.",
+                a2Sub1: "Die 3 goldenen Regeln zum Kontoschutz",
+                a2L1: "Teile niemals Passwörter oder Browser-Cookies: Seriöse Community-Hubs, Statistik-Tracker und Quest-Plattformen fragen niemals nach deinem Passwort oder Browser-Cookies. Öffentliche Systeme benötigen nur deinen Benutzernamen.",
+                a2L2: "Nutze App-basierte Zwei-Schritt-Verifizierung (2FA): Konfiguriere eine Authenticator-App (wie Google Authenticator oder Authy), die zeitabhängige Codes lokal auf deinem Smartphone generiert.",
+                a2L3: "Vorsicht vor schädlichen Browser-Erweiterungen: Installiere nur Plugins von verifizierten Entwicklern, um Sitzungs-Tokens vor Datendiebstahl zu schützen.",
+                a3Meta: "Hardware & Netzwerk • Technisches Tutorial",
+                a3Title: "Netzwerklatenz (Ping), Tick-Raten und FPS-Optimierung verstehen",
+                a3P1: "In kompetitiven Roblox-Spielen zählt jede Millisekunde. Spieler verwechseln häufig niedrige FPS (Bilder pro Sekunde) mit hohem Ping (Netzwerklatenz), obwohl diese völlig unterschiedliche Ursachen haben.",
+                a3Sub1: "FPS-Einbrüche vs. Netzwerk-Lag diagnostizieren",
+                a3P2: "Du kannst deine Leistungswerte in Echtzeit in jedem Roblox-Spiel überprüfen, indem du Shift + F5 drückst oder die Leistungsstatistik im Esc-Menü aktivierst:",
+                a3L1: "CPU- und GPU-Frame-Zeit: Wenn das Bild beim Drehen der Kamera ruckelt, ist deine Grafikkarte oder dein Prozessor ausgelastet. Das Reduzieren der Grafikqualität auf Stufe 3–5 deaktiviert rechenintensive Schatten.",
+                a3L2: "Netzwerk-Ping (ms): Der Ping misst die Zeit, die Datenpakete vom Router zum Server und zurück benötigen. Ein Wechsel von WLAN auf ein Ethernet-Kabel beseitigt Paketverlust sofort.",
+                a4Meta: "Gaming-Kultur • Community-Übersicht",
+                a4Title: "Die Entwicklung virtueller Ökonomien und Community-Treueprogramme",
+                a4P1: "Modernes Online-Gaming geht weit über das eigentliche Spiel hinaus. Spieler vernetzen sich auf Discord-Servern, verfolgen Livestreams auf Twitch und Kick und messen sich auf Bestenlisten. Plattformen wie RBX Rewards verbinden diese Aktivitäten durch interaktive Quests und saisonale Ranglisten.",
+                a4P2: "Durch die Teilnahme an Community-Events, das Testen neuer Apps oder das Beantworten von Partner-Quizzen können Spieler aktiv am digitalen Ökosystem teilnehmen und gemeinsam mit Freunden im Ranking aufsteigen.",
+                fHome: "Startseite", fTerms: "Nutzungsbedingungen", fPrivacy: "Datenschutzerklärung"
+            },
+            ru: {
+                navBack: "← Назад в Центр Сообщества",
+                headerTitle: "Блог и Гайды Сообщества Roblox",
+                headerSub: "Подробные руководства, советы по оптимизации FPS, разработка игр в Roblox Studio и цифровая безопасность для игроков.",
+                a1Meta: "Разработка игр • Обновлено Октябрь 2026",
+                a1Title: "Основы работы в Roblox Studio и скрипты Luau в 2026 году",
+                a1P1: "Roblox превратился из простой песочницы в одну из самых мощных в мире экосистем для создания игр. В центре этой трансформации находится Roblox Studio — среда разработки, позволяющая создавать 3D-миры, программировать механику на языке Luau и публиковать игры сразу на ПК, смартфонах и консолях.",
+                a1Sub1: "1. Понимание модели Клиент-Сервер",
+                a1P2: "Одна из важнейших концепций для начинающих разработчиков в Roblox Studio — разделение между Клиентом (устройством игрока) и Сервером (облачной инфраструктурой Roblox). Современные игры используют архитектуру FilteringEnabled для защиты от читов:",
+                a1L1: "LocalScripts (Локальные скрипты): Выполняются напрямую на устройстве игрока. Идеально подходят для анимации интерфейса (UI), управления камерой и обработки нажатий клавиш.",
+                a1L2: "Server Scripts (Серверные скрипты): Выполняются на сервере игры. Любая важная логика — инвентарь, таблицы лидеров, расчет урона и сохранение данных через DataStoreService — должна проверяться на сервере.",
+                a1L3: "RemoteEvents и RemoteFunctions: Служат защищенными мостами связи между клиентом и сервером.",
+                a1Sub2: "2. Оптимизация 3D-моделей и памяти RAM",
+                a1P3: "Чтобы игра работала плавно как на бюджетных смартфонах, так и на игровых ПК, разработчикам следует включать параметр StreamingEnabled в свойствах Workspace. Эта функция динамически подгружает 3D-объекты по мере приближения игрока, ускоряя загрузку и экономя оперативную память.",
+                a2Meta: "Цифровая безопасность • Руководство",
+                a2Title: "Полное руководство по защите игровых аккаунтов и цифрового инвентаря",
+                a2P1: "По мере развития виртуальных миров профили игроков накапливают годы прогресса, редкие значки и уникальные предметы. Поэтому безопасность аккаунта должна быть главным приоритетом каждого геймера.",
+                a2Sub1: "3 золотых правила защиты аккаунта",
+                a2L1: "Никогда не передавайте пароли или файлы cookie: Легальные порталы сообществ, трекеры статистики и платформы квестов никогда не запрашивают ваш пароль или cookie браузера. Публичным системам нужен только ваш никнейм (Username).",
+                a2L2: "Используйте двухэтапную аутентификацию (2FA) через приложение: Настройте приложение-аутентификатор (например, Google Authenticator или Authy), которое генерирует временные коды прямо на вашем смартфоне.",
+                a2L3: "Остерегайтесь вредоносных расширений для браузера: Устанавливайте плагины только от проверенных разработчиков, чтобы защитить свои сессии от кражи.",
+                a3Meta: "Железо и сеть • Технический гайд",
+                a3Title: "Сетевая задержка (Пинг), тикрейт и оптимизация FPS",
+                a3P1: "В соревновательных режимах Roblox — от шутеров до ритм-игр и обби — важна каждая миллисекунда. Игроки часто путают низкий FPS (частоту кадров) с высоким пингом (сетевой задержкой), хотя они зависят от разных компонентов ПК.",
+                a3Sub1: "Как отличить просадки FPS от сетевых лагов?",
+                a3P2: "Вы можете проверить показатели производительности в реальном времени в любой игре Roblox, нажав Shift + F5 или включив панель Performance Stats в меню Esc:",
+                a3L1: "Время кадра CPU и GPU (FPS): Если при повороте камеры картинка дергается, нагружена видеокарта или процессор. Снижение качества графики до уровня 3–5 отключает тяжелые тени и повышает плавность.",
+                a3L2: "Сетевой пинг (мс): Пинг показывает время прохождения пакетов данных от роутера до сервера игры и обратно. Переход с Wi-Fi на кабель Ethernet и отключение фоновых загрузок мгновенно устранят рывки персонажа.",
+                a4Meta: "Игровая культура • Обзор сообщества",
+                a4Title: "Эволюция виртуальной экономики и программ лояльности сообществ",
+                a4P1: "Современный онлайн-гейминг выходит далеко за рамки самого игрового клиента. Игроки общаются на серверах Discord, смотрят прямые трансляции на Twitch и Kick и соревнуются в таблицах лидеров. Платформы вроде RBX Rewards объединяют эти активности с помощью системы квестов и сезонных рейтингов.",
+                a4P2: "Участвуя в событиях сообщества, тестируя новые приложения или делясь мнением в партнерских викторинах, игроки могут активно развивать свой профиль и подниматься в рейтинге вместе с друзьями.",
+                fHome: "Главная", fTerms: "Условия использования", fPrivacy: "Политика конфиденциальности"
+            }
+        };
+
+        function changeLang(lang) {
+            if (!translations[lang]) lang = 'en';
+            localStorage.setItem('rbx_lang', lang);
+            document.getElementById('langSelect').value = lang;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const savedLang = localStorage.getItem('rbx_lang') || 'en';
+            changeLang(savedLang);
+        });
+    </script>
 </body>
 </html>

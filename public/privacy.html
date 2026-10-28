@@ -6,49 +6,219 @@
     <title>Privacy Policy - RBX Rewards</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <style>
-        body { background-color: #0f1115; color: #a0a0b0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; background: #181b22; padding: 40px; border-radius: 12px; border: 1px solid #2a2e39; }
-        h1 { color: #00e676; margin-bottom: 20px; }
-        h2 { color: #fff; margin-top: 30px; margin-bottom: 10px; font-size: 1.2rem; }
+        * { box-sizing: border-box; }
+        body { background-color: #0f1115; color: #a0a0b0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px 20px; line-height: 1.65; margin: 0; }
+        .wrapper { max-width: 800px; margin: 0 auto; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .nav-back { display: inline-block; padding: 10px 20px; background: #00e676; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .nav-back:hover { background: #00c853; }
+        .lang-selector select { background: #181b22; color: #fff; border: 1px solid #333947; padding: 10px 14px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; font-size: 0.95rem; }
+        .container { background: #181b22; padding: 40px; border-radius: 12px; border: 1px solid #2a2e39; }
+        h1 { color: #00e676; margin-top: 0; margin-bottom: 10px; }
+        h2 { color: #fff; margin-top: 30px; margin-bottom: 10px; font-size: 1.25rem; border-left: 3px solid #00e676; padding-left: 10px; }
         p { margin-bottom: 15px; }
+        ul { margin-bottom: 15px; padding-left: 20px; }
+        li { margin-bottom: 8px; }
         a { color: #00e676; text-decoration: none; }
         a:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            body { padding: 20px 12px; }
+            .container { padding: 20px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Privacy Policy</h1>
-        <p><strong>Last Updated: September 2026</strong></p>
-        <p>At RBX Rewards, accessible from our website, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by RBX Rewards and how we use it.</p>
+    <div class="wrapper">
+        <div class="top-bar">
+            <a href="/" class="nav-back" data-lang="navBack">&larr; Back to Home</a>
+            <div class="lang-selector">
+                <select id="langSelect" onchange="changeLang(this.value)">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="pl">🇵🇱 Polski</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                </select>
+            </div>
+        </div>
 
-        <h2>1. Information We Collect</h2>
-        <p>We believe in minimal data collection. We do not require passwords for account creation. The personal information we collect includes:</p>
-        <ul>
-            <li><strong>Username:</strong> Required to identify your account and track your earned points.</li>
-            <li><strong>Payment Information (PayPal Email):</strong> Collected strictly when you request a withdrawal. For fraud prevention and to protect your funds from unauthorized access, this email address is securely and permanently linked to your account upon your first withdrawal.</li>
-            <li><strong>IP Address & Device Data:</strong> Collected automatically to prevent fraud, detect VPN/Proxy usage, and ensure the quality of traffic for our advertising partners.</li>
-        </ul>
+        <div class="container">
+            <h1 data-lang="pTitle">Privacy Policy</h1>
+            <p><strong data-lang="pUpdated">Last Updated: October 2026</strong></p>
+            <p data-lang="pIntro">At RBX Rewards ("we", "us", or "our"), accessible from our website, one of our main priorities is the privacy and digital safety of our visitors. This Privacy Policy document outlines the types of information collected and recorded by RBX Rewards and how we use and protect it.</p>
 
-        <h2>2. How We Use Your Information</h2>
-        <p>We use the information we collect in various ways, including to:</p>
-        <ul>
-            <li>Provide, operate, and maintain our website.</li>
-            <li>Process your reward payouts accurately and securely.</li>
-            <li>Find and prevent fraud, unauthorized access, and malicious activity.</li>
-            <li>Understand and analyze how you use our website to improve user experience.</li>
-        </ul>
+            <h2 data-lang="s1Title">1. Information We Collect</h2>
+            <p data-lang="s1Intro">We operate on a strict data-minimization principle. We never ask for or collect gaming account passwords. The limited information we collect includes:</p>
+            <ul>
+                <li data-lang="s1L1">Public Username: Provided voluntarily by you to identify your community profile, display your progress on leaderboards, and track your accumulated points.</li>
+                <li data-lang="s1L2">Reward Delivery Details (Electronic Wallet Email): Collected strictly when you submit a reward claim request. For security and fraud-prevention purposes, the payout email address provided during your first claim is permanently associated with your profile.</li>
+                <li data-lang="s1L3">Local Storage & Technical Data: We use browser localStorage to remember your language preferences, cookie consent status, and active username session. Our servers also log standard technical data (such as IP address, browser type, and timestamps) to prevent automated abuse, detect VPN/Proxy connections, and maintain platform security.</li>
+            </ul>
 
-        <h2>3. Google AdSense and Cookies</h2>
-        <p>We use Google AdSense to display advertisements on our site. Google, as a third-party vendor, uses cookies to serve ads to our users based on their previous visits to our site and other sites on the Internet.</p>
-        <p>Users may opt-out of the use of the DART cookie by visiting the Google Ad and Content Network privacy policy. We also work with third-party Offerwall providers (such as CPX Research) who may use their own cookies to track survey completion statuses. We have no access to or control over these cookies that are used by third-party advertisers.</p>
+            <h2 data-lang="s2Title">2. How We Use Your Information</h2>
+            <p data-lang="s2Intro">We use the collected information for the following legitimate purposes:</p>
+            <ul>
+                <li data-lang="s2L1">To provide, operate, and maintain our community hub, global chat, and leaderboards.</li>
+                <li data-lang="s2L2">To verify task completions and process user reward claims accurately.</li>
+                <li data-lang="s2L3">To respond to user inquiries submitted through our Support ticket system.</li>
+                <li data-lang="s2L4">To detect, investigate, and prevent fraudulent transactions, multi-accounting, and unauthorized access.</li>
+            </ul>
 
-        <h2>4. Data Security</h2>
-        <p>We value your trust in providing us your Personal Information, thus we are striving to use commercially acceptable means of protecting it. However, remember that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and we cannot guarantee its absolute security.</p>
+            <h2 data-lang="s3Title">3. Google AdSense & Third-Party Cookies</h2>
+            <p data-lang="s3P1">We use Google AdSense to display advertisements on select pages of our website. Google, as a third-party vendor, uses cookies (including the DoubleClick DART cookie) to serve ads to our users based on their visit to our site and other sites on the Internet.</p>
+            <ul>
+                <li><span data-lang="s3L1">Users may opt out of personalized advertising and the use of the DART cookie by visiting the official</span> <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" data-lang="s3Link">Google Ad and Content Network Privacy Policy</a>.</li>
+                <li data-lang="s3L2">Our website also integrates third-party interactive quest and market research providers. When you voluntarily open a partner task wall, those third-party partners may use their own cookies and tracking identifiers in accordance with their respective privacy policies to verify task completion. RBX Rewards has no access to or control over third-party cookies.</li>
+            </ul>
 
-        <h2>5. Consent</h2>
-        <p>By using our website, you hereby consent to our Privacy Policy and agree to its terms.</p>
+            <h2 data-lang="s4Title">4. Data Protection Rights (GDPR & CCPA)</h2>
+            <p data-lang="s4P1">Depending on your location, you have the right to request access to the personal data we hold about your profile, request corrections, or request the deletion of your profile data. To exercise any of these rights, please contact our administration team via the Support tab on our website or through our official Discord server.</p>
 
-        <p><br><a href="/">&larr; Back to Home</a></p>
+            <h2 data-lang="s5Title">5. Children's Information</h2>
+            <p data-lang="s5P1">Protecting children while using the internet is a priority. Our platform is intended for users aged 13 and older. We do not knowingly collect personally identifiable information from children under the age of 13. If you believe that a child under 13 has provided personal data on our website, please contact us immediately via Support and we will promptly remove such information from our records.</p>
+
+            <h2 data-lang="s6Title">6. Consent</h2>
+            <p data-lang="s6P1">By using our website, you hereby consent to our Privacy Policy and agree to its terms.</p>
+
+            <p><br><a href="/" data-lang="navBackBottom">&larr; Back to Home</a></p>
+        </div>
     </div>
+
+    <script>
+        const translations = {
+            en: {
+                navBack: "← Back to Home",
+                navBackBottom: "← Back to Home",
+                pTitle: "Privacy Policy",
+                pUpdated: "Last Updated: October 2026",
+                pIntro: "At RBX Rewards (\"we\", \"us\", or \"our\"), accessible from our website, one of our main priorities is the privacy and digital safety of our visitors. This Privacy Policy document outlines the types of information collected and recorded by RBX Rewards and how we use and protect it.",
+                s1Title: "1. Information We Collect",
+                s1Intro: "We operate on a strict data-minimization principle. We never ask for or collect gaming account passwords. The limited information we collect includes:",
+                s1L1: "Public Username: Provided voluntarily by you to identify your community profile, display your progress on leaderboards, and track your accumulated points.",
+                s1L2: "Reward Delivery Details (Electronic Wallet Email): Collected strictly when you submit a reward claim request. For security and fraud-prevention purposes, the payout email address provided during your first claim is permanently associated with your profile.",
+                s1L3: "Local Storage & Technical Data: We use browser localStorage to remember your language preferences, cookie consent status, and active username session. Our servers also log standard technical data (such as IP address, browser type, and timestamps) to prevent automated abuse, detect VPN/Proxy connections, and maintain platform security.",
+                s2Title: "2. How We Use Your Information",
+                s2Intro: "We use the collected information for the following legitimate purposes:",
+                s2L1: "To provide, operate, and maintain our community hub, global chat, and leaderboards.",
+                s2L2: "To verify task completions and process user reward claims accurately.",
+                s2L3: "To respond to user inquiries submitted through our Support ticket system.",
+                s2L4: "To detect, investigate, and prevent fraudulent transactions, multi-accounting, and unauthorized access.",
+                s3Title: "3. Google AdSense & Third-Party Cookies",
+                s3P1: "We use Google AdSense to display advertisements on select pages of our website. Google, as a third-party vendor, uses cookies (including the DoubleClick DART cookie) to serve ads to our users based on their visit to our site and other sites on the Internet.",
+                s3L1: "Users may opt out of personalized advertising and the use of the DART cookie by visiting the official",
+                s3Link: "Google Ad and Content Network Privacy Policy",
+                s3L2: "Our website also integrates third-party interactive quest and market research providers. When you voluntarily open a partner task wall, those third-party partners may use their own cookies and tracking identifiers in accordance with their respective privacy policies to verify task completion. RBX Rewards has no access to or control over third-party cookies.",
+                s4Title: "4. Data Protection Rights (GDPR & CCPA)",
+                s4P1: "Depending on your location, you have the right to request access to the personal data we hold about your profile, request corrections, or request the deletion of your profile data. To exercise any of these rights, please contact our administration team via the Support tab on our website or through our official Discord server.",
+                s5Title: "5. Children's Information",
+                s5P1: "Protecting children while using the internet is a priority. Our platform is intended for users aged 13 and older. We do not knowingly collect personally identifiable information from children under the age of 13. If you believe that a child under 13 has provided personal data on our website, please contact us immediately via Support and we will promptly remove such information from our records.",
+                s6Title: "6. Consent",
+                s6P1: "By using our website, you hereby consent to our Privacy Policy and agree to its terms."
+            },
+            pl: {
+                navBack: "← Powrót na Stronę Główną",
+                navBackBottom: "← Powrót na Stronę Główną",
+                pTitle: "Polityka Prywatności",
+                pUpdated: "Ostatnia aktualizacja: Październik 2026",
+                pIntro: "W serwisie RBX Rewards („my”, „nas” lub „nasz”) jednym z głównych priorytetów jest prywatność i bezpieczeństwo cyfrowe naszych użytkowników. Niniejsza Polityka Prywatności opisuje rodzaje informacji gromadzonych przez RBX Rewards oraz sposób ich wykorzystywania i ochrony.",
+                s1Title: "1. Jakie Informacje Gromadzimy",
+                s1Intro: "Działamy zgodnie z zasadą minimalizacji danych. Nigdy nie prosimy o hasła do kont w grach ani ich nie gromadzimy. Ograniczone dane, które przetwarzamy, obejmują:",
+                s1L1: "Publiczny Nick (Username): Podawany dobrowolnie w celu identyfikacji profilu społecznościowego, wyświetlania postępów w rankingu oraz zapisywania zebranych punktów.",
+                s1L2: "Dane do Wydania Nagrody (E-mail Portfela Elektronicznego): Zbierane wyłącznie w momencie złożenia dyspozycji odbioru nagrody. Ze względów bezpieczeństwa i ochrony przed oszustwami adres e-mail podany przy pierwszej wypłacie zostaje na stałe przypisany do profilu.",
+                s1L3: "Pamięć Lokalna (LocalStorage) i Dane Techniczne: Używamy pamięci przeglądarki localStorage do zapamiętywania wybranego języka, zgody na pliki cookies oraz aktywnej sesji nicku. Nasze serwery rejestrują również standardowe dane techniczne (takie jak adres IP, typ przeglądarki i znaczniki czasu) w celu zapobiegania nadużyciom, wykrywania połączeń VPN/Proxy oraz ochrony platformy.",
+                s2Title: "2. Jak Wykorzystujemy Informacje",
+                s2Intro: "Zgromadzone informacje wykorzystujemy w następujących uzasadnionych celach:",
+                s2L1: "Aby utrzymywać i obsługiwać nasz portal społecznościowy, czat globalny oraz tabele rankingowe.",
+                s2L2: "Aby weryfikować wykonanie zadań i bezpiecznie realizować zamówienia nagród.",
+                s2L3: "Aby odpowiadać na zgłoszenia użytkowników przesyłane przez zakładkę Support.",
+                s2L4: "Aby wykrywać, badać i blokować próby oszustw, multikonta oraz nieautoryzowany dostęp.",
+                s3Title: "3. Google AdSense i Pliki Cookies Podmiotów Trzecich",
+                s3P1: "Korzystamy z usługi Google AdSense do wyświetlania reklam na wybranych podstronach witryny. Google jako zewnętrzny dostawca wykorzystuje pliki cookie (w tym pliki DoubleClick DART) do wyświetlania reklam na podstawie wcześniejszych odwiedzin użytkownika w naszej witrynie oraz na innych stronach internetowych.",
+                s3L1: "Użytkownicy mogą zrezygnować ze spersonalizowanych reklam i wykorzystywania plików cookie DART, odwiedzając oficjalną stronę:",
+                s3Link: "Polityka Prywatności Sieci Reklamowej Google",
+                s3L2: "Nasza witryna integruje również zewnętrznych dostawców interaktywnych zadań i badań rynkowych. Gdy dobrowolnie otwierasz ścianę zadań partnera, podmioty te mogą używać własnych plików cookie zgodnie ze swoimi politykami prywatności w celu potwierdzenia ukończenia misji. RBX Rewards nie ma dostępu ani kontroli nad plikami cookie podmiotów trzecich.",
+                s4Title: "4. Prawa Ochrony Danych (RODO / GDPR)",
+                s4P1: "Masz prawo zażądać dostępu do danych przypisanych do Twojego profilu, ich sprostowania lub całkowitego usunięcia. Aby skorzystać z tych praw, skontaktuj się z administracją przez zakładkę Support na stronie lub poprzez nasz oficjalny serwer Discord.",
+                s5Title: "5. Ochrona Dzieci",
+                s5P1: "Nasza platforma jest przeznaczona dla użytkowników, którzy ukończyli 13 lat. Nie gromadzimy świadomie danych osobowych dzieci poniżej 13. roku życia. Jeśli uważasz, że dziecko poniżej 13 lat przekazało dane w naszym serwisie, skontaktuj się z nami przez Support, a niezwłocznie usuniemy te informacje.",
+                s6Title: "6. Zgoda",
+                s6P1: "Korzystając z naszej witryny, wyrażasz zgodę na niniejszą Politykę Prywatności i akceptujesz jej warunki."
+            },
+            de: {
+                navBack: "← Zurück zur Startseite",
+                navBackBottom: "← Zurück zur Startseite",
+                pTitle: "Datenschutzerklärung",
+                pUpdated: "Zuletzt aktualisiert: Oktober 2026",
+                pIntro: "Bei RBX Rewards („wir“, „uns“ oder „unser“) hat der Schutz der Privatsphäre und die digitale Sicherheit unserer Besucher höchste Priorität. Diese Datenschutzerklärung erläutert, welche Daten von RBX Rewards erfasst und wie sie verwendet und geschützt werden.",
+                s1Title: "1. Welche Daten wir erfassen",
+                s1Intro: "Wir arbeiten nach dem Prinzip der Datenminimierung. Wir fragen niemals nach Passwörtern für Gaming-Konten. Zu den begrenzten Informationen, die wir erfassen, gehören:",
+                s1L1: "Öffentlicher Benutzername: Wird freiwillig angegeben, um dein Community-Profil zu identifizieren, deinen Fortschritt in Ranglisten anzuzeigen und deine gesammelten Punkte zu speichern.",
+                s1L2: "Auszahlungsdetails (E-Wallet-E-Mail): Werden ausschließlich erfasst, wenn du eine Belohnung anforderst. Aus Sicherheitsgründen und zur Betrugsprävention wird die bei der ersten Einlösung angegebene E-Mail-Adresse dauerhaft mit deinem Profil verknüpft.",
+                s1L3: "Lokaler Speicher (LocalStorage) & Technische Daten: Wir nutzen den Browser-Speicher localStorage, um deine Spracheinstellungen, die Cookie-Zustimmung und deine aktive Sitzung zu speichern. Unsere Server protokollieren zudem technische Standarddaten (wie IP-Adresse, Browsertyp und Zeitstempel), um Missbrauch zu verhindern und VPN/Proxy-Verbindungen zu erkennen.",
+                s2Title: "2. Wie wir deine Daten verwenden",
+                s2Intro: "Wir verwenden die erfassten Informationen für folgende legitime Zwecke:",
+                s2L1: "Bereitstellung, Betrieb und Wartung unseres Community-Hubs, des globalen Chats und der Ranglisten.",
+                s2L2: "Überprüfung abgeschlossener Quests und sichere Bearbeitung von Belohnungsanfragen.",
+                s2L3: "Beantwortung von Nutzeranfragen über unser Support-Ticketsystem.",
+                s2L4: "Erkennung und Verhinderung von Betrug, Multi-Accounting und unbefugtem Zugriff.",
+                s3Title: "3. Google AdSense & Cookies von Drittanbietern",
+                s3P1: "Wir verwenden Google AdSense, um auf ausgewählten Seiten unserer Website Werbeanzeigen einzublenden. Google verwendet als Drittanbieter Cookies (einschließlich des DoubleClick-DART-Cookies), um Anzeigen basierend auf früheren Besuchen unserer und anderer Websites zu schalten.",
+                s3L1: "Nutzer können personalisierte Werbung und die Verwendung des DART-Cookies deaktivieren, indem sie die offizielle Seite besuchen:",
+                s3Link: "Datenschutzerklärung für das Google-Werbenetzwerk",
+                s3L2: "Unsere Website integriert zudem Drittanbieter für interaktive Quests und Marktforschung. Wenn du freiwillig eine Partner-Wall öffnest, können diese Anbieter eigene Cookies gemäß ihren Datenschutzrichtlinien verwenden, um den Abschluss von Aufgaben zu bestätigen.",
+                s4Title: "4. Datenschutzrechte (DSGVO / GDPR)",
+                s4P1: "Du hast das Recht, Auskunft über die zu deinem Profil gespeicherten Daten, deren Berichtigung oder Löschung zu verlangen. Kontaktiere dazu bitte unser Team über den Tab Support oder über unseren offiziellen Discord-Server.",
+                s5Title: "5. Schutz von Kindern",
+                s5P1: "Unsere Plattform richtet sich an Nutzer ab 13 Jahren. Wir erfassen wissentlich keine personenbezogenen Daten von Kindern unter 13 Jahren. Sollte ein Kind unter 13 Jahren Daten übermittelt haben, kontaktiere uns bitte umgehend über den Support zur sofortigen Löschung.",
+                s6Title: "6. Zustimmung",
+                s6P1: "Durch die Nutzung unserer Website stimmst du unserer Datenschutzerklärung und ihren Bedingungen zu."
+            },
+            ru: {
+                navBack: "← Назад на Главную",
+                navBackBottom: "← Назад на Главную",
+                pTitle: "Политика Конфиденциальности",
+                pUpdated: "Последнее обновление: Октябрь 2026",
+                pIntro: "В сервисе RBX Rewards («мы», «нас» или «наш») одним из главных приоритетов является конфиденциальность и цифровая безопасность наших посетителей. В настоящей Политике конфиденциальности описано, какие данные собирает RBX Rewards и как мы их используем и защищаем.",
+                s1Title: "1. Какую информацию мы собираем",
+                s1Intro: "Мы придерживаемся принципа минимизации данных и никогда не запрашиваем пароли от игровых аккаунтов. Ограниченный объем собираемых данных включает:",
+                s1L1: "Публичный никнейм (Username): Указывается вами добровольно для идентификации профиля, отображения прогресса в таблице лидеров и учета набранных баллов.",
+                s1L2: "Реквизиты для получения наград (Email электронного кошелька): Запрашиваются исключительно при оформлении заявки на получение награды. В целях безопасности и предотвращения мошенничества адрес, указанный при первой заявке, навсегда привязывается к вашему профилю.",
+                s1L3: "Локальное хранилище (LocalStorage) и технические данные: Мы используем память браузера localStorage для сохранения выбранного языка, согласия на использование файлов cookie и активной сессии. Наши серверы также фиксируют стандартные технические данные (IP-адрес, тип браузера, время) для защиты от ботов и обнаружения VPN/Proxy.",
+                s2Title: "2. Как мы используем информацию",
+                s2Intro: "Собранная информация используется в следующих законных целях:",
+                s2L1: "Обеспечение работы нашего портала сообщества, глобального чата и рейтингов.",
+                s2L2: "Проверка выполнения квестов и корректная обработка заявок на награды.",
+                s2L3: "Ответы на обращения пользователей через систему тикетов в разделе Поддержки.",
+                s2L4: "Предотвращение мошенничества, мультиаккаунтов и несанкционированного доступа.",
+                s3Title: "3. Google AdSense и файлы Cookie третьих лиц",
+                s3P1: "Мы используем Google AdSense для показа рекламы на отдельных страницах сайта. Компания Google как сторонний поставщик использует файлы cookie (включая DoubleClick DART) для показа объявлений на основе ваших предыдущих посещений нашего и других сайтов.",
+                s3L1: "Пользователи могут отключить персонализированную рекламу и использование файлов cookie DART, посетив официальную страницу:",
+                s3Link: "Политика конфиденциальности рекламной сети Google",
+                s3L2: "Наш сайт также интегрирует сторонних поставщиков интерактивных заданий и исследований. Когда вы открываете стену квестов партнера, эти сервисы могут использовать собственные файлы cookie согласно своим политикам конфиденциальности для подтверждения выполнения заданий.",
+                s4Title: "4. Права на защиту данных (GDPR)",
+                s4P1: "Вы имеете право запросить доступ к данным вашего профиля, их исправление или полное удаление. Для этого свяжитесь с нашей администрацией через вкладку Поддержка (Support) на сайте или через наш официальный сервер Discord.",
+                s5Title: "5. Защита информации о детях",
+                s5P1: "Наша платформа предназначена для пользователей старше 13 лет. Мы сознательно не собираем личные данные детей младше 13 лет. Если вам стало известно о передаче таких данных, свяжитесь с нами через Поддержку для их немедленного удаления.",
+                s6Title: "6. Согласие",
+                s6P1: "Используя наш сайт, вы выражаете согласие с настоящей Политикой конфиденциальности и принимаете ее условия."
+            }
+        };
+
+        function changeLang(lang) {
+            if (!translations[lang]) lang = 'en';
+            localStorage.setItem('rbx_lang', lang);
+            document.getElementById('langSelect').value = lang;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const savedLang = localStorage.getItem('rbx_lang') || 'en';
+            changeLang(savedLang);
+        });
+    </script>
 </body>
 </html>
