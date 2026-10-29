@@ -318,6 +318,7 @@
           <p style="color: #a0a0b0; font-size: 0.9rem; margin-top: 8px; font-weight: bold;" id="globalGoalText">0.00 / 0.00 R$</p>
       </div>
 
+      <!-- ZAKŁADKA HOME -->
       <main id="tab-home">
           <div id="home-logged-out" style="display: block; width: 100%;">
               <div class="hero-container">
@@ -420,6 +421,7 @@
           </div>
       </main>
 
+      <!-- ZAKŁADKA EARN -->
       <main id="tab-earn" style="display: none;">
         <div class="ticker-wrap" style="width: 100%; clear: both;">
           <div class="ticker-title" data-lang="liveEarners">🔥 Live Activity</div>
@@ -449,6 +451,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA GOALS -->
       <main id="tab-goals" style="display: none;">
           <h2 class="section-title" data-lang="navGoals">🎯 Goal Tracker</h2>
           <div class="goal-form-section">
@@ -476,6 +479,7 @@
           </div>
       </main>
 
+      <!-- ZAKŁADKA WHEEL -->
       <main id="tab-wheel" style="display: none;">
         <h2 class="section-title" data-lang="wheelTitle">🎡 Wheel of Fortune</h2>
         <div class="wheel-container">
@@ -508,6 +512,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA LEVELS -->
       <main id="tab-levels" style="display: none;">
         <h2 class="section-title" data-lang="levelsTitle">⭐ Account Levels & XP</h2>
         <div class="content-box" style="padding: 20px;">
@@ -521,6 +526,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA LEADERBOARD -->
       <main id="tab-leaderboard" style="display: none;">
           <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
           <h2 class="section-title" data-lang="navLeaderboard">🏆 Leaderboard</h2>
@@ -541,6 +547,7 @@
           </div>
       </main>
 
+      <!-- ZAKŁADKA REFERRALS -->
       <main id="tab-referrals" style="display: none;">
         <h2 class="section-title" data-lang="refTitle">Invite Friends & Get +15% Bonus</h2>
         <div class="content-box">
@@ -571,6 +578,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA PROMOCODES -->
       <main id="tab-promocodes" style="display: none;">
         <h2 class="section-title" data-lang="promoTitle">Redeem Promo Codes</h2>
         <div class="content-box">
@@ -588,6 +596,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
         <p style="color: #a0a0b0; margin-bottom: 15px;">Direct email: support@rbx-rewards.com</p>
@@ -639,7 +648,7 @@
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #ffb703; margin-bottom: 15px;">🔧 Zarządzanie Robuxami Graczy</h3>
             <div style="position: relative;">
-                <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" placeholder="Wpisz nazwę gracza (Wyszukiwarka alfabetyczna)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+                <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" onchange="fetchUserDetails(this.value)" placeholder="Wpisz nazwę gracza (Wyszukiwarka alfabetyczna)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
                 <ul id="adminUserDropdown" style="display: none; position: absolute; top: 45px; left: 0; background: #1e1e26; width: 100%; list-style: none; padding: 0; margin: 0; border: 1px solid #333; border-radius: 6px; z-index: 10; max-height: 180px; overflow-y: auto;"></ul>
             </div>
             
@@ -691,7 +700,7 @@
               <a href="terms.html" target="_blank">Terms of Service</a> | 
               <a href="privacy.html" target="_blank">Privacy Policy</a>
           </div>
-          <p style="color: #666; margin-bottom: 5px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
+          <p style="color: #666; margin-bottom: 5px;">© 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
       </footer>
     </div>
   </div>
@@ -750,7 +759,7 @@
   <!-- OKIENKO ANKIET -->
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
-      <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">&times;</span></div>
+      <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">×</span></div>
       <div id="iframeContainer"></div>
     </div>
   </div>
@@ -942,6 +951,188 @@
         try { if (twitchPlayer) twitchPlayer.pause(); } catch (e) {}
     }
 
+    // --- FUNKCJE LOGOWANIA, WYPŁAT I OFFERWALLI ---
+    function openLoginModal() {
+        document.getElementById("loginModal").style.display = "flex";
+    }
+
+    function closeLoginModal() {
+        document.getElementById("loginModal").style.display = "none";
+    }
+
+    function saveUsername() {
+        const input = document.getElementById("usernameInput").value.trim();
+        if (input) {
+            localStorage.setItem("rbx_username", input);
+            closeLoginModal();
+            checkLoginStatus();
+            const pendingRef = localStorage.getItem('pending_ref');
+            if (pendingRef) autoApplyReferral(pendingRef);
+        } else {
+            alert("Invalid username!");
+        }
+    }
+
+    function checkLoginStatus() {
+      const savedUser = localStorage.getItem("rbx_username");
+      if (savedUser) {
+        injectProtectedContent();
+        const activeLang = localStorage.getItem('rbx_lang') || 'en';
+        applyTranslationsToDOM(activeLang);
+
+        document.getElementById("loginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        document.getElementById("loggedUserName").innerText = savedUser;
+
+        const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "none";
+        document.getElementById("home-logged-in").style.display = "block"; 
+        document.getElementById("home-logged-out").style.display = "none";
+        
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
+            const d = document.getElementById("nav-" + id); if(d) d.style.display = "block";
+            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "block";
+        });
+
+        const fullLink = window.location.origin + "/?ref=" + savedUser; 
+        const refDisplay = document.getElementById("myRefLinkDisplay"); if(refDisplay) refDisplay.innerText = fullLink;
+
+        document.getElementById("chatWidget").style.display = "flex";
+        fetchUserPoints(); 
+        fetchInbox();
+        
+        if (socket) socket.emit('user_joined', savedUser);
+
+        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt"; 
+        const secureHashParam = typeof md5 !== 'undefined' ? md5(savedUser + "-" + appSecureHash) : "";
+        currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
+        currentUserTheoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${theoremReachApiKey}&user_id=${encodeURIComponent(savedUser)}`;
+      } else {
+        document.getElementById("loginBtn").style.display = "inline-block"; 
+        document.getElementById("logoutBtn").style.display = "none";
+        const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "block";
+        const offerwallSection = document.getElementById("offerwallSection"); if (offerwallSection) { offerwallSection.innerHTML = ""; offerwallSection.style.display = "none"; }
+        document.getElementById("home-logged-in").style.display = "none"; 
+        document.getElementById("home-logged-out").style.display = "block";
+        
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
+            const d = document.getElementById("nav-" + id); if(d) d.style.display = "none";
+            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "none";
+        });
+        
+        document.getElementById("userPoints").innerText = "0.00"; 
+        document.getElementById("homeBigPoints").innerText = "0.00 R$"; 
+        document.getElementById("homeBigUsd").innerText = "$0.00";
+        document.getElementById("chatWidget").style.display = "none";
+        updateGlobalGoalBar();
+      }
+    }
+
+    function logoutUser() { 
+        localStorage.removeItem("rbx_username"); 
+        localStorage.removeItem("rbx_points"); 
+        localStorage.removeItem("rbx_linked_paypal"); 
+        window.location.reload(); 
+    }
+    
+    function openOfferwall(networkId, networkName) {
+      const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return openLoginModal();
+      document.getElementById('offerModalTitle').innerText = networkName; let finalUrl = "";
+      if (networkId === 'CPX') finalUrl = currentUserCpxUrl; else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl;
+      if (finalUrl) { 
+          document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
+          document.getElementById('offerModal').style.display = 'flex'; 
+          const mobNav = document.querySelector('.mobile-nav');
+          if (mobNav) mobNav.style.display = 'none';
+      }
+    }
+    
+    function closeOfferModal() { 
+        document.getElementById('offerModal').style.display = 'none'; 
+        document.getElementById('iframeContainer').innerHTML = ''; 
+        const mobNav = document.querySelector('.mobile-nav');
+        if (mobNav) mobNav.style.display = '';
+    }
+    window.onclick = function(event) { if (event.target === document.getElementById('offerModal')) closeOfferModal(); }
+
+    function openWithdrawModal() { 
+        injectProtectedContent();
+        const activeLang = localStorage.getItem('rbx_lang') || 'en'; applyTranslationsToDOM(activeLang);
+        document.getElementById("withdrawModal").style.display = "flex"; 
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
+        document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
+        
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); 
+        const addressInput = document.getElementById("paypalEmail");
+        const lockWarning = document.getElementById("paypalLockWarning"); 
+        const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
+        
+        if (linkedAddress && linkedAddress !== "null" && linkedAddress !== "") {
+            addressInput.value = linkedAddress; 
+            addressInput.readOnly = true; 
+            addressInput.style.opacity = "0.5"; 
+            addressInput.style.cursor = "not-allowed"; 
+            lockWarning.style.display = "block"; 
+            firstTimeWarning.style.display = "none";
+        } else { 
+            addressInput.value = ""; 
+            addressInput.readOnly = false; 
+            addressInput.style.opacity = "1"; 
+            addressInput.style.cursor = "text"; 
+            lockWarning.style.display = "none"; 
+            firstTimeWarning.style.display = "block"; 
+        }
+    }
+
+    function setMaxPoints() {
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
+        document.getElementById("withdrawPoints").value = safePoints.toFixed(2); calculateUSD();
+    }
+    
+    function closeWithdrawModal() { 
+        document.getElementById("withdrawModal").style.display = "none"; 
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("paypalEmail");
+        if (addressInput && (!linkedAddress || linkedAddress === "null" || linkedAddress === "")) { addressInput.value = ""; }
+        const wp = document.getElementById("withdrawPoints"); if (wp) wp.value = ""; const ur = document.getElementById("usdResult"); if (ur) ur.innerText = "$0.00";
+    }
+    
+    function calculateUSD() {
+        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0; const usdValue = points * 0.025; document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
+    }
+    
+    async function submitWithdraw() {
+        const address = document.getElementById("paypalEmail").value.trim(); 
+        const points = parseFloat(document.getElementById("withdrawPoints").value);
+        const username = localStorage.getItem("rbx_username");
+        
+        if (!address || !address.includes("@")) return alert("Nieprawidłowy adres email PayPal.");
+        if (!points || points <= 0) return alert("Nieprawidłowa kwota R$.");
+        
+        try {
+            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: 'PayPal', payoutAddress: address, points }) });
+            if (!response.ok) { const data = await response.json().catch(() => null); if (data && data.error) return alert("❌ " + data.error); alert("❌ Server Error!"); return; }
+            const data = await response.json();
+            if (data.error) alert("Error: " + data.error);
+            else {
+                alert(`Sukces! Zlecono wypłatę: $${data.usd.toFixed(2)}.`);
+                const safeNewBal = Math.floor(data.newBalance * 100) / 100; document.getElementById("userPoints").innerText = safeNewBal.toFixed(2);
+                const homeBigPointsEl = document.getElementById("homeBigPoints"); if(homeBigPointsEl) homeBigPointsEl.innerText = safeNewBal.toFixed(2) + " R$";
+                const homeBigUsdEl = document.getElementById("homeBigUsd"); const usdValue = safeNewBal * 0.025; if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
+                localStorage.setItem("rbx_points", data.newBalance); localStorage.setItem("rbx_linked_paypal", address.toLowerCase());
+                closeWithdrawModal(); fetchLatestPayouts(); 
+            }
+        } catch (error) { alert("Connection Error"); }
+    }
+
+    function startSocialTask(platform, url) {
+        window.open(url, '_blank');
+        const lang = document.getElementById('langSelect').value || 'en';
+        let msg = "Thank you for your support!";
+        if(lang === 'pl') msg = "Dzięki za wsparcie!";
+        if(lang === 'de') msg = "Danke für deine Unterstützung!";
+        if(lang === 'ru') msg = "Спасибо за поддержку!";
+        alert(msg);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
       checkCookieConsent();
       const savedLang = localStorage.getItem('rbx_lang') || 'en';
@@ -1124,7 +1315,7 @@
             <div class="goal-card">${imgHtml}
                 <div class="goal-details">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;"><h4 style="margin:0;">${goal.title}</h4><span class="goal-status ${statusClass}">${statusText}</span></div>
-                    <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$ &nbsp;|&nbsp; ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
+                    <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$  |  ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
                     <div class="progress-bar-bg" style="margin-bottom: 10px;"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
                     ${cancelBtn}
                 </div>
