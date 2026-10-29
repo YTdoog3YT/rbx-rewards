@@ -15,7 +15,7 @@ const botTwitch = require('./bot-twitch.js');
 const ADMIN_DISCORD_ID = "398911896893521921";
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "1546268855708684318"; 
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || "sQ_3XRcNGuEHnoDUdy5zKfPvZOGry0FF"; 
-const REDIRECT_URI = process.env.REDIRECT_URI || "http://localhost:3000/api/admin/callback";
+const REDIRECT_URI = process.env.REDIRECT_URI || "https://rbx-rewards.onrender.com/api/admin/callback";
 const ADMIN_PROMO_CHANNEL_ID = process.env.ADMIN_PROMO_CHANNEL_ID || "";
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
