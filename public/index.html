@@ -416,23 +416,27 @@
           </div>
       </main>
 
-      <!-- ZAKŁADKA EARN -->
+<!-- ZAKŁADKA EARN -->
       <main id="tab-earn" style="display: none;">
-        <div class="ticker-wrap">
-<!-- TWITCH STREAM (IFRAME) -->
-        <div style="margin-bottom: 25px; border-radius: 12px; overflow: hidden; border: 1px solid #2a2e39; box-shadow: 0 5px 20px rgba(0,0,0,0.5);">
+        
+        <!-- TWITCH STREAM (IFRAME) -->
+        <div style="margin-bottom: 25px; border-radius: 12px; overflow: hidden; border: 1px solid #2a2e39; box-shadow: 0 5px 20px rgba(0,0,0,0.5); width: 100%; display: block; clear: both;">
             <iframe
                 src="https://player.twitch.tv/?channel=ttv_ytdoog3yt&parent=rbx-rewards.onrender.com&parent=localhost&muted=true"
                 height="480"
                 width="100%"
                 allowfullscreen="true"
-                style="border: none;">
+                style="border: none; display: block; width: 100%;">
             </iframe>
         </div>
+
+        <div class="ticker-wrap" style="width: 100%; clear: both;">
           <div class="ticker-title" data-lang="liveEarners">🔥 Live Activity</div>
           <div class="ticker-container"><div class="ticker-move" id="liveTicker"><div class="ticker-item" data-lang="loadingStats">Loading live stats...</div></div></div>
         </div>
+        
         <h2 class="section-title" data-lang="earnTitle">Complete Quests & Collect R$!</h2>
+        
         <div id="earnLoginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 20px 0;">
             <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px 20px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
                 <img src="/logo.png" alt="RBX Rewards Logo" class="login-banner-logo" style="max-width: 180px; width: 100%; filter: drop-shadow(0px 0px 15px rgba(0, 230, 118, 0.6)); margin-bottom: 25px;">
@@ -441,6 +445,7 @@
                 <button class="btn-action" style="width: 100%;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
             </div>
         </div>
+        
         <div id="offerwallSection" class="content-box" style="padding: 15px; display: none;"></div>
         
         <div class="content-box" id="recentPayoutsBox">
