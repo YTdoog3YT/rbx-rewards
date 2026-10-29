@@ -12,6 +12,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
+  
+  <!-- SKRYPT TWITCH API DO INTELIGENTNEGO WIDŻETU -->
+  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -138,7 +141,9 @@
 
     .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
     .modal { background: rgba(0,0,0,0.95); } 
-    .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 2000; } 
+    
+    /* MODAL ANKIET ORAZ JEGO Z-INDEX */
+    .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 100000; } /* Ustawiony z-index wyżej niż menu mobilne */
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
     .modal-content input, .modal-content select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px; }
     .modal-content button { width: 100%; } 
@@ -206,8 +211,8 @@
     .cookie-banner a { color: #00e676; }
     .cookie-banner button { background: #00e676; color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     
-    /* STYLE DLA PŁYWAJĄCEGO TWITCHA */
-    .twitch-floating { position: fixed; bottom: 20px; left: 20px; width: 320px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid #9146FF; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; background: #181b22; display: flex; flex-direction: column; }
+    /* STYLE DLA INTELIGENTNEGO WIDŻETU TWITCHA */
+    .twitch-floating { position: fixed; bottom: 20px; left: 20px; width: 320px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid #9146FF; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; background: #181b22; display: none; flex-direction: column; }
     .twitch-header { background: #9146FF; color: #fff; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     .twitch-header span:last-child { cursor: pointer; transition: 0.2s; padding: 0 5px; }
     .twitch-header span:last-child:hover { color: #ff3333; }
@@ -223,6 +228,10 @@
         .podium-name { font-size: 0.9rem; }
         .podium-score { font-size: 0.9rem; }
         .twitch-floating { display: none !important; } /* UKRYWA TWITCHA NA TELEFONACH */
+        
+        /* PEŁNY EKRAN DLA ANKIET NA TELEFONIE */
+        .offer-modal-box { width: 100%; height: 100vh; border-radius: 0; border: none; }
+        .offer-modal-header { padding: 10px 15px; }
     }
     @media (max-width: 600px) {
         body { padding: 10px; }
@@ -641,19 +650,13 @@
     </div>
   </div>
 
-  <!-- PŁYWAJĄCY WIDŻET TWITCH (TYLKO PC) -->
+  <!-- PŁYWAJĄCY WIDŻET TWITCH (TYLKO PC) - ZAMIENIONY NA INTELIGENTNY SKRYPT -->
   <div class="twitch-floating" id="twitchWidget">
       <div class="twitch-header">
           <span>🔴 TTV_YTdoog3YT LIVE</span>
-          <span onclick="document.getElementById('twitchWidget').style.display='none'" title="Zamknij stream">✖</span>
+          <span onclick="closeTwitchWidget()" title="Zamknij stream">✖</span>
       </div>
-      <iframe
-          src="https://player.twitch.tv/?channel=ttv_ytdoog3yt&parent=rbx-rewards.onrender.com&parent=localhost&muted=true"
-          height="100%"
-          width="100%"
-          allowfullscreen="true"
-          style="border: none; flex: 1;">
-      </iframe>
+      <div id="twitch-embed-player" style="flex: 1; width: 100%; height: 100%;"></div>
   </div>
 
   <!-- CZAT -->
@@ -696,6 +699,7 @@
       </div>
   </div>
 
+  <!-- MODAL DLA ANKIET -->
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
       <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">×</span></div>
@@ -871,11 +875,51 @@
     let socket = null;
     try { if (typeof io !== 'undefined') socket = io(); } catch (e) {}
 
+    // --- NOWA INTELIGENTNA FUNKCJA TWITCH API ---
+    let twitchPlayer = null;
+    function initTwitchWidget() {
+        if (sessionStorage.getItem('twitch_closed') === 'true') {
+            document.getElementById('twitchWidget').style.display = 'none';
+            return;
+        }
+        
+        const options = {
+            width: "100%",
+            height: "100%",
+            channel: "ttv_ytdoog3yt",
+            parent: ["rbx-rewards.onrender.com", "localhost"],
+            muted: true
+        };
+        
+        twitchPlayer = new Twitch.Player("twitch-embed-player", options);
+        
+        // POJAWIA SIĘ TYLKO GDY JESTEŚ LIVE
+        twitchPlayer.addEventListener(Twitch.Player.ONLINE, () => {
+            if (sessionStorage.getItem('twitch_closed') !== 'true') {
+                document.getElementById('twitchWidget').style.display = 'flex';
+            }
+        });
+        
+        // ZNIKA GDY JESTEŚ OFFLINE
+        twitchPlayer.addEventListener(Twitch.Player.OFFLINE, () => {
+            document.getElementById('twitchWidget').style.display = 'none';
+        });
+    }
+
+    function closeTwitchWidget() {
+        document.getElementById('twitchWidget').style.display = 'none';
+        sessionStorage.setItem('twitch_closed', 'true'); // Zapamiętuje zamknięcie na czas sesji
+        if (twitchPlayer) twitchPlayer.pause();
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
       checkCookieConsent();
       const savedLang = localStorage.getItem('rbx_lang') || 'en';
       checkLoginStatus();
       changeLang(savedLang);
+
+      // INICJALIZACJA TWITCHA
+      initTwitchWidget();
 
       const urlParams = new URLSearchParams(window.location.search);
       const refParam = urlParams.get('ref');
@@ -1609,14 +1653,30 @@
         window.location.reload(); 
     }
     
+    // POPRAWKA DLA TELEFONÓW: Ukrywamy nav-bar na czas ankiety
     function openOfferwall(networkId, networkName) {
       const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return openLoginModal();
       document.getElementById('offerModalTitle').innerText = networkName; let finalUrl = "";
       if (networkId === 'CPX') finalUrl = currentUserCpxUrl; else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl;
-      if (finalUrl) { document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; document.getElementById('offerModal').style.display = 'flex'; }
+      
+      if (finalUrl) { 
+          document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
+          document.getElementById('offerModal').style.display = 'flex'; 
+          
+          const mobNav = document.querySelector('.mobile-nav');
+          if (mobNav) mobNav.style.display = 'none'; // CHOWA ZABEZPIECZAJĄCE MENU
+      }
     }
     
-    function closeOfferModal() { document.getElementById('offerModal').style.display = 'none'; document.getElementById('iframeContainer').innerHTML = ''; }
+    // POPRAWKA DLA TELEFONÓW: Przywracamy nav-bar po zamknięciu ankiety
+    function closeOfferModal() { 
+        document.getElementById('offerModal').style.display = 'none'; 
+        document.getElementById('iframeContainer').innerHTML = ''; 
+        
+        const mobNav = document.querySelector('.mobile-nav');
+        if (mobNav) mobNav.style.display = ''; // PRZYWRACA MENU
+    }
+    
     window.onclick = function(event) { if (event.target === document.getElementById('offerModal')) closeOfferModal(); }
 
     function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
