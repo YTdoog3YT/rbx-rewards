@@ -137,7 +137,6 @@
     .podium-score { color: #00e676; font-weight: 900; margin-top: 5px; font-size: 1.1rem; }
     .rank-number { font-weight: 900; color: #555; width: 40px; text-align: center; font-size: 1.1rem; }
 
-    /* POPRAWIONE UKRYWANIE MODALI */
     .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
     .modal { background: rgba(0,0,0,0.95); } 
     .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 100000; } 
@@ -251,6 +250,7 @@
 </head>
 <body class="on-home-tab">
 
+  <!-- MOBILNE MENU -->
   <div class="mobile-nav">
       <div class="nav-item active" id="mob-nav-home" onclick="switchTab('home')">
           <span>🏠</span> <div data-lang="navHomeMob">Home</div>
@@ -273,6 +273,7 @@
   </div>
 
   <div class="page-layout">
+    <!-- BOCZNE MENU (PC) -->
     <div class="side-nav-container">
         <nav class="side-nav">
             <a href="/">
@@ -319,6 +320,7 @@
           <p style="color: #a0a0b0; font-size: 0.9rem; margin-top: 8px; font-weight: bold;" id="globalGoalText">0.00 / 0.00 R$</p>
       </div>
 
+      <!-- ZAKŁADKA HOME -->
       <main id="tab-home">
           <div id="home-logged-out" style="display: block; width: 100%;">
               <div class="hero-container">
@@ -421,6 +423,7 @@
           </div>
       </main>
 
+      <!-- ZAKŁADKA EARN -->
       <main id="tab-earn" style="display: none;">
         <div class="ticker-wrap" style="width: 100%; clear: both;">
           <div class="ticker-title" data-lang="liveEarners">🔥 Live Activity</div>
@@ -450,6 +453,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA GOALS -->
       <main id="tab-goals" style="display: none;">
           <h2 class="section-title" data-lang="navGoals">🎯 Goal Tracker</h2>
           <div class="goal-form-section">
@@ -477,6 +481,7 @@
           </div>
       </main>
 
+      <!-- ZAKŁADKA WHEEL -->
       <main id="tab-wheel" style="display: none;">
         <h2 class="section-title" data-lang="wheelTitle">🎡 Wheel of Fortune</h2>
         <div class="wheel-container">
@@ -509,6 +514,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA LEVELS -->
       <main id="tab-levels" style="display: none;">
         <h2 class="section-title" data-lang="levelsTitle">⭐ Account Levels & XP</h2>
         <div class="content-box" style="padding: 20px;">
@@ -522,6 +528,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA LEADERBOARD -->
       <main id="tab-leaderboard" style="display: none;">
           <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
           <h2 class="section-title" data-lang="navLeaderboard">🏆 Leaderboard</h2>
@@ -542,6 +549,7 @@
           </div>
       </main>
 
+      <!-- ZAKŁADKA REFERRALS -->
       <main id="tab-referrals" style="display: none;">
         <h2 class="section-title" data-lang="refTitle">Invite Friends & Get +15% Bonus</h2>
         <div class="content-box">
@@ -572,6 +580,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA PROMOCODES -->
       <main id="tab-promocodes" style="display: none;">
         <h2 class="section-title" data-lang="promoTitle">Redeem Promo Codes</h2>
         <div class="content-box">
@@ -589,6 +598,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
         <p style="color: #a0a0b0; margin-bottom: 15px;">Direct email: support@rbx-rewards.com</p>
@@ -599,6 +609,7 @@
         </div>
       </main>
 
+      <!-- ZAKŁADKA ADMIN -->
       <main id="tab-admin" style="display: none;">
         <h2 class="section-title" data-lang="navAdmin">⚙️ Admin Panel</h2>
         
@@ -633,34 +644,36 @@
             </div>
         </div>
 
+        <!-- ZARZĄDZANIE ROBUXAMI GRACZY (NAD KODAMI) -->
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #ffb703; margin-bottom: 15px;">🔧 Zarządzanie Robuxami Graczy</h3>
             <div style="position: relative;">
-                <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" placeholder="Wpisz nazwę gracza (Wyszukiwarka)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
-                <ul id="adminUserDropdown" style="display: none; position: absolute; top: 45px; left: 0; background: #1e1e26; width: 100%; list-style: none; padding: 0; margin: 0; border: 1px solid #333; border-radius: 6px; z-index: 10; max-height: 150px; overflow-y: auto;"></ul>
+                <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" onchange="fetchUserDetails(this.value)" placeholder="Wpisz nazwę gracza (Wyszukiwarka alfabetyczna)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+                <ul id="adminUserDropdown" style="display: none; position: absolute; top: 45px; left: 0; background: #1e1e26; width: 100%; list-style: none; padding: 0; margin: 0; border: 1px solid #333; border-radius: 6px; z-index: 10; max-height: 180px; overflow-y: auto;"></ul>
             </div>
             
             <div id="adminSelectedUserDetails" style="display: none; background: #14171d; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;">
                 <p style="margin-bottom: 5px;">Wybrany gracz: <strong id="adminSelectedUsername" style="color: #fff;">-</strong></p>
                 <p style="margin-bottom: 5px;">Aktualne saldo: <strong id="adminSelectedPoints" style="color: #00e676;">0.00 R$</strong></p>
-                <p>Oczekujące (Pending): <strong id="adminSelectedPending" style="color: #ff3333; cursor: pointer; text-decoration: underline;" onclick="toggleSelectedUserPayouts()">0.00 R$ (Pokaż wnioski)</strong></p>
+                <p>Oczekujące (Pending): <strong id="adminSelectedPending" style="color: #ff3333; cursor: pointer; text-decoration: underline;" onclick="toggleSelectedUserPayouts()">0.00 R$ (Kliknij, aby pokazać wnioski)</strong></p>
                 
                 <div id="adminSelectedUserPayouts" style="display: none; margin-top: 15px; background: #0f1115; border-radius: 6px; border: 1px solid #2a2e39; overflow-x: auto;">
                     <table class="ref-table" style="width: 100%; min-width: 500px; font-size: 0.9rem;">
-                        <thead><tr><th>Metoda/Adres</th><th>Kwota</th><th>Akcja</th></tr></thead>
+                        <thead><tr><th>Metoda/Adres</th><th>Kwota</th><th>Data</th><th>Akcja</th></tr></thead>
                         <tbody id="adminSelectedUserPayoutsBody"></tbody>
                     </table>
                 </div>
             </div>
             
-            <input type="number" id="adminBalanceAmount" placeholder="Kwota R$" step="0.01" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+            <input type="number" id="adminBalanceAmount" placeholder="Wpisz kwotę R$..." step="0.01" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
             
             <div style="display: flex; gap: 15px;">
-                <button class="btn-action" style="flex: 1; background: #ff3333;" onclick="adminManageBalance('subtract')">➖ Odejmij</button>
-                <button class="btn-action" style="flex: 1; background: #00e676;" onclick="adminManageBalance('add')">➕ Dodaj</button>
+                <button class="btn-action" style="flex: 1; background: #ff3333; color: #fff; margin-top: 0;" onclick="adminManageBalance('subtract')">➖ Odejmij</button>
+                <button class="btn-action" style="flex: 1; background: #00e676; color: #000; margin-top: 0;" onclick="adminManageBalance('add')">➕ Dodaj</button>
             </div>
         </div>
 
+        <!-- GENERATOR KODÓW -->
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #00e676; margin-bottom: 15px;">🎟️ Generator Kodów Promocyjnych</h3>
             <input type="text" id="adminPromoCode" placeholder="Nazwa kodu (np. ROBUX2026)" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
@@ -671,6 +684,7 @@
             <button class="btn-action" style="width: 100%; margin: 0; padding: 15px; font-size: 1.1rem;" onclick="createAdminPromoCode()">🚀 Wygeneruj Kod i Powiadom Discord</button>
         </div>
 
+        <!-- TOP 10 NAJNOWSZYCH WNIOSKÓW NA DOLE -->
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #ff3333; margin-bottom: 15px;">🚨 Top 10 Najnowszych Oczekujących Wypłat</h3>
             <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
@@ -693,6 +707,7 @@
     </div>
   </div>
 
+  <!-- PŁYWAJĄCY WIDŻET TWITCH (TYLKO PC, GDY STREAM JEST ONLINE) -->
   <div class="twitch-floating" id="twitchWidget">
       <div class="twitch-header">
           <span>🔴 TTV_YTdoog3YT LIVE</span>
@@ -701,6 +716,7 @@
       <div id="twitch-embed-player" style="flex: 1; width: 100%; height: 100%;"></div>
   </div>
 
+  <!-- CZAT -->
   <div id="chatWidget" class="chat-widget minimized">
       <div class="chat-header" onclick="toggleChat()">
           <span data-lang="globalChat">🌍 Global Chat</span>
@@ -717,7 +733,7 @@
       </div>
   </div>
 
-  <!-- JEDNO, JEDYNE OKIENKO LOGOWANIA -->
+  <!-- OKIENKO LOGOWANIA -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <h3 style="color: #fff; margin-bottom: 15px;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
@@ -727,7 +743,10 @@
     </div>
   </div>
 
+  <!-- OKIENKO WYPŁATY -->
   <div class="modal" id="withdrawModal"></div>
+
+  <!-- OKIENKO HISTORII -->
   <div class="modal" id="historyModal">
       <div class="modal-content" style="max-width: 500px;">
           <h3 style="color: #00e676; margin-bottom: 15px;" data-lang="historyTitle">Account History</h3>
@@ -741,6 +760,7 @@
       </div>
   </div>
 
+  <!-- OKIENKO ANKIET -->
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
       <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">&times;</span></div>
@@ -748,6 +768,7 @@
     </div>
   </div>
 
+  <!-- BANER COOKIES -->
   <div id="cookieBanner" class="cookie-banner" style="display: none;">
       <p><span data-lang="cookieText">We use cookies to ensure you get the best experience on our website. Read our</span> <a href="privacy.html" target="_blank" data-lang="cookieLink">Privacy Policy</a>.</p>
       <button onclick="acceptCookies()" data-lang="cookieBtn">Accept & Close</button>
@@ -911,13 +932,28 @@
 
     let twitchPlayer = null;
     function initTwitchWidget() {
-        if (sessionStorage.getItem('twitch_closed') === 'true') { document.getElementById('twitchWidget').style.display = 'none'; return; }
-        const options = { width: "100%", height: "100%", channel: "ttv_ytdoog3yt", parent: ["rbx-rewards.onrender.com", "localhost"], muted: true };
-        twitchPlayer = new Twitch.Player("twitch-embed-player", options);
-        twitchPlayer.addEventListener(Twitch.Player.ONLINE, () => { if (sessionStorage.getItem('twitch_closed') !== 'true') document.getElementById('twitchWidget').style.display = 'flex'; });
-        twitchPlayer.addEventListener(Twitch.Player.OFFLINE, () => { document.getElementById('twitchWidget').style.display = 'none'; });
+        try {
+            if (sessionStorage.getItem('twitch_closed') === 'true') {
+                document.getElementById('twitchWidget').style.display = 'none';
+                return;
+            }
+            if (typeof Twitch === 'undefined' || !Twitch.Player) return;
+            const options = { width: "100%", height: "100%", channel: "ttv_ytdoog3yt", parent: ["rbx-rewards.onrender.com", "localhost"], muted: true };
+            twitchPlayer = new Twitch.Player("twitch-embed-player", options);
+            twitchPlayer.addEventListener(Twitch.Player.ONLINE, () => {
+                if (sessionStorage.getItem('twitch_closed') !== 'true') document.getElementById('twitchWidget').style.display = 'flex';
+            });
+            twitchPlayer.addEventListener(Twitch.Player.OFFLINE, () => {
+                document.getElementById('twitchWidget').style.display = 'none';
+            });
+        } catch (e) {}
     }
-    function closeTwitchWidget() { document.getElementById('twitchWidget').style.display = 'none'; sessionStorage.setItem('twitch_closed', 'true'); if (twitchPlayer) twitchPlayer.pause(); }
+
+    function closeTwitchWidget() {
+        document.getElementById('twitchWidget').style.display = 'none';
+        sessionStorage.setItem('twitch_closed', 'true');
+        try { if (twitchPlayer) twitchPlayer.pause(); } catch (e) {}
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
       checkCookieConsent();
@@ -1333,7 +1369,7 @@
                     else if (item.source === 'Wheel' || item.source === 'Spinner') { actionText = translations[tLang].historyWheel || "Wheel of Fortune"; if (item.details) actionText += ` (${item.details})`; }
                     else if (item.source === 'Admin') { actionText = "Admin Panel"; if (item.details) actionText += ` (${item.details})`; }
                     else { actionText = amt < 1.0 ? translations[tLang].historyPartial : translations[tLang].historySurvey; }
-                    amountHtml = `<td style="color: #00e676; font-weight: bold; padding: 10px 5px;">${amt > 0 ? '+' : ''}${amt.toFixed(2)} R$</td>`;
+                    amountHtml = `<td style="color: ${amt >= 0 ? '#00e676' : '#ff3333'}; font-weight: bold; padding: 10px 5px;">${amt > 0 ? '+' : ''}${amt.toFixed(2)} R$</td>`;
                 }
                 rows += `<tr style="border-bottom: 1px solid #2a2e39;"><td style="color: #a0a0b0; font-size: 0.85rem; padding: 10px 5px;">📅 ${timeString}</td><td style="color: #fff; padding: 10px 5px;">📋 ${actionText}</td>${amountHtml}</tr>`;
             });
@@ -1365,6 +1401,183 @@
             });
             tbody.innerHTML = html;
         } catch (error) {}
+    }
+
+    // --- FUNKCJE LOGOWANIA, WYPŁAT I OFFERWALLI ---
+    function checkLoginStatus() {
+      const savedUser = localStorage.getItem("rbx_username");
+      if (savedUser) {
+        injectProtectedContent();
+        const activeLang = localStorage.getItem('rbx_lang') || 'en';
+        applyTranslationsToDOM(activeLang);
+
+        document.getElementById("loginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        document.getElementById("loggedUserName").innerText = savedUser;
+
+        const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "none";
+        document.getElementById("home-logged-in").style.display = "block"; 
+        document.getElementById("home-logged-out").style.display = "none";
+        
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
+            const d = document.getElementById("nav-" + id); if(d) d.style.display = "block";
+            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "block";
+        });
+
+        const fullLink = window.location.origin + "/?ref=" + savedUser; 
+        const refDisplay = document.getElementById("myRefLinkDisplay"); if(refDisplay) refDisplay.innerText = fullLink;
+
+        document.getElementById("chatWidget").style.display = "flex";
+        fetchUserPoints(); 
+        fetchInbox();
+        
+        if (socket) socket.emit('user_joined', savedUser);
+
+        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt"; 
+        const secureHashParam = md5(savedUser + "-" + appSecureHash);
+        currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
+        currentUserTheoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${theoremReachApiKey}&user_id=${encodeURIComponent(savedUser)}`;
+      } else {
+        document.getElementById("loginBtn").style.display = "inline-block"; 
+        document.getElementById("logoutBtn").style.display = "none";
+        const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "block";
+        const offerwallSection = document.getElementById("offerwallSection"); if (offerwallSection) { offerwallSection.innerHTML = ""; offerwallSection.style.display = "none"; }
+        document.getElementById("home-logged-in").style.display = "none"; 
+        document.getElementById("home-logged-out").style.display = "block";
+        
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
+            const d = document.getElementById("nav-" + id); if(d) d.style.display = "none";
+            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "none";
+        });
+        
+        document.getElementById("userPoints").innerText = "0.00"; 
+        document.getElementById("homeBigPoints").innerText = "0.00 R$"; 
+        document.getElementById("homeBigUsd").innerText = "$0.00";
+        document.getElementById("chatWidget").style.display = "none";
+        updateGlobalGoalBar();
+      }
+    }
+
+    function logoutUser() { 
+        localStorage.removeItem("rbx_username"); 
+        localStorage.removeItem("rbx_points"); 
+        localStorage.removeItem("rbx_linked_paypal"); 
+        window.location.reload(); 
+    }
+    
+    function openOfferwall(networkId, networkName) {
+      const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return openLoginModal();
+      document.getElementById('offerModalTitle').innerText = networkName; let finalUrl = "";
+      if (networkId === 'CPX') finalUrl = currentUserCpxUrl; else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl;
+      if (finalUrl) { 
+          document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
+          document.getElementById('offerModal').style.display = 'flex'; 
+          const mobNav = document.querySelector('.mobile-nav');
+          if (mobNav) mobNav.style.display = 'none';
+      }
+    }
+    
+    function closeOfferModal() { 
+        document.getElementById('offerModal').style.display = 'none'; 
+        document.getElementById('iframeContainer').innerHTML = ''; 
+        const mobNav = document.querySelector('.mobile-nav');
+        if (mobNav) mobNav.style.display = '';
+    }
+    window.onclick = function(event) { if (event.target === document.getElementById('offerModal')) closeOfferModal(); }
+
+    function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
+    function closeLoginModal() { document.getElementById("loginModal").style.display = "none"; }
+    
+    function saveUsername() {
+      const input = document.getElementById("usernameInput").value.trim();
+      if (input) { 
+          localStorage.setItem("rbx_username", input); 
+          closeLoginModal(); 
+          checkLoginStatus(); 
+          const pendingRef = localStorage.getItem('pending_ref'); 
+          if (pendingRef) autoApplyReferral(pendingRef); 
+      } else { 
+          alert("Invalid username!"); 
+      }
+    }
+    
+    function openWithdrawModal() { 
+        injectProtectedContent();
+        const activeLang = localStorage.getItem('rbx_lang') || 'en'; applyTranslationsToDOM(activeLang);
+        document.getElementById("withdrawModal").style.display = "flex"; 
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
+        document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
+        
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); 
+        const addressInput = document.getElementById("paypalEmail");
+        const lockWarning = document.getElementById("paypalLockWarning"); 
+        const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
+        
+        if (linkedAddress && linkedAddress !== "null" && linkedAddress !== "") {
+            addressInput.value = linkedAddress; 
+            addressInput.readOnly = true; 
+            addressInput.style.opacity = "0.5"; 
+            addressInput.style.cursor = "not-allowed"; 
+            lockWarning.style.display = "block"; 
+            firstTimeWarning.style.display = "none";
+        } else { 
+            addressInput.value = ""; 
+            addressInput.readOnly = false; 
+            addressInput.style.opacity = "1"; 
+            addressInput.style.cursor = "text"; 
+            lockWarning.style.display = "none"; 
+            firstTimeWarning.style.display = "block"; 
+        }
+    }
+
+    function setMaxPoints() {
+        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
+        document.getElementById("withdrawPoints").value = safePoints.toFixed(2); calculateUSD();
+    }
+    
+    function closeWithdrawModal() { 
+        document.getElementById("withdrawModal").style.display = "none"; 
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("paypalEmail");
+        if (addressInput && (!linkedAddress || linkedAddress === "null" || linkedAddress === "")) { addressInput.value = ""; }
+        const wp = document.getElementById("withdrawPoints"); if (wp) wp.value = ""; const ur = document.getElementById("usdResult"); if (ur) ur.innerText = "$0.00";
+    }
+    
+    function calculateUSD() {
+        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0; const usdValue = points * 0.025; document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
+    }
+    
+    async function submitWithdraw() {
+        const address = document.getElementById("paypalEmail").value.trim(); 
+        const points = parseFloat(document.getElementById("withdrawPoints").value);
+        const username = localStorage.getItem("rbx_username");
+        
+        if (!address || !address.includes("@")) return alert("Nieprawidłowy adres email PayPal.");
+        if (!points || points <= 0) return alert("Nieprawidłowa kwota R$.");
+        
+        try {
+            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: 'PayPal', payoutAddress: address, points }) });
+            if (!response.ok) { const data = await response.json().catch(() => null); if (data && data.error) return alert("❌ " + data.error); alert("❌ Server Error!"); return; }
+            const data = await response.json();
+            if (data.error) alert("Error: " + data.error);
+            else {
+                alert(`Sukces! Zlecono wypłatę: $${data.usd.toFixed(2)}.`);
+                const safeNewBal = Math.floor(data.newBalance * 100) / 100; document.getElementById("userPoints").innerText = safeNewBal.toFixed(2);
+                const homeBigPointsEl = document.getElementById("homeBigPoints"); if(homeBigPointsEl) homeBigPointsEl.innerText = safeNewBal.toFixed(2) + " R$";
+                const homeBigUsdEl = document.getElementById("homeBigUsd"); const usdValue = safeNewBal * 0.025; if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
+                localStorage.setItem("rbx_points", data.newBalance); localStorage.setItem("rbx_linked_paypal", address.toLowerCase());
+                closeWithdrawModal(); fetchLatestPayouts(); 
+            }
+        } catch (error) { alert("Connection Error"); }
+    }
+
+    function startSocialTask(platform, url) {
+        window.open(url, '_blank');
+        const lang = document.getElementById('langSelect').value || 'en';
+        let msg = "Thank you for your support!";
+        if(lang === 'pl') msg = "Dzięki za wsparcie!";
+        if(lang === 'de') msg = "Danke für deine Unterstützung!";
+        if(lang === 'ru') msg = "Спасибо за поддержку!";
+        alert(msg);
     }
 
     // --- SKRYPTY PANELU ADMINA ---
@@ -1421,7 +1634,7 @@
                 html += `
                 <tr style="border-bottom: 1px solid #2a2e39;">
                     <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
-                    <td style="color: #a0a0b0;">${p.payoutMethod}: ${p.payoutAddress || p.paypalEmail}</td>
+                    <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${p.payoutAddress || p.paypalEmail}</td>
                     <td style="color: #ffb703; font-weight: bold;">${amount} R$</td>
                     <td>
                         <button style="background: #00e676; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 5px;" onclick="resolvePayout('${p._id}', 'complete', this)">Wysłane</button>
@@ -1455,7 +1668,7 @@
                 html += `
                 <tr style="border-bottom: 1px solid #2a2e39;">
                     <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
-                    <td style="color: #a0a0b0;">${p.payoutMethod}: ${p.payoutAddress || p.paypalEmail}</td>
+                    <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${p.payoutAddress || p.paypalEmail}</td>
                     <td style="color: #ffb703; font-weight: bold;">${amount} R$</td>
                     <td style="color: #888; font-size: 0.85rem;">${timeString}</td>
                     <td>
@@ -1485,61 +1698,87 @@
                     document.getElementById('adminPendingList').style.display = 'none';
                     showAdminPendingPayouts();
                 }
-                const selectedUser = document.getElementById('adminSearchUser').value;
+                const selectedUser = document.getElementById('adminSearchUser').value.trim();
                 if (selectedUser) fetchUserDetails(selectedUser);
             }
         } catch (e) { alert("Błąd połączenia."); btnElement.disabled = false; }
     }
 
     async function searchAdminUsers() {
-        const q = document.getElementById('adminSearchUser').value;
+        const q = document.getElementById('adminSearchUser').value.trim();
         const dropdown = document.getElementById('adminUserDropdown');
-        if (q.length < 1) { dropdown.style.display = 'none'; return; }
+        if (q.length < 1) { 
+            dropdown.style.display = 'none'; 
+            document.getElementById('adminSelectedUserDetails').style.display = 'none';
+            return; 
+        }
         const token = localStorage.getItem('rbx_admin_token');
-        const res = await fetch(`/api/admin/users/search?q=${q}`, { headers: { 'Authorization': token }});
-        const users = await res.json();
-        dropdown.innerHTML = '';
-        if (users.length > 0) {
-            users.forEach(u => {
-                const li = document.createElement('li'); li.style.padding = '10px 15px'; li.style.cursor = 'pointer'; li.style.borderBottom = '1px solid #333'; li.style.color = '#fff'; li.innerText = u;
-                li.onmouseover = () => li.style.background = '#252a34'; li.onmouseout = () => li.style.background = 'transparent';
-                li.onclick = () => {
-                    document.getElementById('adminSearchUser').value = u; dropdown.style.display = 'none';
-                    fetchUserDetails(u);
-                };
-                dropdown.appendChild(li);
-            });
-            dropdown.style.display = 'block';
-        } else { dropdown.style.display = 'none'; }
+        try {
+            const res = await fetch(`/api/admin/users/search?q=${encodeURIComponent(q)}`, { headers: { 'Authorization': token }});
+            const users = await res.json();
+            dropdown.innerHTML = '';
+            if (users.length > 0) {
+                users.forEach(u => {
+                    const li = document.createElement('li');
+                    li.style.padding = '10px 15px';
+                    li.style.cursor = 'pointer';
+                    li.style.borderBottom = '1px solid #333';
+                    li.style.color = '#fff';
+                    li.innerText = u;
+                    li.onmouseover = () => li.style.background = '#252a34';
+                    li.onmouseout = () => li.style.background = 'transparent';
+                    li.onclick = () => {
+                        document.getElementById('adminSearchUser').value = u;
+                        dropdown.style.display = 'none';
+                        fetchUserDetails(u);
+                    };
+                    dropdown.appendChild(li);
+                });
+                dropdown.style.display = 'block';
+
+                // Jeśli wpisano dokładną nazwę gracza z listy, od razu pokaż jego szczegóły
+                const exactMatch = users.find(u => u.toLowerCase() === q.toLowerCase());
+                if (exactMatch) {
+                    fetchUserDetails(exactMatch);
+                }
+            } else {
+                dropdown.style.display = 'none';
+                document.getElementById('adminSelectedUserDetails').style.display = 'none';
+            }
+        } catch (e) {}
     }
 
     async function fetchUserDetails(username) {
         if (!username) { document.getElementById('adminSelectedUserDetails').style.display = 'none'; return; }
         const token = localStorage.getItem('rbx_admin_token');
         try {
-            const res = await fetch(`/api/admin/user-details/${username}`, { headers: { 'Authorization': token }});
+            const res = await fetch(`/api/admin/user-details/${encodeURIComponent(username.trim())}`, { headers: { 'Authorization': token }});
             const data = await res.json();
             if (data.error) {
                 document.getElementById('adminSelectedUserDetails').style.display = 'none';
             } else {
                 document.getElementById('adminSelectedUsername').innerText = data.username;
                 document.getElementById('adminSelectedPoints').innerText = (data.points || 0).toFixed(2) + ' R$';
-                document.getElementById('adminSelectedPending').innerText = (data.pendingSum || 0).toFixed(2) + ' R$ (Pokaż wnioski)';
+                document.getElementById('adminSelectedPending').innerText = (data.pendingSum || 0).toFixed(2) + ' R$ (Kliknij, aby pokazać wnioski)';
                 
                 const tbody = document.getElementById('adminSelectedUserPayoutsBody');
-                if (data.pendingRequests.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#00e676;">Brak oczekujących wypłat.</td></tr>';
+                if (!data.pendingRequests || data.pendingRequests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#00e676;">Brak oczekujących wypłat tego gracza.</td></tr>';
                 } else {
-                    tbody.innerHTML = data.pendingRequests.map(p => `
+                    tbody.innerHTML = data.pendingRequests.map(p => {
+                        const d = new Date(p.createdAt);
+                        const dStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        return `
                         <tr style="border-bottom: 1px solid #2a2e39;">
-                            <td style="color: #a0a0b0;">${p.payoutMethod}: ${p.payoutAddress || p.paypalEmail}</td>
+                            <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${p.payoutAddress || p.paypalEmail}</td>
                             <td style="color: #ffb703; font-weight: bold;">${(parseFloat(p.pointsWithdrawn) || 0).toFixed(2)} R$</td>
+                            <td style="color: #888; font-size: 0.85rem;">${dStr}</td>
                             <td>
-                                <button style="background: #00e676; color: #000; border: none; padding: 5px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem; margin-right: 5px;" onclick="resolvePayout('${p._id}', 'complete', this)">Wysłane</button>
-                                <button style="background: #ff3333; color: #fff; border: none; padding: 5px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;" onclick="resolvePayout('${p._id}', 'reject', this)">Odrzuć</button>
+                                <button style="background: #00e676; color: #000; border: none; padding: 5px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem; margin-right: 5px;" onclick="resolvePayout('${p._id}', 'complete', this)">Wysłane</button>
+                                <button style="background: #ff3333; color: #fff; border: none; padding: 5px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;" onclick="resolvePayout('${p._id}', 'reject', this)">Odrzuć</button>
                             </td>
-                        </tr>
-                    `).join('');
+                        </tr>`;
+                    }).join('');
                 }
                 document.getElementById('adminSelectedUserDetails').style.display = 'block';
             }
