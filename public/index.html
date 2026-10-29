@@ -793,9 +793,10 @@
 
         const withdrawModal = document.getElementById("withdrawModal");
         if (withdrawModal && withdrawModal.innerHTML.trim() === "") {
+            const pName = "Pay" + "Pal";
             withdrawModal.innerHTML = `
               <div class="modal-content">
-                <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Claim Reward</h3>
+                <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Claim Reward (${pName})</h3>
                 <p style="color: #a0a0b0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 R$ Point = $0.025 USD</p>
                 <p style="color: #00e676; font-size: 1.05rem; font-weight: bold; margin-top: 15px; margin-bottom: 10px;">
                     <span data-lang="currentBalance">Current Balance:</span> <span id="modalCurrentPoints">0.00 R$</span>
@@ -803,13 +804,7 @@
                 <p id="paypalFirstTimeWarning" style="color: #ffb703; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold; background: rgba(255, 183, 3, 0.1); padding: 10px; border-radius: 6px; border: 1px solid #ffb703;" data-lang="paypalWarningInfo">⚠️ Note: This payout address will be permanently linked to your account for security.</p>
                 <p id="paypalLockWarning" style="color: #00e676; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold;" data-lang="paypalLocked">🔒 Payout address is securely locked to this account.</p>
                 
-                <select id="payoutMethod" onchange="updatePayoutPlaceholder()" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box; cursor: pointer; font-weight: bold;">
-                    <option value="BLIK">📱 Przelew na Telefon (BLIK)</option>
-                    <option value="Revolut">💳 Revolut (@Tag / Numer)</option>
-                    <option value="PayPal">📧 PayPal (Adres Email)</option>
-                </select>
-
-                <input type="text" id="payoutAddress" placeholder="Wpisz swój numer telefonu BLIK..." style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
+                <input type="email" id="paypalEmail" placeholder="${pName} Email" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
                 
                 <div class="withdraw-input-row" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
                     <input type="number" id="withdrawPoints" placeholder="R$ Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; min-width: 0; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box;">
@@ -820,21 +815,6 @@
                 <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()" data-lang="btnCancel">Cancel</button>
               </div>
             `;
-        }
-    }
-
-    function updatePayoutPlaceholder() {
-        const method = document.getElementById("payoutMethod").value;
-        const addressInput = document.getElementById("payoutAddress");
-        if (method === "BLIK") {
-            addressInput.placeholder = "Wpisz numer telefonu (np. +48 123 456 789)...";
-            addressInput.type = "text";
-        } else if (method === "Revolut") {
-            addressInput.placeholder = "Wpisz Revolut @Tag lub numer...";
-            addressInput.type = "text";
-        } else {
-            addressInput.placeholder = "Wpisz adres e-mail z PayPal...";
-            addressInput.type = "email";
         }
     }
 
@@ -1642,8 +1622,7 @@
         document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
         
         const linkedAddress = localStorage.getItem("rbx_linked_paypal"); 
-        const addressInput = document.getElementById("payoutAddress");
-        const methodSelect = document.getElementById("payoutMethod");
+        const addressInput = document.getElementById("paypalEmail");
         const lockWarning = document.getElementById("paypalLockWarning"); 
         const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
         
@@ -1652,8 +1631,6 @@
             addressInput.readOnly = true; 
             addressInput.style.opacity = "0.5"; 
             addressInput.style.cursor = "not-allowed"; 
-            methodSelect.disabled = true;
-            methodSelect.style.opacity = "0.5";
             lockWarning.style.display = "block"; 
             firstTimeWarning.style.display = "none";
         } else { 
@@ -1661,8 +1638,6 @@
             addressInput.readOnly = false; 
             addressInput.style.opacity = "1"; 
             addressInput.style.cursor = "text"; 
-            methodSelect.disabled = false;
-            methodSelect.style.opacity = "1";
             lockWarning.style.display = "none"; 
             firstTimeWarning.style.display = "block"; 
         }
@@ -1675,7 +1650,7 @@
     
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
-        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("payoutAddress");
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("paypalEmail");
         if (addressInput && (!linkedAddress || linkedAddress === "null" || linkedAddress === "")) { addressInput.value = ""; }
         const wp = document.getElementById("withdrawPoints"); if (wp) wp.value = ""; const ur = document.getElementById("usdResult"); if (ur) ur.innerText = "$0.00";
     }
@@ -1685,17 +1660,15 @@
     }
     
     async function submitWithdraw() {
-        const method = document.getElementById("payoutMethod").value;
-        const address = document.getElementById("payoutAddress").value.trim(); 
+        const address = document.getElementById("paypalEmail").value.trim(); 
         const points = parseFloat(document.getElementById("withdrawPoints").value);
         const username = localStorage.getItem("rbx_username");
         
-        if (!address || address.length < 3) return alert("Podaj prawidłowy adres / numer telefonu.");
-        if (method === "PayPal" && !address.includes("@")) return alert("Nieprawidłowy adres email PayPal.");
+        if (!address || !address.includes("@")) return alert("Nieprawidłowy adres email PayPal.");
         if (!points || points <= 0) return alert("Nieprawidłowa kwota R$.");
         
         try {
-            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: method, payoutAddress: address, points }) });
+            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: 'PayPal', payoutAddress: address, points }) });
             if (!response.ok) { const data = await response.json().catch(() => null); if (data && data.error) return alert("❌ " + data.error); alert("❌ Server Error!"); return; }
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);

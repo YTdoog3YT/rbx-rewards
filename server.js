@@ -141,7 +141,7 @@ const UserSchema = new mongoose.Schema({
     referredUsers: { type: [String], default: [] },
     redeemedPromoCodes: { type: [{ code: String, reward: Number, date: { type: Date, default: Date.now } }], default: [] },
     inbox: { type: [{ message: String, date: { type: Date, default: Date.now }, read: { type: Boolean, default: false } }], default: [] },
-    linkedPayPal: { type: String, default: null }, // używane uniwersalnie jako adres wypłaty (BLIK, Revolut, PayPal)
+    linkedPayPal: { type: String, default: null },
     xp: { type: Number, default: 0 },
     claimedLevels: { type: [Number], default: [] },
     dailyEarned: { type: Number, default: 0 },
@@ -155,16 +155,7 @@ const User = mongoose.model('User', UserSchema);
 const EarningSchema = new mongoose.Schema({ username: String, amount: Number, source: { type: String, default: 'Survey' }, details: { type: String, default: '' }, createdAt: { type: Date, default: Date.now } });
 const Earning = mongoose.model('Earning', EarningSchema);
 
-const PayoutSchema = new mongoose.Schema({ 
-    username: String, 
-    payoutMethod: { type: String, default: 'PayPal' }, 
-    payoutAddress: String, 
-    paypalEmail: String, // Zachowane w bazie dla starszych logów
-    pointsWithdrawn: Number, 
-    usdAmount: Number, 
-    status: { type: String, default: 'Pending Manual' }, 
-    createdAt: { type: Date, default: Date.now } 
-});
+const PayoutSchema = new mongoose.Schema({ username: String, paypalEmail: String, pointsWithdrawn: Number, usdAmount: Number, status: { type: String, default: 'Completed' }, createdAt: { type: Date, default: Date.now } });
 const Payout = mongoose.model('Payout', PayoutSchema);
 
 const PromoCodeSchema = new mongoose.Schema({ code: { type: String, unique: true, uppercase: true }, reward: Number, maxUses: Number, currentUses: { type: Number, default: 0 }, usedBy: [String] });
@@ -201,7 +192,6 @@ async function processReferralBonus(username, amountEarned) {
                 referrer.points += bonus; 
                 allocateGoalProgress(referrer, bonus);
                 await referrer.save();
-                // Zapisujemy KTO wykonał ofertę (szef to widzi w historii)
                 await new Earning({ username: referrer.username, amount: bonus, source: 'Referral', details: username }).save();
             }
         }
@@ -343,7 +333,7 @@ app.get('/api/user-stats/:username', async (req, res) => {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // POPRAWKA: Dynamiczne liczenie DZIENNYCH ZAROBKÓW DO KOŁA. Zlicza TYLKO oferty, z pominięciem poleceń!
+        // POPRAWKA DO KOŁA FORTUNY: Zlicza TYLKO zarobki z ankiet, ignoruje wpisy z poleceń
         const dailyEarnedAggr = await Earning.aggregate([
             { $match: { 
                 username: new RegExp(`^${req.params.username}$`, 'i'), 
@@ -400,7 +390,6 @@ app.post('/api/claim-level', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// POPRAWKA: Koło fortuny akceptuje TYLKO zarobki z ankiet, ignorując referrals.
 app.post('/api/spin-wheel', async (req, res) => {
     const { username } = req.body;
     try {
@@ -410,6 +399,7 @@ app.post('/api/spin-wheel', async (req, res) => {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
+        // POPRAWKA DO KOŁA FORTUNY: Zabezpieczenie nałożone podczas losowania (ignoruje polecenia)
         const dailyEarnedAggr = await Earning.aggregate([
             { $match: { 
                 username: new RegExp(`^${username}$`, 'i'), 
@@ -529,33 +519,19 @@ app.post('/api/support-ticket', async (req, res) => {
 });
 
 app.post('/api/withdraw', async (req, res) => {
-    const { username, payoutMethod, payoutAddress, points } = req.body;
+    // Odczytuje e-mail, zabezpieczając się przed różnymi wersjami HTML (paypalEmail albo payoutAddress)
+    const paypalEmail = req.body.paypalEmail || req.body.payoutAddress; 
+    const { username, points } = req.body;
     try {
         const user = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
         if (!user || user.points < points) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-        
         if (user.linkedPayPal) { 
-            if (user.linkedPayPal.toLowerCase() !== payoutAddress.toLowerCase()) {
-                return res.status(400).json({ error: `Konto jest na stałe przypisane do adresu wypłaty: ${user.linkedPayPal}` }); 
-            }
-        } else { 
-            user.linkedPayPal = payoutAddress.toLowerCase(); 
-        }
-        
+            if (user.linkedPayPal.toLowerCase() !== paypalEmail.toLowerCase()) return res.status(400).json({ error: `Konto przypisane do adresu: ${user.linkedPayPal}` }); 
+        } 
+        else { user.linkedPayPal = paypalEmail.toLowerCase(); }
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
-        user.points -= points; 
-        await user.save();
-        
-        const newPayout = await new Payout({ 
-            username: user.username, 
-            payoutMethod: payoutMethod || 'PayPal',
-            payoutAddress: payoutAddress,
-            paypalEmail: payoutAddress.toLowerCase(), // Dla wstecznej kompatybilności bazy
-            pointsWithdrawn: points, 
-            usdAmount, 
-            status: 'Pending Manual' 
-        }).save();
-        
+        user.points -= points; await user.save();
+        const newPayout = await new Payout({ username: user.username, paypalEmail: paypalEmail.toLowerCase(), pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save();
         discordBot.sendPayoutAlert(newPayout);
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
