@@ -141,7 +141,7 @@ const UserSchema = new mongoose.Schema({
     referredUsers: { type: [String], default: [] },
     redeemedPromoCodes: { type: [{ code: String, reward: Number, date: { type: Date, default: Date.now } }], default: [] },
     inbox: { type: [{ message: String, date: { type: Date, default: Date.now }, read: { type: Boolean, default: false } }], default: [] },
-    linkedPayPal: { type: String, default: null },
+    linkedPayPal: { type: String, default: null }, // używane uniwersalnie jako adres wypłaty (BLIK, Revolut, PayPal)
     xp: { type: Number, default: 0 },
     claimedLevels: { type: [Number], default: [] },
     dailyEarned: { type: Number, default: 0 },
@@ -155,7 +155,16 @@ const User = mongoose.model('User', UserSchema);
 const EarningSchema = new mongoose.Schema({ username: String, amount: Number, source: { type: String, default: 'Survey' }, details: { type: String, default: '' }, createdAt: { type: Date, default: Date.now } });
 const Earning = mongoose.model('Earning', EarningSchema);
 
-const PayoutSchema = new mongoose.Schema({ username: String, paypalEmail: String, pointsWithdrawn: Number, usdAmount: Number, status: { type: String, default: 'Completed' }, createdAt: { type: Date, default: Date.now } });
+const PayoutSchema = new mongoose.Schema({ 
+    username: String, 
+    payoutMethod: { type: String, default: 'PayPal' }, 
+    payoutAddress: String, 
+    paypalEmail: String, // Zachowane w bazie dla starszych logów
+    pointsWithdrawn: Number, 
+    usdAmount: Number, 
+    status: { type: String, default: 'Pending Manual' }, 
+    createdAt: { type: Date, default: Date.now } 
+});
 const Payout = mongoose.model('Payout', PayoutSchema);
 
 const PromoCodeSchema = new mongoose.Schema({ code: { type: String, unique: true, uppercase: true }, reward: Number, maxUses: Number, currentUses: { type: Number, default: 0 }, usedBy: [String] });
@@ -192,6 +201,7 @@ async function processReferralBonus(username, amountEarned) {
                 referrer.points += bonus; 
                 allocateGoalProgress(referrer, bonus);
                 await referrer.save();
+                // Zapisujemy KTO wykonał ofertę (szef to widzi w historii)
                 await new Earning({ username: referrer.username, amount: bonus, source: 'Referral', details: username }).save();
             }
         }
@@ -330,10 +340,20 @@ app.get('/api/user-stats/:username', async (req, res) => {
         const user = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
         if (!user) return res.json({ xp: 0, dailyEarned: 0, claimedLevels: [], lastWheelSpin: null, wheelStreak: 0 });
         
-        const today = new Date().toISOString().split('T')[0];
-        const actualDailyEarned = (user.lastEarnedDate === today) ? user.dailyEarned : 0;
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
 
-        // Jeśli minęło ponad 48h (24h blokady + 24h na odebranie), streak wygasł
+        // POPRAWKA: Dynamiczne liczenie DZIENNYCH ZAROBKÓW DO KOŁA. Zlicza TYLKO oferty, z pominięciem poleceń!
+        const dailyEarnedAggr = await Earning.aggregate([
+            { $match: { 
+                username: new RegExp(`^${req.params.username}$`, 'i'), 
+                createdAt: { $gte: startOfDay },
+                source: { $in: ['Survey'] } 
+            }},
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        const actualDailyEarned = dailyEarnedAggr.length > 0 ? dailyEarnedAggr[0].total : 0;
+
         let currentStreak = user.wheelStreak || 0;
         if (user.lastWheelSpin) {
             const diffHours = (new Date() - new Date(user.lastWheelSpin)) / (1000 * 60 * 60);
@@ -346,7 +366,7 @@ app.get('/api/user-stats/:username', async (req, res) => {
 
         res.json({ 
             xp: user.xp || 0, 
-            dailyEarned: actualDailyEarned || 0, 
+            dailyEarned: actualDailyEarned, 
             claimedLevels: user.claimedLevels || [], 
             lastWheelSpin: user.lastWheelSpin, 
             wheelStreak: currentStreak 
@@ -380,15 +400,28 @@ app.post('/api/claim-level', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-// KOŁO FORTUNY: 24h blokady + 24h okienka na odebranie nagrody (razem 48h na utrzymanie streaka)
+// POPRAWKA: Koło fortuny akceptuje TYLKO zarobki z ankiet, ignorując referrals.
 app.post('/api/spin-wheel', async (req, res) => {
     const { username } = req.body;
     try {
         let user = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
         if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
-        const today = new Date().toISOString().split('T')[0];
-        if (user.lastEarnedDate !== today || user.dailyEarned < 4.5) {
-            return res.status(400).json({ error: 'Zarób dzisiaj minimum 4.50 R$ z ankiet, aby zakręcić kołem!' });
+        
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const dailyEarnedAggr = await Earning.aggregate([
+            { $match: { 
+                username: new RegExp(`^${username}$`, 'i'), 
+                createdAt: { $gte: startOfDay },
+                source: { $in: ['Survey'] } 
+            }},
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        const actualDailyEarned = dailyEarnedAggr.length > 0 ? dailyEarnedAggr[0].total : 0;
+
+        if (actualDailyEarned < 4.5) {
+            return res.status(400).json({ error: 'Zarób dzisiaj minimum 4.50 R$ (Oferty/Ankiety), aby zakręcić kołem!' });
         }
 
         const now = new Date();
@@ -397,7 +430,6 @@ app.post('/api/spin-wheel', async (req, res) => {
             if (diffHours < 24) {
                 return res.status(400).json({ error: 'Koło jest jeszcze zablokowane (trwa 24h blokady)!' });
             }
-            // Między 24h a 48h (czyli w trakcie 24-godzinnego okienka na odebranie)
             if (diffHours <= 48) {
                 user.wheelStreak = (user.wheelStreak || 0) + 1;
             } else {
@@ -497,15 +529,33 @@ app.post('/api/support-ticket', async (req, res) => {
 });
 
 app.post('/api/withdraw', async (req, res) => {
-    const { username, paypalEmail, points } = req.body;
+    const { username, payoutMethod, payoutAddress, points } = req.body;
     try {
         const user = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
         if (!user || user.points < points) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-        if (user.linkedPayPal) { if (user.linkedPayPal.toLowerCase() !== paypalEmail.toLowerCase()) return res.status(400).json({ error: `Konto przypisane do adresu: ${user.linkedPayPal}` }); } 
-        else { user.linkedPayPal = paypalEmail.toLowerCase(); }
+        
+        if (user.linkedPayPal) { 
+            if (user.linkedPayPal.toLowerCase() !== payoutAddress.toLowerCase()) {
+                return res.status(400).json({ error: `Konto jest na stałe przypisane do adresu wypłaty: ${user.linkedPayPal}` }); 
+            }
+        } else { 
+            user.linkedPayPal = payoutAddress.toLowerCase(); 
+        }
+        
         const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
-        user.points -= points; await user.save();
-        const newPayout = await new Payout({ username: user.username, paypalEmail: paypalEmail.toLowerCase(), pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save();
+        user.points -= points; 
+        await user.save();
+        
+        const newPayout = await new Payout({ 
+            username: user.username, 
+            payoutMethod: payoutMethod || 'PayPal',
+            payoutAddress: payoutAddress,
+            paypalEmail: payoutAddress.toLowerCase(), // Dla wstecznej kompatybilności bazy
+            pointsWithdrawn: points, 
+            usdAmount, 
+            status: 'Pending Manual' 
+        }).save();
+        
         discordBot.sendPayoutAlert(newPayout);
         res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }

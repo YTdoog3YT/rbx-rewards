@@ -50,11 +50,9 @@
     .btn-action:hover { background: #00c853; }
     .btn-action:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    /* GLOBALNY PASEK CELU */
     .global-goal-bar { background: #14171d; border: 1px solid #333947; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: none; text-align: left; }
     .global-goal-bar.active { display: block; }
     
-    /* SYSTEM POZIOMÓW I KOŁO FORTUNY */
     .wheel-container { display: flex; flex-direction: column; align-items: center; background: #14171d; border: 1px solid #333947; padding: 25px; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
     .wheel-stats { display: flex; gap: 20px; margin-bottom: 15px; width: 100%; justify-content: space-around; flex-wrap: wrap; }
     .wheel-stat-box { background: #1e1e26; padding: 15px; border-radius: 8px; border: 1px solid #2a2e39; flex: 1; min-width: 120px; text-align: center; }
@@ -83,7 +81,6 @@
     .progress-bar-fill { height: 100%; background: #00e676; width: 0%; transition: width 0.5s ease-in-out; }
     .level-reward { font-size: 1.2rem; font-weight: bold; color: #ffb703; background: rgba(255, 183, 3, 0.1); padding: 8px 15px; border-radius: 8px; border: 1px solid #ffb703; white-space: nowrap; }
 
-    /* SYSTEM CELÓW */
     .goal-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
     .goal-tab { flex: 1; padding: 10px; background: #14171d; border: 1px solid #333947; color: #a0a0b0; cursor: pointer; border-radius: 8px; font-weight: bold; text-align: center; }
     .goal-tab.active { background: #00e676; color: #000; border-color: #00e676; }
@@ -99,7 +96,6 @@
     .status-completed { background: rgba(255, 183, 3, 0.15); color: #ffb703; }
     .status-canceled { background: rgba(255, 51, 51, 0.15); color: #ff3333; }
 
-    /* RESZTA STYLÓW */
     .hero-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 55px 20px; background: linear-gradient(180deg, #181b22 0%, #0f1115 100%); border: 1px solid #2a2e39; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0, 230, 118, 0.05); }
     .hero-title { font-size: 2.6rem; font-weight: 900; margin-bottom: 15px; color: #fff; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
     .hero-title span { color: #00e676; }
@@ -145,7 +141,7 @@
     .modal { background: rgba(0,0,0,0.95); } 
     .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 2000; } 
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
-    .modal-content input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; }
+    .modal-content input, .modal-content select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px; }
     .modal-content button { width: 100%; } 
     
     .offerwalls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; margin-bottom: 20px; }
@@ -280,10 +276,11 @@
             <a id="nav-wheel" class="nav-item" onclick="switchTab('wheel')" style="display: none;"><span data-lang="navWheel">🎡 Wheel of Fortune</span></a>
             <a id="nav-levels" class="nav-item" onclick="switchTab('levels')" style="display: none;"><span data-lang="navLevels">⭐ Levels</span></a>
             <a id="nav-leaderboard" class="nav-item" onclick="switchTab('leaderboard')"><span data-lang="navLeaderboard">🏆 Leaderboard</span></a>
-            <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')"><span data-lang="navRef">👥 Referrals</span></a>
-            <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')"><span data-lang="navPromo">🎫 Promo Codes</span></a>
-            <a id="nav-support" class="nav-item" onclick="switchTab('support')"><span data-lang="navSupport">🛠️ Support</span></a>
             
+            <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')" style="display: none;"><span data-lang="navRef">👥 Referrals</span></a>
+            <a id="nav-promocodes" class="nav-item" onclick="switchTab('promocodes')" style="display: none;"><span data-lang="navPromo">🎫 Promo Codes</span></a>
+            
+            <a id="nav-support" class="nav-item" onclick="switchTab('support')"><span data-lang="navSupport">🛠️ Support</span></a>
             <a id="nav-admin" class="nav-item" onclick="switchTab('admin')" style="display: none; color: #ff0055;"><span data-lang="navAdmin">⚙️ Admin</span></a>
         </nav>
         <div class="adsense-sidebar" id="sidebarAdContainer"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="3674362524" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
@@ -306,7 +303,6 @@
         </div>
       </header>
 
-      <!-- GLOBALNY PASEK CELU (WIDOCZNY NA KAŻDEJ ZAKŁADCE PO ZALOGOWANIU, GDY JEST AKTYWNY CEL) -->
       <div id="globalGoalBar" class="global-goal-bar">
           <h4 style="color: #fff; margin-bottom: 8px; font-size: 1.1rem;"><span data-lang="activeGoal">Active Goal:</span> <span id="globalGoalTitle" style="color: #00e676;"></span></h4>
           <div class="progress-bar-bg" style="height: 15px; border-radius: 20px;">
@@ -397,9 +393,9 @@
               <div class="adsense-banner" style="margin-bottom: 25px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
 
               <h3 style="color: #fff; margin-top: 10px; text-align: left;" data-lang="homeSocialTasks">Social Tasks</h3>
-              <p style="color: #a0a0a0; text-align: left; font-size: 0.9rem;" data-lang="homeSocialTasksDesc">Follow our channels to get bonus R$ points! (Verification coming in Stage 2)</p>
+              <p style="color: #a0a0a0; text-align: left; font-size: 0.9rem;" data-lang="homeSocialTasksDesc">Follow our channels to get bonus R$ points!</p>
               
-<div class="social-tasks-grid">
+              <div class="social-tasks-grid">
                   <div class="social-task-card task-discord" onclick="startSocialTask('discord', 'https://discord.gg/49EwqEsFTJ')">
                       <div class="social-task-icon"><svg viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></div>
                       <div class="social-task-info"><h4>Join Discord</h4><p>+1.00 R$</p></div>
@@ -417,6 +413,7 @@
                       <div class="social-task-info"><h4>Follow Kick</h4><p>+1.00 R$</p></div>
                   </div>
               </div>
+          </div>
       </main>
 
       <!-- ZAKŁADKA EARN -->
@@ -484,7 +481,7 @@
           </div>
       </main>
 
-      <!-- OSOBNA ZAKŁADKA KOŁO FORTUNY (SPINNER CS:GO) -->
+      <!-- OSOBNA ZAKŁADKA KOŁO FORTUNY -->
       <main id="tab-wheel" style="display: none;">
         <h2 class="section-title" data-lang="wheelTitle">🎡 Wheel of Fortune</h2>
         
@@ -564,7 +561,7 @@
         <h2 class="section-title" data-lang="refTitle">Invite Friends & Get +15% Bonus</h2>
         <div class="content-box">
           <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="refInfo">Your Referral Info</h3>
-          <p style="color: #a0a0a0; margin-bottom: 15px;" data-lang="refDesc">Share your custom link with friends! You will receive a 15% lifetime bonus from all quest points they collect!</p>
+          <p style="color: #a0a0b0; margin-bottom: 15px;" data-lang="refDesc">Share your custom link with friends! You will receive a 15% lifetime bonus from all quest points they collect!</p>
           <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
               <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-word;">Log in first</span>
               <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
@@ -614,6 +611,7 @@
       <!-- ZAKŁADKA SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
+        <p style="color: #a0a0b0; margin-bottom: 15px;">Direct email: support@rbx-rewards.com</p>
         <div class="content-box">
           <input type="text" id="ticketContactInput" data-lang-placeholder="phSupportContact" placeholder="Your Discord / Email (optional)" style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
           <textarea id="ticketMessageInput" rows="5" data-lang-placeholder="phSupport" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
@@ -623,7 +621,7 @@
 
       <main id="tab-admin" style="display: none;">
         <h2 class="section-title" data-lang="navAdmin">⚙️ Admin</h2>
-        <div class="content-box"><p style="color: #a0a0a0;">Admin panel active.</p></div>
+        <div class="content-box"><p style="color: #a0a0b0;">Admin panel active.</p></div>
       </main>
 
       <footer>
@@ -637,6 +635,7 @@
     </div>
   </div>
 
+  <!-- CZAT -->
   <div id="chatWidget" class="chat-widget minimized">
       <div class="chat-header" onclick="toggleChat()">
           <span data-lang="globalChat">🌍 Global Chat</span>
@@ -722,7 +721,8 @@
             step2Badge: "STEP 2", step2Title: "🚀 Complete Quests", step2Desc: "Browse available community tasks, test new mobile & PC games, or share your opinion in partner quizzes.", step3Badge: "STEP 3", step3Title: "💎 Claim R$ Rewards", step3Desc: "Points are credited to your profile balance automatically. Exchange your collected R$ points anytime!",
             guidesMainTitle: "📚 Roblox Community Guides", g1Meta: "Performance Guide • Updated 2026", g1Title: "How to Optimize Roblox for Maximum FPS and Low Ping in 2026", g1P1: "Experiencing frame drops or network lag during intense Roblox sessions can ruin your gameplay. Optimizing your client and system configuration can drastically boost your frames per second (FPS) and stabilize your connection.", g1Sub1: "1. In-Game Graphics & Rendering Adjustments", g1P2: "Start by opening the Roblox in-game menu (press ESC) and switching your Graphics Mode from Automatic to Manual. Lowering the graphics quality slider disables heavy shaders.", g2Meta: "Security & Safety • Essential Reading", g2Title: "Complete Guide to Roblox Account Security", g2P1: "As your Roblox profile grows, keeping your account secure becomes critical. Legitimate platforms never need your password.", g2Sub2: "2. Enabling Two-Step Verification (2FA)", g2P3: "Always activate Two-Step Verification in your official Roblox Account Settings using a dedicated Authenticator App rather than SMS or email alone.",
             cookieText: "We use cookies to ensure you get the best experience on our website. Read our", cookieLink: "Privacy Policy", cookieBtn: "Accept & Close",
-            homeDashboard: "Your Dashboard", homeCurrentBalance: "Current Balance", btnGoEarn: "🚀 Start Quests", btnWithdrawNow: "💸 Claim Reward", homeSocialTasks: "Social Tasks", homeSocialTasksDesc: "Follow our channels to get bonus R$ points! (Verification coming in Stage 2)", ldToday: "Today", ld7Days: "Last 7 Days", ld30Days: "Last 30 Days", ldYear: "Last Year", ldAllTime: "All Time", liveEarners: "🔥 Live Activity", earnTitle: "Complete Quests & Collect R$!", loadingStats: "Loading...", emptyEarners: "Be the first to complete a quest today!", startEarning: "Start Completing Quests for R$! 💎", startDesc: "Enter your Roblox username below so we know where to assign your quest points. No passwords required.", btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose a Quest Wall", offerDesc: "Select a partner wall below to start collecting R$ points.", cpxDesc: "High-reward partner quizzes", trDesc: "Fast & easy interactive tasks", recentCashouts: "🎉 Recent Reward Claims", loadingCashouts: "Loading recent claims...", emptyCashouts: "No claims yet!", tableUser: "User", tableAmount: "Amount", tableTime: "Time", faqTitle: "FAQ", q1: "Do you need my Roblox password?", a1: "No! We will never ask for your Roblox password. We only need your public username to track your quest progress and assign your points.", q2: "How fast are quest points added to my balance?", a2: "Once you complete a partner quest or quiz, points are credited to your account balance automatically within a few moments.", refTitle: "Invite Friends & Get +15% Bonus", refInfo: "Your Referral Info", refDesc: "Share your custom link! You will receive a massive 15% lifetime bonus of all R$ points your friends collect!", btnCopy: "📋 Copy", promoTitle: "Redeem Promo Codes", gotCode: "Got a Code?", btnRedeem: "Redeem", supportTitle: "Contact Support", btnSubmitTicket: "Submit Ticket", globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send", modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login", modalWithdrawTitle: "Claim Reward", rateInfo: "1 R$ Point = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout", phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...", historyTitle: "Account History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Quest Completion", historyPartial: "Partial Bonus", historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Reward Claim", historyLevel: "Level Reward", historyWheel: "Wheel of Fortune", historyFrom: "from:", currentBalance: "Current Balance:", phSupportContact: "Your Discord / Email (optional)", paypalLocked: "🔒 Payout email is securely locked to this account.", paypalWarningInfo: "⚠️ Note: This payout email will be permanently linked to your account for security.",
+            homeDashboard: "Your Dashboard", homeCurrentBalance: "Current Balance", btnGoEarn: "🚀 Start Quests", btnWithdrawNow: "💸 Claim Reward", homeSocialTasks: "Social Tasks", 
+            homeSocialTasksDesc: "Follow our channels to get bonus R$ points!", ldToday: "Today", ld7Days: "Last 7 Days", ld30Days: "Last 30 Days", ldYear: "Last Year", ldAllTime: "All Time", liveEarners: "🔥 Live Activity", earnTitle: "Complete Quests & Collect R$!", loadingStats: "Loading...", emptyEarners: "Be the first to complete a quest today!", startEarning: "Start Completing Quests for R$! 💎", startDesc: "Enter your Roblox username below so we know where to assign your quest points. No passwords required.", btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose a Quest Wall", offerDesc: "Select a partner wall below to start collecting R$ points.", cpxDesc: "High-reward partner quizzes", trDesc: "Fast & easy interactive tasks", recentCashouts: "🎉 Recent Reward Claims", loadingCashouts: "Loading recent claims...", emptyCashouts: "No claims yet!", tableUser: "User", tableAmount: "Amount", tableTime: "Time", faqTitle: "FAQ", q1: "Do you need my Roblox password?", a1: "No! We will never ask for your Roblox password. We only need your public username to track your quest progress and assign your points.", q2: "How fast are quest points added to my balance?", a2: "Once you complete a partner quest or quiz, points are credited to your account balance automatically within a few moments.", refTitle: "Invite Friends & Get +15% Bonus", refInfo: "Your Referral Info", refDesc: "Share your custom link! You will receive a massive 15% lifetime bonus of all R$ points your friends collect!", btnCopy: "📋 Copy", promoTitle: "Redeem Promo Codes", gotCode: "Got a Code?", btnRedeem: "Redeem", supportTitle: "Contact Support", btnSubmitTicket: "Submit Ticket", globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send", modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login", modalWithdrawTitle: "Claim Reward", rateInfo: "1 R$ Point = $0.025 USD", youWillReceive: "You will receive:", btnReqPayout: "Request Payout", phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...", historyTitle: "Account History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Quest Completion", historyPartial: "Partial Bonus", historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Reward Claim", historyLevel: "Level Reward", historyWheel: "Wheel of Fortune", historyFrom: "from:", currentBalance: "Current Balance:", phSupportContact: "Your Discord / Email (optional)", paypalLocked: "🔒 Payout address is securely locked to this account.", paypalWarningInfo: "⚠️ Note: This payout address will be permanently linked to your account for security.",
             phGoalName: "Name your goal", phGoalRobux: "Amount in R$", phGoalUsd: "Amount in USD (min $5)"
         },
         pl: {
@@ -735,7 +735,8 @@
             lvlReq: "Wymaga:", lvlReward: "Nagroda:", btnClaimLevel: "Odbierz Nagrodę", btnLevelClaimed: "Odebrano", btnLevelLocked: "Zablokowane",
             goalCreateTitle: "Stwórz Nowy Cel", goalTabRobux: "Cel w R$", goalTabUsd: "Cel w USD", btnAddGoal: "Dodaj Cel",
             goalListTitle: "Twoje Cele", btnGoalClear: "Wyczyść Historię", btnGoalCancel: "Anuluj", statusActive: "AKTYWNY", statusCompleted: "UZBIERANO", statusCanceled: "ANULOWANO", activeGoal: "Aktywny Cel:",
-            homeHeroTitle: "Wykonuj Misje i Odbieraj <span>Nagrody R$!</span>", homeHeroSub: "Połącz swój nick z Roblox, wykonuj interaktywne zadania, testuj gry i zbieraj punkty R$. Bezpiecznie i bez podawania hasła!", btnHeroStart: "POŁĄCZ KONTO I ZACZNIJ MISJE!", howItWorksTitle: "⚡ Jak To Działa?", step1Badge: "KROK 1", step1Title: "🎮 Podaj Swój Nick", step1Desc: "Kliknij przycisk logowania i wpisz swój nick z Robloxa. Nigdy nie prosimy o hasło ani dane logowania.", step2Badge: "KROK 2", step2Title: "🚀 Wykonuj Zadania", step2Desc: "Wybieraj misje społecznościowe, testuj nowe gry lub dziel się opinią w quizach naszych partnerów.", step3Badge: "KROK 3", step3Title: "💎 Odbieraj Nagrody R$", step3Desc: "Punkty trafiają na Twoje saldo automatycznie po ukończeniu misji. Wymieniaj zebrane R$ w każdej chwili!", guidesMainTitle: "📚 Poradniki Społeczności Roblox", g1Meta: "Poradnik Wydajności • Aktualizacja 2026", g1Title: "Jak Zoptymalizować Roblox pod Maksymalne FPS i Niski Ping w 2026 Roku", g1P1: "Spadki płynności (FPS) lub opóźnienia sieciowe potrafią zepsuć każdą rozgrywkę. Odpowiednia konfiguracja klienta pozwala drastycznie zwiększyć liczbę klatek i ustabilizować połączenie.", g1Sub1: "1. Ustawienia Grafiki i Renderowania w Grze", g1P2: "Rozpocznij od otwarcia menu (klawisz ESC) i przełączenia trybu grafiki na Ręczny (Manual). Obniżenie suwaka wyłącza zasobożerne cienie.", g2Meta: "Bezpieczeństwo Konta • Lektura Obowiązkowa", g2Title: "Kompletny Poradnik Bezpieczeństwa Konta Roblox", g2P1: "Ochrona konta staje się kluczowa wraz ze zdobywaniem rzadkich przedmiotów. Legalne portale społecznościowe nigdy nie proszą o hasło do gry.", g2Sub2: "2. Włączenie Weryfikacji Dwuetapowej (2FA)", g2P3: "Zawsze aktywuj weryfikację dwuetapową w ustawieniach konta Roblox, korzystając z dedykowanej aplikacji uwierzytelniającej.", cookieText: "Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. Przeczytaj naszą", cookieLink: "Politykę Prywatności", cookieBtn: "Akceptuję i Zamknij", homeDashboard: "Twój Panel", homeCurrentBalance: "Aktualny Stan Konta", btnGoEarn: "🚀 Zacznij Misje", btnWithdrawNow: "💸 Wypłać Nagrodę", homeSocialTasks: "Zadania Społecznościowe", homeSocialTasksDesc: "Zaobserwuj nas, aby zdobyć dodatkowe punkty R$! (Weryfikacja w Etapie 2)", ldToday: "Dzisiaj", ld7Days: "Ostatnie 7 Dni", ld30Days: "Ostatnie 30 Dni", ldYear: "Ostatni Rok", ldAllTime: "Zawsze", liveEarners: "🔥 Na żywo", earnTitle: "Wykonuj Misje i Zbieraj Punkty R$!", loadingStats: "Ładowanie...", emptyEarners: "Bądź pierwszym, który ukończy dziś misję!", startEarning: "Zacznij Wykonywać Misje za R$! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.", btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ścianę Misji", offerDesc: "Wybierz partnera poniżej, aby zacząć zdobywać punkty R$.", cpxDesc: "Wysoko punktowane quizy i zadania", trDesc: "Szybkie i proste misje", recentCashouts: "🎉 Ostatnie Wypłaty Nagród", loadingCashouts: "Ładowanie wypłat...", emptyCashouts: "Brak wypłat! Bądź pierwszym, który odbierze nagrodę.", tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas", faqTitle: "FAQ - Często Zadawane Pytania", q1: "Czy potrzebujecie mojego hasła?", a1: "Nie! Nigdy nie poprosimy o Twoje hasło do Robloxa. Wystarczy sam publiczny nick.", q2: "Jak szybko dodawane są punkty?", a2: "Zdobyte punkty dodają się automatycznie natychmiast po ukończeniu zadania.", refTitle: "Zaproś Znajomych (+15% Bonusu)", refInfo: "Twój Panel Poleceń", refDesc: "Wyślij znajomym swój link! Otrzymasz 15% bonusu od wszystkich zdobytych przez nich punktów na zawsze!", btnCopy: "📋 Kopiuj", promoTitle: "Kody Promocyjne", gotCode: "Masz Kod?", btnRedeem: "Odbierz", supportTitle: "Kontakt z Administracją", btnSubmitTicket: "Wyślij", globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij", modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się", modalWithdrawTitle: "Wypłata Nagrody", rateInfo: "1 R$ = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę", phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...", historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Ukończenie misji", historyPartial: "Bonus częściowy", historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata nagrody", historyLevel: "Nagroda za Poziom", historyWheel: "Koło Fortuny", historyFrom: "od:", currentBalance: "Aktualny Stan Konta:", phSupportContact: "Twój Discord / Email (opcjonalnie)", paypalLocked: "🔒 Ten adres wypłaty jest na stałe przypisany do konta.", paypalWarningInfo: "⚠️ Uwaga: Ten adres zostanie na stałe przypisany do Twojego konta ze względów bezpieczeństwa.",
+            homeHeroTitle: "Wykonuj Misje i Odbieraj <span>Nagrody R$!</span>", homeHeroSub: "Połącz swój nick z Roblox, wykonuj interaktywne zadania, testuj gry i zbieraj punkty R$. Bezpiecznie i bez podawania hasła!", btnHeroStart: "POŁĄCZ KONTO I ZACZNIJ MISJE!", howItWorksTitle: "⚡ Jak To Działa?", step1Badge: "KROK 1", step1Title: "🎮 Podaj Swój Nick", step1Desc: "Kliknij przycisk logowania i wpisz swój nick z Robloxa. Nigdy nie prosimy o hasło ani dane logowania.", step2Badge: "KROK 2", step2Title: "🚀 Wykonuj Zadania", step2Desc: "Wybieraj misje społecznościowe, testuj nowe gry lub dziel się opinią w quizach naszych partnerów.", step3Badge: "KROK 3", step3Title: "💎 Odbieraj Nagrody R$", step3Desc: "Punkty trafiają na Twoje saldo automatycznie po ukończeniu misji. Wymieniaj zebrane R$ w każdej chwili!", guidesMainTitle: "📚 Poradniki Społeczności Roblox", g1Meta: "Poradnik Wydajności • Aktualizacja 2026", g1Title: "Jak Zoptymalizować Roblox pod Maksymalne FPS i Niski Ping w 2026 Roku", g1P1: "Spadki płynności (FPS) lub opóźnienia sieciowe potrafią zepsuć każdą rozgrywkę. Odpowiednia konfiguracja klienta pozwala drastycznie zwiększyć liczbę klatek i ustabilizować połączenie.", g1Sub1: "1. Ustawienia Grafiki i Renderowania w Grze", g1P2: "Rozpocznij od otwarcia menu (klawisz ESC) i przełączenia trybu grafiki na Ręczny (Manual). Obniżenie suwaka wyłącza zasobożerne cienie.", g2Meta: "Bezpieczeństwo Konta • Lektura Obowiązkowa", g2Title: "Kompletny Poradnik Bezpieczeństwa Konta Roblox", g2P1: "Ochrona konta staje się kluczowa wraz ze zdobywaniem rzadkich przedmiotów. Legalne portale społecznościowe nigdy nie proszą o hasło do gry.", g2Sub2: "2. Włączenie Weryfikacji Dwuetapowej (2FA)", g2P3: "Zawsze aktywuj weryfikację dwuetapową w ustawieniach konta Roblox, korzystając z dedykowanej aplikacji uwierzytelniającej.", cookieText: "Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. Przeczytaj naszą", cookieLink: "Politykę Prywatności", cookieBtn: "Akceptuję i Zamknij", homeDashboard: "Twój Panel", homeCurrentBalance: "Aktualny Stan Konta", btnGoEarn: "🚀 Zacznij Misje", btnWithdrawNow: "💸 Wypłać Nagrodę", homeSocialTasks: "Zadania Społecznościowe", 
+            homeSocialTasksDesc: "Zaobserwuj nas, aby zdobyć dodatkowe punkty R$!", ldToday: "Dzisiaj", ld7Days: "Ostatnie 7 Dni", ld30Days: "Ostatnie 30 Dni", ldYear: "Ostatni Rok", ldAllTime: "Zawsze", liveEarners: "🔥 Na żywo", earnTitle: "Wykonuj Misje i Zbieraj Punkty R$!", loadingStats: "Ładowanie...", emptyEarners: "Bądź pierwszym, który ukończy dziś misję!", startEarning: "Zacznij Wykonywać Misje za R$! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.", btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ścianę Misji", offerDesc: "Wybierz partnera poniżej, aby zacząć zdobywać punkty R$.", cpxDesc: "Wysoko punktowane quizy i zadania", trDesc: "Szybkie i proste misje", recentCashouts: "🎉 Ostatnie Wypłaty Nagród", loadingCashouts: "Ładowanie wypłat...", emptyCashouts: "Brak wypłat! Bądź pierwszym, który odbierze nagrodę.", tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas", faqTitle: "FAQ - Często Zadawane Pytania", q1: "Czy potrzebujecie mojego hasła?", a1: "Nie! Nigdy nie poprosimy o Twoje hasło do Robloxa. Wystarczy sam publiczny nick.", q2: "Jak szybko dodawane są punkty?", a2: "Zdobyte punkty dodają się automatycznie natychmiast po ukończeniu zadania.", refTitle: "Zaproś Znajomych (+15% Bonusu)", refInfo: "Twój Panel Poleceń", refDesc: "Wyślij znajomym swój link! Otrzymasz 15% bonusu od wszystkich zdobytych przez nich punktów na zawsze!", btnCopy: "📋 Kopiuj", promoTitle: "Kody Promocyjne", gotCode: "Masz Kod?", btnRedeem: "Odbierz", supportTitle: "Kontakt z Administracją", btnSubmitTicket: "Wyślij", globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij", modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się", modalWithdrawTitle: "Wypłata Nagrody", rateInfo: "1 R$ = $0.025 USD", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę", phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...", historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Ukończenie misji", historyPartial: "Bonus częściowy", historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata nagrody", historyLevel: "Nagroda za Poziom", historyWheel: "Koło Fortuny", historyFrom: "od:", currentBalance: "Aktualny Stan Konta:", phSupportContact: "Twój Discord / Email (opcjonalnie)", paypalLocked: "🔒 Metoda wypłaty jest na stałe przypisana do konta.", paypalWarningInfo: "⚠️ Uwaga: Ten adres zostanie na stałe przypisany do Twojego konta ze względów bezpieczeństwa.",
             phGoalName: "Nazwa celu", phGoalRobux: "Kwota w R$", phGoalUsd: "Kwota w USD (min 5$)"
         },
         de: {
@@ -748,7 +749,8 @@
             lvlReq: "Benötigt:", lvlReward: "Belohnung:", btnClaimLevel: "Einlösen", btnLevelClaimed: "Eingelöst", btnLevelLocked: "Gesperrt",
             goalCreateTitle: "Neues Ziel", goalTabRobux: "Ziel R$", goalTabUsd: "Ziel USD", btnAddGoal: "Hinzufügen",
             goalListTitle: "Deine Ziele", btnGoalClear: "Verlauf löschen", btnGoalCancel: "Abbrechen", statusActive: "AKTIV", statusCompleted: "ERREICHT", statusCanceled: "ABGEBROCHEN", activeGoal: "Aktives Ziel:",
-            homeHeroTitle: "Quests abschließen & <span>R$ sichern!</span>", homeHeroSub: "Verbinde deinen Roblox-Namen, schließe Quests ab und sammle R$. Kein Passwort erforderlich!", btnHeroStart: "EINLOGGEN & STARTEN!", howItWorksTitle: "⚡ Wie funktioniert es?", step1Badge: "SCHRITT 1", step1Title: "🎮 Namen verbinden", step1Desc: "Gib deinen Roblox-Namen ein. Wir fragen nie nach dem Passwort.", step2Badge: "SCHRITT 2", step2Title: "🚀 Quests erledigen", step2Desc: "Nimm an Partner-Quizzen teil, um R$ zu sammeln.", step3Badge: "SCHRITT 3", step3Title: "💎 R$ einlösen", step3Desc: "Tausche deine R$-Punkte jederzeit ein!", guidesMainTitle: "📚 Roblox Community Guides", g1Meta: "Performance-Guide", g1Title: "Roblox FPS & Ping optimieren", g1P1: "Lag ruiniert das Spiel. Hier erfährst du, wie du Roblox optimierst.", g1Sub1: "1. Grafikeinstellungen", g1P2: "Reduziere die Grafikqualität für bessere FPS.", g2Meta: "Kontosicherheit", g2Title: "Kontosicherheit", g2P1: "Schütze dein Konto. Wir fragen nie nach deinem Passwort.", g2Sub2: "2. 2FA aktivieren", g2P3: "Nutze eine Authenticator-App für deinen Account.", cookieText: "Wir verwenden Cookies für die beste Erfahrung.", cookieLink: "Datenschutzerklärung", cookieBtn: "Akzeptieren", homeDashboard: "Dein Dashboard", homeCurrentBalance: "Aktueller Kontostand", btnGoEarn: "🚀 Quests starten", btnWithdrawNow: "💸 Einlösen", homeSocialTasks: "Soziale Aufgaben", homeSocialTasksDesc: "Folge uns für Bonus-R$!", ldToday: "Heute", ld7Days: "Letzte 7 Tage", ld30Days: "Letzte 30 Tage", ldYear: "Letztes Jahr", ldAllTime: "Immer", liveEarners: "🔥 Live-Aktivität", earnTitle: "Sammle R$!", loadingStats: "Lädt...", emptyEarners: "Sei der Erste heute!", startEarning: "Starte jetzt!", startDesc: "Roblox-Namen eingeben (kein Passwort):", btnConnect: "Verbinden", chooseOfferwall: "🚀 Wähle eine Wall", offerDesc: "Wähle einen Partner.", cpxDesc: "Partner-Quizze", trDesc: "Einfache Quests", recentCashouts: "🎉 Letzte Einlösungen", loadingCashouts: "Lädt...", emptyCashouts: "Noch keine Einlösungen!", tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit", faqTitle: "FAQ", q1: "Passwort?", a1: "Nein, nur dein Benutzername.", q2: "Wie schnell?", a2: "Sofort nach Abschluss.", refTitle: "Freunde Einladen (+15%)", refInfo: "Dein Link", refDesc: "Teile den Link für 15% Bonus!", btnCopy: "📋 Kopieren", promoTitle: "Promo-Codes", gotCode: "Code?", btnRedeem: "Einlösen", supportTitle: "Support", btnSubmitTicket: "Senden", globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen im Chat!", btnSend: "Senden", modalLoginTitle: "Einloggen", btnConnectConfirm: "Bestätigen", modalWithdrawTitle: "Einlösen", rateInfo: "1 R$ = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen", phFriendCode: "Code eingeben", phPromoCode: "Code", phSupport: "Problem...", phChat: "Schreibe...", historyTitle: "Verlauf", historyEmpty: "Keine Aktionen!", historyAction: "Aktion", historySurvey: "Quest", historyPartial: "Teilbonus", historyPromo: "Promo-Code", historyRef: "Empfehlung", historyPayout: "Einlösung", historyLevel: "Level-Belohnung", historyWheel: "Glücksrad", historyFrom: "von:", currentBalance: "Kontostand:", phSupportContact: "Discord / E-Mail", paypalLocked: "🔒 Auszahlungsadresse ist gesperrt.", paypalWarningInfo: "⚠️ Die Adresse wird dauerhaft verknüpft.",
+            homeHeroTitle: "Quests abschließen & <span>R$ sichern!</span>", homeHeroSub: "Verbinde deinen Roblox-Namen, schließe Quests ab und sammle R$. Kein Passwort erforderlich!", btnHeroStart: "EINLOGGEN & STARTEN!", howItWorksTitle: "⚡ Wie funktioniert es?", step1Badge: "SCHRITT 1", step1Title: "🎮 Namen verbinden", step1Desc: "Gib deinen Roblox-Namen ein. Wir fragen nie nach dem Passwort.", step2Badge: "SCHRITT 2", step2Title: "🚀 Quests erledigen", step2Desc: "Nimm an Partner-Quizzen teil, um R$ zu sammeln.", step3Badge: "SCHRITT 3", step3Title: "💎 R$ einlösen", step3Desc: "Tausche deine R$-Punkte jederzeit ein!", guidesMainTitle: "📚 Roblox Community Guides", g1Meta: "Performance-Guide", g1Title: "Roblox FPS & Ping optimieren", g1P1: "Lag ruiniert das Spiel. Hier erfährst du, wie du Roblox optimierst.", g1Sub1: "1. Grafikeinstellungen", g1P2: "Reduziere die Grafikqualität für bessere FPS.", g2Meta: "Kontosicherheit", g2Title: "Kontosicherheit", g2P1: "Schütze dein Konto. Wir fragen nie nach deinem Passwort.", g2Sub2: "2. 2FA aktivieren", g2P3: "Nutze eine Authenticator-App für deinen Account.", cookieText: "Wir verwenden Cookies für die beste Erfahrung.", cookieLink: "Datenschutzerklärung", cookieBtn: "Akzeptieren", homeDashboard: "Dein Dashboard", homeCurrentBalance: "Aktueller Kontostand", btnGoEarn: "🚀 Quests starten", btnWithdrawNow: "💸 Einlösen", homeSocialTasks: "Soziale Aufgaben", 
+            homeSocialTasksDesc: "Folge uns für Bonus-R$!", ldToday: "Heute", ld7Days: "Letzte 7 Tage", ld30Days: "Letzte 30 Tage", ldYear: "Letztes Jahr", ldAllTime: "Immer", liveEarners: "🔥 Live-Aktivität", earnTitle: "Sammle R$!", loadingStats: "Lädt...", emptyEarners: "Sei der Erste heute!", startEarning: "Starte jetzt!", startDesc: "Roblox-Namen eingeben (kein Passwort):", btnConnect: "Verbinden", chooseOfferwall: "🚀 Wähle eine Wall", offerDesc: "Wähle einen Partner.", cpxDesc: "Partner-Quizze", trDesc: "Einfache Quests", recentCashouts: "🎉 Letzte Einlösungen", loadingCashouts: "Lädt...", emptyCashouts: "Noch keine Einlösungen!", tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit", faqTitle: "FAQ", q1: "Passwort?", a1: "Nein, nur dein Benutzername.", q2: "Wie schnell?", a2: "Sofort nach Abschluss.", refTitle: "Freunde Einladen (+15%)", refInfo: "Dein Link", refDesc: "Teile den Link für 15% Bonus!", btnCopy: "📋 Kopieren", promoTitle: "Promo-Codes", gotCode: "Code?", btnRedeem: "Einlösen", supportTitle: "Support", btnSubmitTicket: "Senden", globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen im Chat!", btnSend: "Senden", modalLoginTitle: "Einloggen", btnConnectConfirm: "Bestätigen", modalWithdrawTitle: "Einlösen", rateInfo: "1 R$ = $0.025 USD", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen", phFriendCode: "Code eingeben", phPromoCode: "Code", phSupport: "Problem...", phChat: "Schreibe...", historyTitle: "Verlauf", historyEmpty: "Keine Aktionen!", historyAction: "Aktion", historySurvey: "Quest", historyPartial: "Teilbonus", historyPromo: "Promo-Code", historyRef: "Empfehlung", historyPayout: "Einlösung", historyLevel: "Level-Belohnung", historyWheel: "Glücksrad", historyFrom: "von:", currentBalance: "Kontostand:", phSupportContact: "Discord / E-Mail", paypalLocked: "🔒 Auszahlungsadresse ist gesperrt.", paypalWarningInfo: "⚠️ Die Adresse wird dauerhaft verknüpft.",
             phGoalName: "Zielname", phGoalRobux: "Betrag in R$", phGoalUsd: "Betrag in USD"
         },
         ru: {
@@ -761,7 +763,8 @@
             lvlReq: "Требуется:", lvlReward: "Награда:", btnClaimLevel: "Забрать", btnLevelClaimed: "Получено", btnLevelLocked: "Закрыто",
             goalCreateTitle: "Новая цель", goalTabRobux: "Цель R$", goalTabUsd: "Цель USD", btnAddGoal: "Добавить",
             goalListTitle: "Твои цели", btnGoalClear: "Очистить историю", btnGoalCancel: "Отменить", statusActive: "АКТИВНО", statusCompleted: "ВЫПОЛНЕНО", statusCanceled: "ОТМЕНЕНО", activeGoal: "Текущая цель:",
-            homeHeroTitle: "Выполняй квесты и получай <span>R$!</span>", homeHeroSub: "Подключи ник, выполняй задания и собирай баллы. Пароль не требуется!", btnHeroStart: "НАЧАТЬ КВЕСТЫ!", howItWorksTitle: "⚡ Как это работает?", step1Badge: "ШАГ 1", step1Title: "🎮 Подключи ник", step1Desc: "Введи ник. Мы не просим пароль.", step2Badge: "ШАГ 2", step2Title: "🚀 Выполняй", step2Desc: "Проходи викторины.", step3Badge: "ШАГ 3", step3Title: "💎 Забирай R$", step3Desc: "Меняй баллы на награды!", guidesMainTitle: "📚 Гайды", g1Meta: "FPS", g1Title: "Оптимизация FPS", g1P1: "Как повысить FPS.", g1Sub1: "1. Графика", g1P2: "Снизьте графику.", g2Meta: "Защита", g2Title: "Безопасность", g2P1: "Никогда не давайте пароль.", g2Sub2: "2. 2FA", g2P3: "Включите 2FA.", cookieText: "Мы используем cookies.", cookieLink: "Политика", cookieBtn: "Принять", homeDashboard: "Панель", homeCurrentBalance: "Баланс", btnGoEarn: "🚀 Квесты", btnWithdrawNow: "💸 Вывести", homeSocialTasks: "Соцсети", homeSocialTasksDesc: "Подпишись за R$!", ldToday: "Сегодня", ld7Days: "7 Дней", ld30Days: "30 Дней", ldYear: "Год", ldAllTime: "Все время", liveEarners: "🔥 Активность", earnTitle: "Собирай R$!", loadingStats: "Загрузка...", emptyEarners: "Будь первым!", startEarning: "Начни зарабатывать!", startDesc: "Введи никнейм:", btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери стену", offerDesc: "Выбери партнера.", cpxDesc: "Викторины", trDesc: "Задания", recentCashouts: "🎉 Выплаты", loadingCashouts: "Загрузка...", emptyCashouts: "Пока нет выплат!", tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время", faqTitle: "FAQ", q1: "Пароль?", a1: "Нет, только ник.", q2: "Как быстро?", a2: "Мгновенно.", refTitle: "Пригласи друзей (+15%)", refInfo: "Твоя ссылка", refDesc: "Делись ссылкой!", btnCopy: "📋 Копия", promoTitle: "Промокоды", gotCode: "Есть код?", btnRedeem: "Активировать", supportTitle: "Поддержка", btnSubmitTicket: "Отправить", globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать!", btnSend: "Отправить", modalLoginTitle: "Войти", btnConnectConfirm: "Войти", modalWithdrawTitle: "Вывести", rateInfo: "1 R$ = $0.025", youWillReceive: "Вы получите:", btnReqPayout: "Вывести", phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Проблема...", phChat: "Напиши...", historyTitle: "История", historyEmpty: "Нет действий!", historyAction: "Действие", historySurvey: "Квест", historyPartial: "Частично", historyPromo: "Промокод", historyRef: "Реф", historyPayout: "Вывод", historyLevel: "Награда за уровень", historyWheel: "Колесо Фортуны", historyFrom: "от:", currentBalance: "Баланс:", phSupportContact: "Discord / Email", paypalLocked: "🔒 Кошелек привязан.", paypalWarningInfo: "⚠️ Кошелек будет привязан навсегда.",
+            homeHeroTitle: "Выполняй квесты и получай <span>R$!</span>", homeHeroSub: "Подключи ник, выполняй задания и собирай баллы. Пароль не требуется!", btnHeroStart: "НАЧАТЬ КВЕСТЫ!", howItWorksTitle: "⚡ Как это работает?", step1Badge: "ШАГ 1", step1Title: "🎮 Подключи ник", step1Desc: "Введи ник. Мы не просим пароль.", step2Badge: "ШАГ 2", step2Title: "🚀 Выполняй", step2Desc: "Проходи викторины.", step3Badge: "ШАГ 3", step3Title: "💎 Забирай R$", step3Desc: "Меняй баллы на награды!", guidesMainTitle: "📚 Гайды", g1Meta: "FPS", g1Title: "Оптимизация FPS", g1P1: "Как повысить FPS.", g1Sub1: "1. Графика", g1P2: "Снизьте графику.", g2Meta: "Защита", g2Title: "Безопасность", g2P1: "Никогда не давайте пароль.", g2Sub2: "2. 2FA", g2P3: "Включите 2FA.", cookieText: "Мы используем cookies.", cookieLink: "Политика", cookieBtn: "Принять", homeDashboard: "Панель", homeCurrentBalance: "Баланс", btnGoEarn: "🚀 Квесты", btnWithdrawNow: "💸 Вывести", homeSocialTasks: "Соцсети", 
+            homeSocialTasksDesc: "Подпишись за R$!", ldToday: "Сегодня", ld7Days: "7 Дней", ld30Days: "30 Дней", ldYear: "Год", ldAllTime: "Все время", liveEarners: "🔥 Активность", earnTitle: "Собирай R$!", loadingStats: "Загрузка...", emptyEarners: "Будь первым!", startEarning: "Начни зарабатывать!", startDesc: "Введи никнейм:", btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери стену", offerDesc: "Выбери партнера.", cpxDesc: "Викторины", trDesc: "Задания", recentCashouts: "🎉 Выплаты", loadingCashouts: "Загрузка...", emptyCashouts: "Пока нет выплат!", tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время", faqTitle: "FAQ", q1: "Пароль?", a1: "Нет, только ник.", q2: "Как быстро?", a2: "Мгновенно.", refTitle: "Пригласи друзей (+15%)", refInfo: "Твоя ссылка", refDesc: "Делись ссылкой!", btnCopy: "📋 Копия", promoTitle: "Промокоды", gotCode: "Есть код?", btnRedeem: "Активировать", supportTitle: "Поддержка", btnSubmitTicket: "Отправить", globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать!", btnSend: "Отправить", modalLoginTitle: "Войти", btnConnectConfirm: "Войти", modalWithdrawTitle: "Вывести", rateInfo: "1 R$ = $0.025", youWillReceive: "Вы получите:", btnReqPayout: "Вывести", phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Проблема...", phChat: "Напиши...", historyTitle: "История", historyEmpty: "Нет действий!", historyAction: "Действие", historySurvey: "Квест", historyPartial: "Частично", historyPromo: "Промокод", historyRef: "Реф", historyPayout: "Вывод", historyLevel: "Награда за уровень", historyWheel: "Колесо Фортуны", historyFrom: "от:", currentBalance: "Баланс:", phSupportContact: "Discord / Email", paypalLocked: "🔒 Кошелек привязан.", paypalWarningInfo: "⚠️ Кошелек будет привязан навсегда.",
             phGoalName: "Название", phGoalRobux: "Сумма в R$", phGoalUsd: "Сумма в USD"
         }
     };
@@ -790,17 +793,24 @@
 
         const withdrawModal = document.getElementById("withdrawModal");
         if (withdrawModal && withdrawModal.innerHTML.trim() === "") {
-            const pName = "Pay" + "Pal";
             withdrawModal.innerHTML = `
               <div class="modal-content">
-                <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Claim Reward (${pName})</h3>
+                <h3 style="color: #fff;" data-lang="modalWithdrawTitle">Claim Reward</h3>
                 <p style="color: #a0a0b0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 R$ Point = $0.025 USD</p>
                 <p style="color: #00e676; font-size: 1.05rem; font-weight: bold; margin-top: 15px; margin-bottom: 10px;">
                     <span data-lang="currentBalance">Current Balance:</span> <span id="modalCurrentPoints">0.00 R$</span>
                 </p>
-                <p id="paypalFirstTimeWarning" style="color: #ffb703; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold; background: rgba(255, 183, 3, 0.1); padding: 10px; border-radius: 6px; border: 1px solid #ffb703;" data-lang="paypalWarningInfo">⚠️ Note: This payout email will be permanently linked to your account for security.</p>
-                <p id="paypalLockWarning" style="color: #00e676; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold;" data-lang="paypalLocked">🔒 Payout email is securely locked to this account.</p>
-                <input type="email" id="paypalEmail" placeholder="${pName} Email" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
+                <p id="paypalFirstTimeWarning" style="color: #ffb703; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold; background: rgba(255, 183, 3, 0.1); padding: 10px; border-radius: 6px; border: 1px solid #ffb703;" data-lang="paypalWarningInfo">⚠️ Note: This payout address will be permanently linked to your account for security.</p>
+                <p id="paypalLockWarning" style="color: #00e676; font-size: 0.85rem; display: none; margin-bottom: 10px; font-weight: bold;" data-lang="paypalLocked">🔒 Payout address is securely locked to this account.</p>
+                
+                <select id="payoutMethod" onchange="updatePayoutPlaceholder()" style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box; cursor: pointer; font-weight: bold;">
+                    <option value="BLIK">📱 Przelew na Telefon (BLIK)</option>
+                    <option value="Revolut">💳 Revolut (@Tag / Numer)</option>
+                    <option value="PayPal">📧 PayPal (Adres Email)</option>
+                </select>
+
+                <input type="text" id="payoutAddress" placeholder="Wpisz swój numer telefonu BLIK..." style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; box-sizing: border-box;">
+                
                 <div class="withdraw-input-row" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
                     <input type="number" id="withdrawPoints" placeholder="R$ Amount" oninput="calculateUSD()" step="0.01" style="flex: 1; min-width: 0; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin: 0; box-sizing: border-box;">
                     <button style="width: auto; flex: 0 0 auto; background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 10px 20px; font-weight: bold; cursor: pointer; transition: 0.2s; height: 42px; box-sizing: border-box;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'" onclick="setMaxPoints()">MAX</button>
@@ -810,6 +820,21 @@
                 <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeWithdrawModal()" data-lang="btnCancel">Cancel</button>
               </div>
             `;
+        }
+    }
+
+    function updatePayoutPlaceholder() {
+        const method = document.getElementById("payoutMethod").value;
+        const addressInput = document.getElementById("payoutAddress");
+        if (method === "BLIK") {
+            addressInput.placeholder = "Wpisz numer telefonu (np. +48 123 456 789)...";
+            addressInput.type = "text";
+        } else if (method === "Revolut") {
+            addressInput.placeholder = "Wpisz Revolut @Tag lub numer...";
+            addressInput.type = "text";
+        } else {
+            addressInput.placeholder = "Wpisz adres e-mail z PayPal...";
+            addressInput.type = "email";
         }
     }
 
@@ -879,7 +904,7 @@
       setInterval(fetchUserPoints, 5000);
       setInterval(fetchLiveEarners, 30000); 
       setInterval(fetchLatestPayouts, 30000); 
-      setInterval(updateWheelTimer, 1000); // Odświeżanie licznika 24h co sekundę!
+      setInterval(updateWheelTimer, 1000);
     });
 
     function switchTab(tabId) {
@@ -956,8 +981,8 @@
     async function submitSupportTicket() {
         const contactInput = document.getElementById("ticketContactInput"); const messageInput = document.getElementById("ticketMessageInput");
         const contact = contactInput.value.trim(); const message = messageInput.value.trim(); const username = localStorage.getItem("rbx_username");
-        const btn = document.getElementById("submitTicketBtn");
         if (!username) return alert("Log in first!"); if (!message || message.length < 10) return alert("Message too short!");
+        const btn = document.getElementById("submitTicketBtn");
         btn.innerText = "Wait..."; btn.disabled = true;
         try {
             const response = await fetch('/api/support-ticket', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, contact, message }) });
@@ -1000,7 +1025,6 @@
       } catch (error) {}
     }
 
-    // --- SYSTEM CELÓW ---
     let currentGoalMode = 'robux';
     function switchGoalTab(mode, btnElement) {
         currentGoalMode = mode;
@@ -1142,7 +1166,6 @@
         } catch(e) {}
     }
 
-    // --- LOGIKA KOŁA FORTUNY (24H BLOKADY + 24H NA ODEBRANIE) ---
     function formatDuration(ms) {
         const totalSec = Math.max(0, Math.floor(ms / 1000));
         const h = Math.floor(totalSec / 3600);
@@ -1184,7 +1207,6 @@
             const lastSpin = new Date(userStats.lastWheelSpin);
             const diffMs = now - lastSpin;
 
-            // ETAP 1: Pierwsze 24h - Blokada Koła
             if (diffMs < H24) {
                 const leftLockMs = H24 - diffMs;
                 btnSpin.disabled = true;
@@ -1198,7 +1220,6 @@
                 return;
             }
 
-            // ETAP 2: Drugie 24h (od 24h do 48h) - Odliczanie 24h na odebranie nagrody i utrzymanie Streaka
             if (diffMs < H48) {
                 const leftClaimMs = H48 - diffMs;
                 timerEl.style.display = "block";
@@ -1218,7 +1239,6 @@
                 return;
             }
 
-            // ETAP 3: Minęło ponad 48h (okienko 24h na odebranie wygasło)
             timerEl.style.display = "block";
             timerEl.style.color = "#888";
             timerEl.style.borderColor = "#2a2e39";
@@ -1339,7 +1359,6 @@
         } catch (error) { alert("Connection Error"); }
     }
 
-    // --- POLECENIA, KODY PROMO, RANKING I HISTORIA ---
     async function autoApplyReferral(code) {
         const username = localStorage.getItem("rbx_username"); if (!username || !code) return;
         try {
@@ -1486,12 +1505,10 @@
         } catch (error) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; }
     }
 
-    // --- BEZPIECZNE FUNKCJE DO AKTYWNOŚCI NA ŻYWO ---
     async function fetchLiveEarners() {
       try {
         const response = await fetch('/api/latest-earners'); 
         const earners = await response.json();
-        
         const lang = localStorage.getItem('rbx_lang') || 'en';
         const tLang = translations[lang] ? lang : 'en';
 
@@ -1500,17 +1517,9 @@
             document.getElementById('liveTicker').innerHTML = `<div class="ticker-item" style="color:#ffb703;">${emptyMsg}</div>`;
             return;
         }
-
         let tickerHTML = '';
-        earners.forEach(t => { 
-            const amt = parseFloat(t.amount) || 0; 
-            tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; 
-        });
-        earners.forEach(t => { 
-            const amt = parseFloat(t.amount) || 0;
-            tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; 
-        });
-        
+        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
+        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
         document.getElementById('liveTicker').innerHTML = tickerHTML;
       } catch (error) {}
     }
@@ -1520,19 +1529,14 @@
             const response = await fetch('/api/latest-payouts'); 
             if (!response.ok) return;
             const payouts = await response.json(); 
-            
             const tbody = document.getElementById('recentPayoutsBody'); 
             if (!tbody) return;
-
             const lang = localStorage.getItem('rbx_lang') || 'en';
             const tLang = translations[lang] ? lang : 'en';
             const emptyMsg = translations[tLang].emptyCashouts || "No claims yet!";
-
             if (!payouts || payouts.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`; 
-                return; 
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`; return; 
             }
-
             let html = '';
             payouts.forEach(p => {
                 const date = new Date(p.createdAt); 
@@ -1545,7 +1549,6 @@
         } catch (error) {}
     }
 
-    // --- LOGOWANIE, WYPŁATY I INICJALIZACJA WIDOKU ---
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
@@ -1561,7 +1564,7 @@
         document.getElementById("home-logged-in").style.display = "block"; 
         document.getElementById("home-logged-out").style.display = "none";
         
-        ['goals', 'wheel', 'levels'].forEach(id => {
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
             const d = document.getElementById("nav-" + id); if(d) d.style.display = "block";
             const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "block";
         });
@@ -1585,7 +1588,7 @@
         document.getElementById("home-logged-in").style.display = "none"; 
         document.getElementById("home-logged-out").style.display = "block";
         
-        ['goals', 'wheel', 'levels'].forEach(id => {
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
             const d = document.getElementById("nav-" + id); if(d) d.style.display = "none";
             const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "none";
         });
@@ -1637,11 +1640,32 @@
         document.getElementById("withdrawModal").style.display = "flex"; 
         const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
         document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
-        const linkedPayPal = localStorage.getItem("rbx_linked_paypal"); const emailInput = document.getElementById("paypalEmail");
-        const lockWarning = document.getElementById("paypalLockWarning"); const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
-        if (linkedPayPal && linkedPayPal !== "null" && linkedPayPal !== "") {
-            emailInput.value = linkedPayPal; emailInput.readOnly = true; emailInput.style.opacity = "0.5"; emailInput.style.cursor = "not-allowed"; lockWarning.style.display = "block"; firstTimeWarning.style.display = "none";
-        } else { emailInput.value = ""; emailInput.readOnly = false; emailInput.style.opacity = "1"; emailInput.style.cursor = "text"; lockWarning.style.display = "none"; firstTimeWarning.style.display = "block"; }
+        
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); 
+        const addressInput = document.getElementById("payoutAddress");
+        const methodSelect = document.getElementById("payoutMethod");
+        const lockWarning = document.getElementById("paypalLockWarning"); 
+        const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
+        
+        if (linkedAddress && linkedAddress !== "null" && linkedAddress !== "") {
+            addressInput.value = linkedAddress; 
+            addressInput.readOnly = true; 
+            addressInput.style.opacity = "0.5"; 
+            addressInput.style.cursor = "not-allowed"; 
+            methodSelect.disabled = true;
+            methodSelect.style.opacity = "0.5";
+            lockWarning.style.display = "block"; 
+            firstTimeWarning.style.display = "none";
+        } else { 
+            addressInput.value = ""; 
+            addressInput.readOnly = false; 
+            addressInput.style.opacity = "1"; 
+            addressInput.style.cursor = "text"; 
+            methodSelect.disabled = false;
+            methodSelect.style.opacity = "1";
+            lockWarning.style.display = "none"; 
+            firstTimeWarning.style.display = "block"; 
+        }
     }
 
     function setMaxPoints() {
@@ -1651,8 +1675,8 @@
     
     function closeWithdrawModal() { 
         document.getElementById("withdrawModal").style.display = "none"; 
-        const linkedPayPal = localStorage.getItem("rbx_linked_paypal"); const emailInput = document.getElementById("paypalEmail");
-        if (emailInput && (!linkedPayPal || linkedPayPal === "null" || linkedPayPal === "")) { emailInput.value = ""; }
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("payoutAddress");
+        if (addressInput && (!linkedAddress || linkedAddress === "null" || linkedAddress === "")) { addressInput.value = ""; }
         const wp = document.getElementById("withdrawPoints"); if (wp) wp.value = ""; const ur = document.getElementById("usdResult"); if (ur) ur.innerText = "$0.00";
     }
     
@@ -1661,21 +1685,26 @@
     }
     
     async function submitWithdraw() {
-        const email = document.getElementById("paypalEmail").value.trim(); const points = parseFloat(document.getElementById("withdrawPoints").value);
+        const method = document.getElementById("payoutMethod").value;
+        const address = document.getElementById("payoutAddress").value.trim(); 
+        const points = parseFloat(document.getElementById("withdrawPoints").value);
         const username = localStorage.getItem("rbx_username");
-        if (!email || !email.includes("@")) return alert("Invalid payout email.");
-        if (!points || points <= 0) return alert("Invalid amount of R$.");
+        
+        if (!address || address.length < 3) return alert("Podaj prawidłowy adres / numer telefonu.");
+        if (method === "PayPal" && !address.includes("@")) return alert("Nieprawidłowy adres email PayPal.");
+        if (!points || points <= 0) return alert("Nieprawidłowa kwota R$.");
+        
         try {
-            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, paypalEmail: email, points }) });
+            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: method, payoutAddress: address, points }) });
             if (!response.ok) { const data = await response.json().catch(() => null); if (data && data.error) return alert("❌ " + data.error); alert("❌ Server Error!"); return; }
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);
             else {
-                alert(`Success! Requested payout: $${data.usd.toFixed(2)}.`);
+                alert(`Sukces! Zlecono wypłatę: $${data.usd.toFixed(2)}.`);
                 const safeNewBal = Math.floor(data.newBalance * 100) / 100; document.getElementById("userPoints").innerText = safeNewBal.toFixed(2);
                 const homeBigPointsEl = document.getElementById("homeBigPoints"); if(homeBigPointsEl) homeBigPointsEl.innerText = safeNewBal.toFixed(2) + " R$";
                 const homeBigUsdEl = document.getElementById("homeBigUsd"); const usdValue = safeNewBal * 0.025; if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
-                localStorage.setItem("rbx_points", data.newBalance); localStorage.setItem("rbx_linked_paypal", email.toLowerCase());
+                localStorage.setItem("rbx_points", data.newBalance); localStorage.setItem("rbx_linked_paypal", address.toLowerCase());
                 closeWithdrawModal(); fetchLatestPayouts(); 
             }
         } catch (error) { alert("Connection Error"); }
@@ -1684,10 +1713,10 @@
     function startSocialTask(platform, url) {
         window.open(url, '_blank');
         const lang = document.getElementById('langSelect').value || 'en';
-        let msg = "Thank you for your support!\nThe automatic verification system will be added in Stage 2.";
-        if(lang === 'pl') msg = "Dzięki za wsparcie!\nAutomatyczny system weryfikacji i przyznawania punktów zostanie dodany w Etapie 2.";
-        if(lang === 'de') msg = "Danke für deine Unterstützung!\nDas automatische Verifizierungssystem wird in Phase 2 hinzugefügt.";
-        if(lang === 'ru') msg = "Спасибо за поддержку!\nСистема автоматической проверки будет добавлена на этапе 2.";
+        let msg = "Thank you for your support!";
+        if(lang === 'pl') msg = "Dzięki za wsparcie!";
+        if(lang === 'de') msg = "Danke für deine Unterstützung!";
+        if(lang === 'ru') msg = "Спасибо за поддержку!";
         alert(msg);
     }
   </script>
