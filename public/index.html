@@ -634,7 +634,38 @@
         </div>
       </main>
 
-      <main id="tab-admin" style="display: none;">
+<main id="tab-admin" style="display: none;">
+        <h2 class="section-title" data-lang="navAdmin">⚙️ Admin Panel</h2>
+        
+        <div class="steps-grid" style="margin-bottom: 20px;">
+            <div class="step-card" style="text-align: center; padding: 25px 15px;">
+                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">🟢 Online Users</h3>
+                <p id="adminStatOnline" style="color: #00e676; font-size: 2.2rem; font-weight: 900;">0</p>
+            </div>
+            <div class="step-card" style="text-align: center; padding: 25px 15px;">
+                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💎 Total R$ Generated</h3>
+                <p id="adminStatTotal" style="color: #ffb703; font-size: 2.2rem; font-weight: 900;">0.00</p>
+            </div>
+            <div class="step-card" style="text-align: center; padding: 25px 15px;">
+                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💸 Pending Payouts (R$)</h3>
+                <p id="adminStatPending" style="color: #ff3333; font-size: 2.2rem; font-weight: 900;">0.00</p>
+            </div>
+        </div>
+
+        <div class="content-box" style="text-align: left;">
+            <h3 style="color: #00e676; margin-bottom: 15px;">🎟️ Generator Kodów Promocyjnych</h3>
+            <p style="color: #a0a0b0; font-size: 0.9rem; margin-bottom: 15px;">Wygeneruj nowy kod. Bot automatycznie wyśle ogłoszenie na wybrany kanał Discord!</p>
+            
+            <input type="text" id="adminPromoCode" placeholder="Nazwa kodu (np. ROBUX2026)" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+            
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <input type="number" id="adminPromoReward" placeholder="Nagroda w R$" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+                <input type="number" id="adminPromoUses" placeholder="Limit użyć (np. 100)" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+            </div>
+            
+            <button class="btn-action" style="width: 100%; margin: 0; padding: 15px; font-size: 1.1rem;" onclick="createAdminPromoCode()">🚀 Wygeneruj Kod i Powiadom Discord</button>
+        </div>
+      </main>
         <h2 class="section-title" data-lang="navAdmin">⚙️ Admin</h2>
         <div class="content-box"><p style="color: #a0a0b0;">Admin panel active.</p></div>
       </main>
@@ -976,6 +1007,7 @@
         if(tabId === 'levels') renderLevelsUI(); 
         if(tabId === 'wheel') updateWheelUI();
         if(tabId === 'goals') fetchGoals();
+        if(tabId === 'admin') loadAdminStats();
     }
 
     function toggleFaq(element) {
@@ -1772,6 +1804,62 @@
         if(lang === 'de') msg = "Danke für deine Unterstützung!";
         if(lang === 'ru') msg = "Спасибо за поддержку!";
         alert(msg);
+    }
+    // --- SKRYPTY PANELU ADMINA ---
+    async function loadAdminStats() {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return;
+        try {
+            const res = await fetch('/api/admin/stats', {
+                headers: { 'Authorization': token }
+            });
+            const data = await res.json();
+            if (!data.error) {
+                document.getElementById('adminStatOnline').innerText = data.online || 0;
+                document.getElementById('adminStatTotal').innerText = (data.totalRobux || 0).toFixed(2);
+                document.getElementById('adminStatPending').innerText = (data.pendingRobux || 0).toFixed(2);
+            }
+        } catch (e) {}
+    }
+
+    async function createAdminPromoCode() {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return alert('Brak autoryzacji administratora!');
+        
+        const code = document.getElementById('adminPromoCode').value.trim();
+        const reward = parseFloat(document.getElementById('adminPromoReward').value);
+        const maxUses = parseInt(document.getElementById('adminPromoUses').value);
+        
+        if (!code || !reward || !maxUses) return alert('Uzupełnij wszystkie pola!');
+        
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerText = "⏳ Generowanie...";
+
+        try {
+            const res = await fetch('/api/admin/create-code', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token 
+                },
+                body: JSON.stringify({ code, reward, maxUses })
+            });
+            const data = await res.json();
+            
+            if (data.error) {
+                alert('❌ Błąd: ' + data.error);
+            } else {
+                alert('✅ Pomyślnie stworzono kod! Wysłano powiadomienie na Discord.');
+                document.getElementById('adminPromoCode').value = '';
+                document.getElementById('adminPromoReward').value = '';
+                document.getElementById('adminPromoUses').value = '';
+            }
+        } catch (e) { 
+            alert('Błąd połączenia z serwerem.'); 
+        }
+        btn.disabled = false;
+        btn.innerText = "🚀 Wygeneruj Kod i Powiadom Discord";
     }
   </script>
 </body>
