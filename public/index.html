@@ -137,10 +137,11 @@
     .podium-score { color: #00e676; font-weight: 900; margin-top: 5px; font-size: 1.1rem; }
     .rank-number { font-weight: 900; color: #555; width: 40px; text-align: center; font-size: 1.1rem; }
 
+    /* POPRAWIONE UKRYWANIE MODALI */
     .modal, .offer-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 1000; }
     .modal { background: rgba(0,0,0,0.95); } 
-    
     .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 100000; } 
+    
     .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; text-align: center; border: 1px solid #2a2e39; }
     .modal-content input, .modal-content select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px; }
     .modal-content button { width: 100%; } 
@@ -598,19 +599,18 @@
         </div>
       </main>
 
-      <!-- NOWY, ULEPSZONY PANEL ADMINA Z WYSZUKIWANIEM I TOP 10 -->
       <main id="tab-admin" style="display: none;">
         <h2 class="section-title" data-lang="navAdmin">⚙️ Admin Panel</h2>
         
-        <!-- STATYSTYKI GŁÓWNE -->
         <div class="steps-grid" style="margin-bottom: 20px;">
             <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminOnlineUsers()">
                 <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">🟢 Online Users (Click)</h3>
                 <p id="adminStatOnline" style="color: #00e676; font-size: 2.2rem; font-weight: 900;">0</p>
             </div>
             <div class="step-card" style="text-align: center; padding: 25px 15px;">
-                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💎 Total R$ Generated</h3>
-                <p id="adminStatTotal" style="color: #ffb703; font-size: 2.2rem; font-weight: 900;">0.00</p>
+                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">📈 Dzienne R$ (Reset 00:00)</h3>
+                <p id="adminStatDaily" style="color: #ffb703; font-size: 2.2rem; font-weight: 900;">0.00</p>
+                <p id="adminStatDailyUsd" style="color: #00e676; font-size: 1rem; margin-top: 5px; font-weight: bold;">≈ $0.00 USD</p>
             </div>
             <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminPendingPayouts()">
                 <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💸 Pending Payouts (Click)</h3>
@@ -633,11 +633,10 @@
             </div>
         </div>
 
-        <!-- ZARZĄDZANIE KONKRETNYM GRACZEM (NOWE) -->
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #ffb703; margin-bottom: 15px;">🔧 Zarządzanie Robuxami Graczy</h3>
             <div style="position: relative;">
-                <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" onchange="fetchUserDetails(this.value)" placeholder="Wpisz nazwę gracza i naciśnij Enter (Wyszukiwarka)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+                <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" placeholder="Wpisz nazwę gracza (Wyszukiwarka)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
                 <ul id="adminUserDropdown" style="display: none; position: absolute; top: 45px; left: 0; background: #1e1e26; width: 100%; list-style: none; padding: 0; margin: 0; border: 1px solid #333; border-radius: 6px; z-index: 10; max-height: 150px; overflow-y: auto;"></ul>
             </div>
             
@@ -662,7 +661,6 @@
             </div>
         </div>
 
-        <!-- GENERATOR KODÓW -->
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #00e676; margin-bottom: 15px;">🎟️ Generator Kodów Promocyjnych</h3>
             <input type="text" id="adminPromoCode" placeholder="Nazwa kodu (np. ROBUX2026)" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
@@ -673,7 +671,6 @@
             <button class="btn-action" style="width: 100%; margin: 0; padding: 15px; font-size: 1.1rem;" onclick="createAdminPromoCode()">🚀 Wygeneruj Kod i Powiadom Discord</button>
         </div>
 
-        <!-- TOP 10 WNIOSKÓW NA DOLE -->
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #ff3333; margin-bottom: 15px;">🚨 Top 10 Najnowszych Oczekujących Wypłat</h3>
             <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
@@ -691,12 +688,11 @@
               <a href="terms.html" target="_blank">Terms of Service</a> | 
               <a href="privacy.html" target="_blank">Privacy Policy</a>
           </div>
-          <p style="color: #666; margin-bottom: 5px;">© 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
+          <p style="color: #666; margin-bottom: 5px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
       </footer>
     </div>
   </div>
 
-  <!-- PŁYWAJĄCY WIDŻET TWITCH -->
   <div class="twitch-floating" id="twitchWidget">
       <div class="twitch-header">
           <span>🔴 TTV_YTdoog3YT LIVE</span>
@@ -705,7 +701,6 @@
       <div id="twitch-embed-player" style="flex: 1; width: 100%; height: 100%;"></div>
   </div>
 
-  <!-- CZAT -->
   <div id="chatWidget" class="chat-widget minimized">
       <div class="chat-header" onclick="toggleChat()">
           <span data-lang="globalChat">🌍 Global Chat</span>
@@ -722,6 +717,7 @@
       </div>
   </div>
 
+  <!-- JEDNO, JEDYNE OKIENKO LOGOWANIA -->
   <div class="modal" id="loginModal">
     <div class="modal-content">
       <h3 style="color: #fff; margin-bottom: 15px;" data-lang="modalLoginTitle">Connect Roblox Account</h3>
@@ -745,10 +741,9 @@
       </div>
   </div>
 
-  <!-- MODAL DLA ANKIET -->
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
-      <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">×</span></div>
+      <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">&times;</span></div>
       <div id="iframeContainer"></div>
     </div>
   </div>
@@ -1106,7 +1101,7 @@
             <div class="goal-card">${imgHtml}
                 <div class="goal-details">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;"><h4 style="margin:0;">${goal.title}</h4><span class="goal-status ${statusClass}">${statusText}</span></div>
-                    <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$  |  ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
+                    <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$ &nbsp;|&nbsp; ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
                     <div class="progress-bar-bg" style="margin-bottom: 10px;"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
                     ${cancelBtn}
                 </div>
@@ -1381,7 +1376,8 @@
             const data = await res.json();
             if (!data.error) {
                 document.getElementById('adminStatOnline').innerText = data.online || 0;
-                document.getElementById('adminStatTotal').innerText = (data.totalRobux || 0).toFixed(2);
+                document.getElementById('adminStatDaily').innerText = (data.dailyRobux || 0).toFixed(2);
+                document.getElementById('adminStatDailyUsd').innerText = '≈ $' + ((data.dailyRobux || 0) * 0.025).toFixed(2) + ' USD';
                 document.getElementById('adminStatPending').innerText = (data.pendingRobux || 0).toFixed(2);
             }
         } catch (e) {}
@@ -1509,7 +1505,7 @@
                 li.onmouseover = () => li.style.background = '#252a34'; li.onmouseout = () => li.style.background = 'transparent';
                 li.onclick = () => {
                     document.getElementById('adminSearchUser').value = u; dropdown.style.display = 'none';
-                    fetchUserDetails(u); // WYWOŁANIE POBRANIA SZCZEGÓŁÓW
+                    fetchUserDetails(u);
                 };
                 dropdown.appendChild(li);
             });
@@ -1572,7 +1568,7 @@
                 alert(`✅ Zakończono sukcesem! Nowy stan konta gracza ${username}: ${data.newBalance.toFixed(2)} R$`);
                 document.getElementById('adminBalanceAmount').value = '';
                 loadAdminStats(); 
-                fetchUserDetails(username); // Odświeża box szczegółów pod spodem
+                fetchUserDetails(username);
             }
         } catch (e) { alert('Błąd połączenia z serwerem.'); }
     }

@@ -39,6 +39,15 @@ function isAdmin(req, res, next) {
     return res.status(403).json({ error: 'Brak dostępu!' });
 }
 
+// Funkcja obliczająca czas o północy w POLSCE (reset statystyk)
+function getPolandMidnight() {
+    const now = new Date();
+    const polandTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
+    const diffMs = polandTime.getTime() - now.getTime();
+    polandTime.setHours(0, 0, 0, 0);
+    return new Date(polandTime.getTime() - diffMs);
+}
+
 app.get('/api/admin/login', (req, res) => {
     const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
     res.redirect(authUrl);
@@ -89,8 +98,15 @@ const onlineUsersMap = new Map();
 
 app.get('/api/admin/stats', isAdmin, async (req, res) => {
     try {
-        const totalPointsAggr = await User.aggregate([{ $group: { _id: null, total: { $sum: "$points" } } }]);
-        const totalRobux = totalPointsAggr.length > 0 ? totalPointsAggr[0].total : 0;
+        const polandMidnight = getPolandMidnight();
+
+        // Liczy wszystkie punkty wygenerowane DZIŚ od północy w Polsce
+        const dailyPointsAggr = await Earning.aggregate([
+            { $match: { createdAt: { $gte: polandMidnight } } },
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        const dailyRobux = dailyPointsAggr.length > 0 ? dailyPointsAggr[0].total : 0;
+
         const pendingPayoutsAggr = await Payout.aggregate([
             { $match: { status: 'Pending Manual' } },
             { $group: { _id: null, total: { $sum: "$pointsWithdrawn" } } }
@@ -98,7 +114,8 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         const pendingRobux = pendingPayoutsAggr.length > 0 ? pendingPayoutsAggr[0].total : 0;
         
         const uniqueOnline = new Set(onlineUsersMap.values()).size;
-        res.json({ online: uniqueOnline, totalRobux: totalRobux, pendingRobux: pendingRobux });
+        
+        res.json({ online: uniqueOnline, dailyRobux: dailyRobux, pendingRobux: pendingRobux });
     } catch (err) { res.status(500).json({ error: 'Błąd statystyk' }); }
 });
 
@@ -118,7 +135,6 @@ app.get('/api/admin/users/search', isAdmin, async (req, res) => {
     } catch (e) { res.status(500).json([]); }
 });
 
-// Nowy endpoint do wyciągania szczegółów pojedynczego gracza
 app.get('/api/admin/user-details/:username', isAdmin, async (req, res) => {
     try {
         const regex = new RegExp(`^${req.params.username}$`, 'i');
