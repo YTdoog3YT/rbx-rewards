@@ -11,7 +11,6 @@ const discordBot = require('./discord-bot');
 const botAdmin = require('./bot-2.js');
 const botTwitch = require('./bot-twitch.js');
 
-// --- DANE SZEFA I DISCORD OAUTH2 ---
 const ADMIN_DISCORD_ID = "398911896893521921";
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "1546268855708684318"; 
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || "sQ_3XRcNGuEHnoDUdy5zKfPvZOGry0FF"; 
@@ -33,9 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- BEZPIECZEŃSTWO ADMINA ---
 const activeAdminTokens = new Set();
-
 function isAdmin(req, res, next) {
     const token = req.headers.authorization;
     if (token && activeAdminTokens.has(token)) return next();
@@ -78,9 +75,7 @@ app.get('/api/admin/callback', async (req, res) => {
         } else {
             res.redirect('/?error=Unauthorized');
         }
-    } catch (error) {
-        res.redirect('/?error=ServerError');
-    }
+    } catch (error) { res.redirect('/?error=ServerError'); }
 });
 
 app.post('/api/admin/verify', (req, res) => {
@@ -88,6 +83,9 @@ app.post('/api/admin/verify', (req, res) => {
     if (token && activeAdminTokens.has(token)) res.json({ success: true });
     else res.json({ success: false });
 });
+
+// --- ADMIN API ---
+const onlineUsersMap = new Map();
 
 app.get('/api/admin/stats', isAdmin, async (req, res) => {
     try {
@@ -98,8 +96,78 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
             { $group: { _id: null, total: { $sum: "$pointsWithdrawn" } } }
         ]);
         const pendingRobux = pendingPayoutsAggr.length > 0 ? pendingPayoutsAggr[0].total : 0;
-        res.json({ online: onlineUsersCount, totalRobux: totalRobux, pendingRobux: pendingRobux });
-    } catch (err) { res.status(500).json({ error: 'Błąd ładowania statystyk' }); }
+        
+        const uniqueOnline = new Set(onlineUsersMap.values()).size;
+        res.json({ online: uniqueOnline, totalRobux: totalRobux, pendingRobux: pendingRobux });
+    } catch (err) { res.status(500).json({ error: 'Błąd statystyk' }); }
+});
+
+app.get('/api/admin/online', isAdmin, (req, res) => {
+    res.json(Array.from(new Set(onlineUsersMap.values())).sort());
+});
+
+app.get('/api/admin/users/search', isAdmin, async (req, res) => {
+    try {
+        const q = req.query.q || '';
+        if (q.length < 1) return res.json([]);
+        const users = await User.find({ username: new RegExp(`^${q}`, 'i') })
+            .select('username')
+            .sort({ username: 1 })
+            .limit(10);
+        res.json(users.map(u => u.username));
+    } catch (e) { res.status(500).json([]); }
+});
+
+app.post('/api/admin/manage-balance', isAdmin, async (req, res) => {
+    const { username, amount, action } = req.body;
+    try {
+        let user = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
+        if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza!' });
+        
+        let amt = parseFloat(amount);
+        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Nieprawidłowa kwota!' });
+        
+        if (action === 'add') {
+            user.points += amt;
+            await new Earning({ username: user.username, amount: amt, source: 'Admin', details: 'Dodano ręcznie' }).save();
+        } else if (action === 'subtract') {
+            user.points = Math.max(0, user.points - amt);
+            await new Earning({ username: user.username, amount: -amt, source: 'Admin', details: 'Odebrano ręcznie' }).save();
+        }
+        
+        await user.save();
+        res.json({ success: true, newBalance: user.points });
+    } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
+});
+
+app.get('/api/admin/pending-payouts', isAdmin, async (req, res) => {
+    try {
+        const payouts = await Payout.find({ status: 'Pending Manual' }).sort({ createdAt: -1 });
+        res.json(payouts);
+    } catch(e) { res.status(500).json([]); }
+});
+
+app.post('/api/admin/resolve-payout', isAdmin, async (req, res) => {
+    const { payoutId, action } = req.body; // action = 'complete' lub 'reject'
+    try {
+        const payout = await Payout.findById(payoutId);
+        if(!payout) return res.status(404).json({ error: 'Wypłata nie istnieje' });
+        
+        if(action === 'complete') {
+            payout.status = 'Completed';
+            await payout.save();
+        } else if(action === 'reject') {
+            // Zwracamy R$ na konto użytkownika i oznaczamy jako odrzucone
+            let user = await User.findOne({ username: payout.username });
+            if(user) {
+                user.points += payout.pointsWithdrawn;
+                await user.save();
+                payout.status = 'Rejected';
+                await payout.save();
+            }
+        }
+        res.json({ success: true });
+    } catch(e) { res.status(500).json({ error: 'Błąd' }); }
 });
 
 app.post('/api/admin/create-code', isAdmin, async (req, res) => {
@@ -129,7 +197,7 @@ const GoalSchema = new mongoose.Schema({
     title: String,
     target: Number,
     current: { type: Number, default: 0 },
-    status: { type: String, default: 'active' }, // 'active', 'completed', 'canceled'
+    status: { type: String, default: 'active' },
     imageUrl: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now }
 });
@@ -155,7 +223,16 @@ const User = mongoose.model('User', UserSchema);
 const EarningSchema = new mongoose.Schema({ username: String, amount: Number, source: { type: String, default: 'Survey' }, details: { type: String, default: '' }, createdAt: { type: Date, default: Date.now } });
 const Earning = mongoose.model('Earning', EarningSchema);
 
-const PayoutSchema = new mongoose.Schema({ username: String, paypalEmail: String, pointsWithdrawn: Number, usdAmount: Number, status: { type: String, default: 'Completed' }, createdAt: { type: Date, default: Date.now } });
+const PayoutSchema = new mongoose.Schema({ 
+    username: String, 
+    payoutMethod: { type: String, default: 'PayPal' }, 
+    payoutAddress: String, 
+    paypalEmail: String, 
+    pointsWithdrawn: Number, 
+    usdAmount: Number, 
+    status: { type: String, default: 'Pending Manual' }, 
+    createdAt: { type: Date, default: Date.now } 
+});
 const Payout = mongoose.model('Payout', PayoutSchema);
 
 const PromoCodeSchema = new mongoose.Schema({ code: { type: String, unique: true, uppercase: true }, reward: Number, maxUses: Number, currentUses: { type: Number, default: 0 }, usedBy: [String] });
@@ -163,7 +240,6 @@ const PromoCode = mongoose.model('PromoCode', PromoCodeSchema);
 
 const dbModels = { User, Earning, Payout, PromoCode };
 
-// --- LOGIKA KASKADY CELÓW ---
 function allocateGoalProgress(user, amountToAllocate) {
     let remaining = amountToAllocate;
     let activeGoals = user.goals.filter(g => g.status === 'active').sort((a, b) => a.createdAt - b.createdAt);
@@ -208,7 +284,6 @@ async function addXPAndDailyEarned(user, amount) {
     user.xp += amount * 100;
 }
 
-// --- ENDPOINTY ZARABIANIA ---
 app.get('/postback', async (req, res) => {
     const userId = req.query.user_id; const amount = parseFloat(req.query.amount_local); const status = req.query.status;
     res.status(200).send('OK');
@@ -250,7 +325,6 @@ app.all('/api/theoremreach-postback', async (req, res) => {
     res.status(200).send('1');
 });
 
-// --- API CELÓW GRACZA ---
 app.get('/api/goals/:username', async (req, res) => {
     try {
         const user = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
@@ -268,14 +342,7 @@ app.post('/api/goals/add', async (req, res) => {
         const activeCount = user.goals.filter(g => g.status === 'active').length;
         if (activeCount >= 5) return res.status(400).json({ error: 'Limit 5 aktywnych celów osiągnięty!' });
 
-        user.goals.push({
-            id: crypto.randomBytes(8).toString('hex'),
-            title: title || 'Mój Cel',
-            target: parseFloat(target),
-            current: 0,
-            status: 'active',
-            imageUrl: ''
-        });
+        user.goals.push({ id: crypto.randomBytes(8).toString('hex'), title: title || 'Mój Cel', target: parseFloat(target), current: 0, status: 'active', imageUrl: '' });
         await user.save();
         res.json({ success: true, goals: user.goals });
     } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
@@ -297,9 +364,7 @@ app.post('/api/goals/cancel', async (req, res) => {
         const rollover = goal.current;
         goal.current = 0; 
 
-        if (rollover > 0) {
-            allocateGoalProgress(user, rollover);
-        }
+        if (rollover > 0) allocateGoalProgress(user, rollover);
         await user.save();
         res.json({ success: true, goals: user.goals });
     } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
@@ -317,7 +382,6 @@ app.post('/api/goals/clear', async (req, res) => {
     } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
 });
 
-// --- API GRACZA (Punkty, Poziomy, Koło Fortuny) ---
 app.get('/api/points/:username', async (req, res) => {
     try {
         const user = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
@@ -333,13 +397,8 @@ app.get('/api/user-stats/:username', async (req, res) => {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // POPRAWKA DO KOŁA FORTUNY: Zlicza TYLKO zarobki z ankiet, ignoruje wpisy z poleceń
         const dailyEarnedAggr = await Earning.aggregate([
-            { $match: { 
-                username: new RegExp(`^${req.params.username}$`, 'i'), 
-                createdAt: { $gte: startOfDay },
-                source: { $in: ['Survey'] } 
-            }},
+            { $match: { username: new RegExp(`^${req.params.username}$`, 'i'), createdAt: { $gte: startOfDay }, source: { $in: ['Survey'] } } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const actualDailyEarned = dailyEarnedAggr.length > 0 ? dailyEarnedAggr[0].total : 0;
@@ -347,30 +406,14 @@ app.get('/api/user-stats/:username', async (req, res) => {
         let currentStreak = user.wheelStreak || 0;
         if (user.lastWheelSpin) {
             const diffHours = (new Date() - new Date(user.lastWheelSpin)) / (1000 * 60 * 60);
-            if (diffHours > 48 && currentStreak !== 0) {
-                currentStreak = 0;
-                user.wheelStreak = 0;
-                await user.save();
-            }
+            if (diffHours > 48 && currentStreak !== 0) { currentStreak = 0; user.wheelStreak = 0; await user.save(); }
         }
 
-        res.json({ 
-            xp: user.xp || 0, 
-            dailyEarned: actualDailyEarned, 
-            claimedLevels: user.claimedLevels || [], 
-            lastWheelSpin: user.lastWheelSpin, 
-            wheelStreak: currentStreak 
-        });
+        res.json({ xp: user.xp || 0, dailyEarned: actualDailyEarned, claimedLevels: user.claimedLevels || [], lastWheelSpin: user.lastWheelSpin, wheelStreak: currentStreak });
     } catch (error) { res.json({ xp: 0, dailyEarned: 0, claimedLevels: [], lastWheelSpin: null, wheelStreak: 0 }); }
 });
 
-const LEVEL_THRESHOLDS = {
-    1: { xp: 1000, reward: 3 },
-    2: { xp: 5000, reward: 8 },
-    3: { xp: 15000, reward: 20 },
-    4: { xp: 40000, reward: 50 },
-    5: { xp: 100000, reward: 100 }
-};
+const LEVEL_THRESHOLDS = { 1: { xp: 1000, reward: 3 }, 2: { xp: 5000, reward: 8 }, 3: { xp: 15000, reward: 20 }, 4: { xp: 40000, reward: 50 }, 5: { xp: 100000, reward: 100 } };
 
 app.post('/api/claim-level', async (req, res) => {
     const { username, level } = req.body;
@@ -399,87 +442,54 @@ app.post('/api/spin-wheel', async (req, res) => {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // POPRAWKA DO KOŁA FORTUNY: Zabezpieczenie nałożone podczas losowania (ignoruje polecenia)
         const dailyEarnedAggr = await Earning.aggregate([
-            { $match: { 
-                username: new RegExp(`^${username}$`, 'i'), 
-                createdAt: { $gte: startOfDay },
-                source: { $in: ['Survey'] } 
-            }},
+            { $match: { username: new RegExp(`^${username}$`, 'i'), createdAt: { $gte: startOfDay }, source: { $in: ['Survey'] } } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const actualDailyEarned = dailyEarnedAggr.length > 0 ? dailyEarnedAggr[0].total : 0;
 
-        if (actualDailyEarned < 4.5) {
-            return res.status(400).json({ error: 'Zarób dzisiaj minimum 4.50 R$ (Oferty/Ankiety), aby zakręcić kołem!' });
-        }
+        if (actualDailyEarned < 4.5) return res.status(400).json({ error: 'Zarób dzisiaj minimum 4.50 R$ (Oferty/Ankiety), aby zakręcić kołem!' });
 
         const now = new Date();
         if (user.lastWheelSpin) {
             const diffHours = (now - new Date(user.lastWheelSpin)) / (1000 * 60 * 60);
-            if (diffHours < 24) {
-                return res.status(400).json({ error: 'Koło jest jeszcze zablokowane (trwa 24h blokady)!' });
-            }
-            if (diffHours <= 48) {
-                user.wheelStreak = (user.wheelStreak || 0) + 1;
-            } else {
-                user.wheelStreak = 1;
-            }
-        } else { 
-            user.wheelStreak = 1; 
-        }
+            if (diffHours < 24) return res.status(400).json({ error: 'Koło jest jeszcze zablokowane (trwa 24h blokady)!' });
+            if (diffHours <= 48) user.wheelStreak = (user.wheelStreak || 0) + 1;
+            else user.wheelStreak = 1;
+        } else { user.wheelStreak = 1; }
 
         const rand = Math.random() * 100;
         let reward = 0.1;
-        if (rand <= 1) reward = 2.5; 
-        else if (rand <= 5) reward = 1.0; 
-        else if (rand <= 20) reward = 0.5;
-        else if (rand <= 55) reward = 0.2; 
-        else reward = 0.1;
+        if (rand <= 1) reward = 2.5; else if (rand <= 5) reward = 1.0; else if (rand <= 20) reward = 0.5; else if (rand <= 55) reward = 0.2; else reward = 0.1;
 
-        user.points += reward;
-        user.lastWheelSpin = now;
-        allocateGoalProgress(user, reward);
-        await user.save();
-
+        user.points += reward; user.lastWheelSpin = now; allocateGoalProgress(user, reward); await user.save();
         await new Earning({ username: user.username, amount: reward, source: 'Wheel', details: `Streak: ${user.wheelStreak}` }).save();
         res.json({ success: true, reward, newBalance: user.points, streak: user.wheelStreak });
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
 app.get('/api/latest-earners', async (req, res) => { 
-    try { 
-        res.json(await Earning.find({ source: { $in: ['Survey', 'Promo', 'LevelUp', 'Spinner', 'Wheel'] } }).sort({ createdAt: -1 }).limit(5)); 
-    } catch (e) { 
-        res.json([]); 
-    } 
+    try { res.json(await Earning.find({ source: { $in: ['Survey', 'Promo', 'LevelUp', 'Spinner', 'Wheel'] } }).sort({ createdAt: -1 }).limit(5)); } 
+    catch (e) { res.json([]); } 
 });
 
 app.get('/api/latest-payouts', async (req, res) => { 
-    try { 
-        res.json(await Payout.find({ status: 'Completed' }).sort({ createdAt: -1 }).limit(5)); 
-    } catch (e) { 
-        res.json([]); 
-    } 
+    try { res.json(await Payout.find({ status: 'Completed' }).sort({ createdAt: -1 }).limit(5)); } 
+    catch (e) { res.json([]); } 
 });
 
 app.get('/api/leaderboard', async (req, res) => {
     try {
-        const period = req.query.period || '7days';
-        const now = new Date(); let matchStage = { source: { $ne: 'Promo' } }; 
+        const period = req.query.period || '7days'; const now = new Date(); let matchStage = { source: { $ne: 'Promo' } }; 
         if (period !== 'alltime') {
             let startDate = new Date();
-            if (period === 'today') startDate.setHours(0, 0, 0, 0);
-            else if (period === '7days') startDate.setDate(now.getDate() - 7);
-            else if (period === '30days') startDate.setDate(now.getDate() - 30);
-            else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
+            if (period === 'today') startDate.setHours(0, 0, 0, 0); else if (period === '7days') startDate.setDate(now.getDate() - 7);
+            else if (period === '30days') startDate.setDate(now.getDate() - 30); else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
             matchStage.createdAt = { $gte: startDate };
         }
         const leaderboard = await Earning.aggregate([
-            { $match: matchStage },
-            { $group: { _id: "$username", earned: { $sum: "$amount" } } },
-            { $sort: { earned: -1 } }, { $limit: 100 },
-            { $project: { _id: 0, username: "$_id", earned: 1 } }
+            { $match: matchStage }, { $group: { _id: "$username", earned: { $sum: "$amount" } } },
+            { $sort: { earned: -1 } }, { $limit: 100 }, { $project: { _id: 0, username: "$_id", earned: 1 } }
         ]);
         res.json(leaderboard);
     } catch (error) { res.status(500).json({ error: "Błąd podczas ładowania rankingu." }); }
@@ -488,11 +498,9 @@ app.get('/api/leaderboard', async (req, res) => {
 app.get('/api/earning-history/:username', async (req, res) => {
     try {
         const regex = new RegExp(`^${req.params.username}$`, 'i');
-        const earnings = await Earning.find({ username: regex }).lean();
-        const payouts = await Payout.find({ username: regex }).lean();
+        const earnings = await Earning.find({ username: regex }).lean(); const payouts = await Payout.find({ username: regex }).lean();
         const combined = [...earnings.map(e => ({ ...e, recordType: 'earning' })), ...payouts.map(p => ({ ...p, recordType: 'payout' }))];
-        combined.sort((a, b) => b.createdAt - a.createdAt);
-        res.json(combined.slice(0, 100));
+        combined.sort((a, b) => b.createdAt - a.createdAt); res.json(combined.slice(0, 100));
     } catch (error) { res.status(500).json({ error: "Error" }); }
 });
 
@@ -501,10 +509,7 @@ app.get('/api/inbox/:username', async (req, res) => {
         const user = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
         if (!user) return res.json([]);
         const unread = user.inbox.filter(msg => !msg.read);
-        if (unread.length > 0) {
-            user.inbox.forEach(msg => msg.read = true);
-            await user.save();
-        }
+        if (unread.length > 0) { user.inbox.forEach(msg => msg.read = true); await user.save(); }
         res.json(unread);
     } catch (error) { res.json([]); }
 });
@@ -519,21 +524,15 @@ app.post('/api/support-ticket', async (req, res) => {
 });
 
 app.post('/api/withdraw', async (req, res) => {
-    // Odczytuje e-mail, zabezpieczając się przed różnymi wersjami HTML (paypalEmail albo payoutAddress)
-    const paypalEmail = req.body.paypalEmail || req.body.payoutAddress; 
-    const { username, points } = req.body;
+    const paypalEmail = req.body.paypalEmail || req.body.payoutAddress; const { username, points } = req.body;
     try {
         const user = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
         if (!user || user.points < points) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-        if (user.linkedPayPal) { 
-            if (user.linkedPayPal.toLowerCase() !== paypalEmail.toLowerCase()) return res.status(400).json({ error: `Konto przypisane do adresu: ${user.linkedPayPal}` }); 
-        } 
+        if (user.linkedPayPal) { if (user.linkedPayPal.toLowerCase() !== paypalEmail.toLowerCase()) return res.status(400).json({ error: `Konto przypisane do adresu: ${user.linkedPayPal}` }); } 
         else { user.linkedPayPal = paypalEmail.toLowerCase(); }
-        const usdAmount = parseFloat((points * 0.025).toFixed(2)); 
-        user.points -= points; await user.save();
+        const usdAmount = parseFloat((points * 0.025).toFixed(2)); user.points -= points; await user.save();
         const newPayout = await new Payout({ username: user.username, paypalEmail: paypalEmail.toLowerCase(), pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save();
-        discordBot.sendPayoutAlert(newPayout);
-        res.json({ success: true, newBalance: user.points, usd: usdAmount });
+        discordBot.sendPayoutAlert(newPayout); res.json({ success: true, newBalance: user.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
@@ -548,8 +547,7 @@ app.post('/api/redeem-promo', async (req, res) => {
         user.points += promo.reward;
         if (!user.redeemedPromoCodes) user.redeemedPromoCodes = [];
         user.redeemedPromoCodes.push({ code: promo.code, reward: promo.reward, date: new Date() });
-        allocateGoalProgress(user, promo.reward);
-        await user.save();
+        allocateGoalProgress(user, promo.reward); await user.save();
         promo.currentUses += 1; promo.usedBy.push(username.toLowerCase()); await promo.save();
         await new Earning({ username: user.username, amount: promo.reward, source: 'Promo', details: promo.code }).save();
         res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} R$!` });
@@ -596,9 +594,14 @@ app.get('/api/referral-stats/:username', async (req, res) => {
     } catch (error) { res.json([]); }
 });
 
-let onlineUsersCount = 0;
 io.on('connection', (socket) => { 
-    onlineUsersCount++; socket.on('chatMessage', (data) => { io.emit('chatMessage', data); }); socket.on('disconnect', () => { onlineUsersCount--; });
+    socket.on('user_joined', (username) => {
+        if(username) onlineUsersMap.set(socket.id, username);
+    });
+    socket.on('chatMessage', (data) => { io.emit('chatMessage', data); }); 
+    socket.on('disconnect', () => { 
+        onlineUsersMap.delete(socket.id);
+    });
 });
 
 const PORT = process.env.PORT || 3000;

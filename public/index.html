@@ -12,8 +12,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
-  
-  <!-- SKRYPT TWITCH API DO INTELIGENTNEGO WIDŻETU -->
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
   <style>
@@ -143,8 +141,8 @@
     .modal { background: rgba(0,0,0,0.95); } 
     
     /* MODAL ANKIET ORAZ JEGO Z-INDEX */
-    .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 100000; } /* Ustawiony z-index wyżej niż menu mobilne */
-    .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #2a2e39; }
+    .offer-modal-overlay { background: rgba(0,0,0,0.95); z-index: 100000; } 
+    .modal-content { background: #181b22; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; text-align: center; border: 1px solid #2a2e39; }
     .modal-content input, .modal-content select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px; }
     .modal-content button { width: 100%; } 
     
@@ -211,7 +209,7 @@
     .cookie-banner a { color: #00e676; }
     .cookie-banner button { background: #00e676; color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     
-    /* STYLE DLA INTELIGENTNEGO WIDŻETU TWITCHA */
+    /* TWITCH WIDGET */
     .twitch-floating { position: fixed; bottom: 20px; left: 20px; width: 320px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid #9146FF; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; background: #181b22; display: none; flex-direction: column; }
     .twitch-header { background: #9146FF; color: #fff; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     .twitch-header span:last-child { cursor: pointer; transition: 0.2s; padding: 0 5px; }
@@ -227,9 +225,7 @@
         .podium-step { width: 32%; padding: 10px; }
         .podium-name { font-size: 0.9rem; }
         .podium-score { font-size: 0.9rem; }
-        .twitch-floating { display: none !important; } /* UKRYWA TWITCHA NA TELEFONACH */
-        
-        /* PEŁNY EKRAN DLA ANKIET NA TELEFONIE */
+        .twitch-floating { display: none !important; }
         .offer-modal-box { width: 100%; height: 100vh; border-radius: 0; border: none; }
         .offer-modal-header { padding: 10px 15px; }
     }
@@ -256,7 +252,6 @@
 </head>
 <body class="on-home-tab">
 
-  <!-- MOBILNE MENU -->
   <div class="mobile-nav">
       <div class="nav-item active" id="mob-nav-home" onclick="switchTab('home')">
           <span>🏠</span> <div data-lang="navHomeMob">Home</div>
@@ -279,7 +274,6 @@
   </div>
 
   <div class="page-layout">
-    <!-- BOCZNE MENU (PC) -->
     <div class="side-nav-container">
         <nav class="side-nav">
             <a href="/">
@@ -328,7 +322,6 @@
 
       <!-- ZAKŁADKA HOME -->
       <main id="tab-home">
-          <!-- WIDOK DLA NIEZALOGOWANYCH -->
           <div id="home-logged-out" style="display: block; width: 100%;">
               <div class="hero-container">
                   <h1 class="hero-title" data-lang="homeHeroTitle">Complete Quests & Claim <span>R$ Rewards!</span></h1>
@@ -388,7 +381,6 @@
               </div>
           </div>
 
-          <!-- WIDOK DLA ZALOGOWANYCH -->
           <div id="home-logged-in" style="display: none;">
               <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
               
@@ -464,16 +456,13 @@
       <!-- ZAKŁADKA GOALS -->
       <main id="tab-goals" style="display: none;">
           <h2 class="section-title" data-lang="navGoals">🎯 Goal Tracker</h2>
-          
           <div class="goal-form-section">
               <h3 style="color: #fff; margin-bottom: 15px;" data-lang="goalCreateTitle">Create a New Goal</h3>
               <div class="goal-tabs">
                   <div class="goal-tab active" onclick="switchGoalTab('robux', this)" data-lang="goalTabRobux">Target R$</div>
                   <div class="goal-tab" onclick="switchGoalTab('usd', this)" data-lang="goalTabUsd">Target USD</div>
               </div>
-              
               <input type="text" id="goalTitleInput" placeholder="Name your goal (e.g., Ninja Animation)" data-lang-placeholder="phGoalName">
-              
               <div id="goalInputRobux">
                   <input type="number" id="goalRobuxValue" placeholder="Amount in R$" data-lang-placeholder="phGoalRobux">
               </div>
@@ -481,28 +470,22 @@
                   <input type="number" id="goalUsdValue" placeholder="Amount in USD (min $5)" step="0.5" data-lang-placeholder="phGoalUsd" oninput="document.getElementById('usdConv').innerText = '≈ ' + (this.value / 0.025).toFixed(0) + ' R$'">
                   <p style="color: #00e676; font-size: 0.9rem; margin-top: -5px; margin-bottom: 15px;" id="usdConv">≈ 0 R$</p>
               </div>
-
               <button class="btn-action" style="width: 100%; margin-top: 5px;" onclick="addGoal()" data-lang="btnAddGoal" id="btnAddGoalBtn">Add Goal</button>
           </div>
-
           <div class="content-box" style="padding: 20px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                   <h3 style="color: #fff; margin: 0;" data-lang="goalListTitle">Your Goals</h3>
                   <button style="background: transparent; color: #ff3333; border: 1px solid #ff3333; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;" onclick="clearGoals()" data-lang="btnGoalClear">Clear History</button>
               </div>
-              <div id="goalsListContainer">
-                  <p style="color: #888;">No goals yet.</p>
-              </div>
+              <div id="goalsListContainer"><p style="color: #888;">No goals yet.</p></div>
           </div>
       </main>
 
       <!-- OSOBNA ZAKŁADKA KOŁO FORTUNY -->
       <main id="tab-wheel" style="display: none;">
         <h2 class="section-title" data-lang="wheelTitle">🎡 Wheel of Fortune</h2>
-        
         <div class="wheel-container">
             <p style="color: #a0a0b0; text-align: center; margin-bottom: 20px; font-size: 0.95rem;" data-lang="wheelDesc">Earn at least 4.50 R$ from quests today to unlock your daily spin. After a 24h cooldown, you have another 24h window to claim and keep your streak!</p>
-            
             <div class="wheel-stats">
                 <div class="wheel-stat-box">
                     <span data-lang="wheelEarnedToday">Earned Today</span>
@@ -513,7 +496,6 @@
                     <strong id="uiWheelStreak">0 Days 🔥</strong>
                 </div>
             </div>
-
             <div class="spinner-window" id="spinnerWindow">
                 <div class="spinner-pointer"></div>
                 <div class="spinner-track" id="spinnerTrack">
@@ -527,7 +509,6 @@
                     <div class="spinner-tile tile-epic">0.50 R$</div>
                 </div>
             </div>
-            
             <button id="btnSpinWheel" class="btn-action" style="padding: 15px 40px; font-size: 1.2rem; width: 100%; max-width: 320px;" onclick="startSpinner()" disabled data-lang="btnSpinLocked">🔒 Locked (Earn 4.5 R$)</button>
             <div id="wheelTimer" class="wheel-timer-box"></div>
         </div>
@@ -536,16 +517,13 @@
       <!-- OSOBNA ZAKŁADKA POZIOMY XP -->
       <main id="tab-levels" style="display: none;">
         <h2 class="section-title" data-lang="levelsTitle">⭐ Account Levels & XP</h2>
-        
         <div class="content-box" style="padding: 20px;">
             <h3 style="color: #fff; margin-bottom: 5px;" data-lang="levelSystemTitle">Account Leveling System</h3>
             <p style="color: #a0a0b0; margin-bottom: 20px;" data-lang="levelSystemDesc">Every 1 R$ earned from quests gives you 100 XP. Reach milestones to claim massive R$ bonuses!</p>
-            
             <div style="background: #14171d; border: 1px solid #333947; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: left;">
                 <span style="color: #a0a0b0; font-size: 0.9rem; text-transform: uppercase;" data-lang="yourTotalXp">Your Total XP:</span>
                 <strong id="uiTotalXp" style="color: #00e676; font-size: 1.5rem; display: block; margin-top: 5px;">0 XP</strong>
             </div>
-
             <div id="levelsList"></div>
         </div>
       </main>
@@ -581,13 +559,11 @@
               <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-word;">Log in first</span>
               <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
           </div>
-
           <div id="redeemCodeSection" style="border-top: 1px solid #2a2e39; padding-top: 20px; margin-top: 10px;">
               <input type="text" id="friendCodeInput" data-lang-placeholder="phFriendCode" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
               <br><button class="btn-action" style="margin-top: 5px;" onclick="submitReferralCode()" data-lang="btnRedeem">Redeem</button>
           </div>
         </div>
-
         <div class="content-box">
             <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
                 <option value="today" data-lang="ldToday">Today</option>
@@ -612,7 +588,6 @@
           <input type="text" id="promoCodeInput" data-lang-placeholder="phPromoCode" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
           <br><button class="btn-action" onclick="submitPromoCode()" data-lang="btnRedeem">Redeem Code</button>
         </div>
-
         <div class="content-box">
             <div class="ref-table-container">
                 <table class="ref-table">
@@ -634,40 +609,64 @@
         </div>
       </main>
 
-<main id="tab-admin" style="display: none;">
+      <!-- NOWY, PEŁNY PANEL ADMINA -->
+      <main id="tab-admin" style="display: none;">
         <h2 class="section-title" data-lang="navAdmin">⚙️ Admin Panel</h2>
         
         <div class="steps-grid" style="margin-bottom: 20px;">
-            <div class="step-card" style="text-align: center; padding: 25px 15px;">
-                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">🟢 Online Users</h3>
+            <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminOnlineUsers()">
+                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">🟢 Online Users (Click)</h3>
                 <p id="adminStatOnline" style="color: #00e676; font-size: 2.2rem; font-weight: 900;">0</p>
             </div>
             <div class="step-card" style="text-align: center; padding: 25px 15px;">
                 <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💎 Total R$ Generated</h3>
                 <p id="adminStatTotal" style="color: #ffb703; font-size: 2.2rem; font-weight: 900;">0.00</p>
             </div>
-            <div class="step-card" style="text-align: center; padding: 25px 15px;">
-                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💸 Pending Payouts (R$)</h3>
+            <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminPendingPayouts()">
+                <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💸 Pending Payouts (Click)</h3>
                 <p id="adminStatPending" style="color: #ff3333; font-size: 2.2rem; font-weight: 900;">0.00</p>
+            </div>
+        </div>
+
+        <div id="adminOnlineList" class="content-box" style="display: none; text-align: left;">
+            <h3 style="color: #00e676; margin-bottom: 10px;">Lista Graczy Online</h3>
+            <div id="adminOnlineListContent" style="color: #fff; background: #0f1115; padding: 15px; border-radius: 6px; border: 1px solid #333; max-height: 200px; overflow-y: auto;">Ładowanie...</div>
+        </div>
+
+        <div id="adminPendingList" class="content-box" style="display: none; text-align: left;">
+            <h3 style="color: #ff3333; margin-bottom: 10px;">Oczekujące Wypłaty (Pending)</h3>
+            <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
+                <table class="ref-table" style="width: 100%; min-width: 500px;">
+                    <thead><tr><th>Użytkownik</th><th>Metoda/Adres</th><th>Kwota</th><th>Akcja</th></tr></thead>
+                    <tbody id="adminPendingListContent"><tr><td colspan="4" style="text-align:center;">Ładowanie...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-box" style="text-align: left;">
+            <h3 style="color: #ffb703; margin-bottom: 15px;">🔧 Zarządzanie Robuxami Graczy</h3>
+            <div style="position: relative;">
+                <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" placeholder="Wpisz nazwę gracza (Wyszukiwarka)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+                <ul id="adminUserDropdown" style="display: none; position: absolute; top: 45px; left: 0; background: #1e1e26; width: 100%; list-style: none; padding: 0; margin: 0; border: 1px solid #333; border-radius: 6px; z-index: 10; max-height: 150px; overflow-y: auto;"></ul>
+            </div>
+            
+            <input type="number" id="adminBalanceAmount" placeholder="Kwota R$" step="0.01" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+            
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-action" style="flex: 1; background: #ff3333;" onclick="adminManageBalance('subtract')">➖ Odejmij</button>
+                <button class="btn-action" style="flex: 1; background: #00e676;" onclick="adminManageBalance('add')">➕ Dodaj</button>
             </div>
         </div>
 
         <div class="content-box" style="text-align: left;">
             <h3 style="color: #00e676; margin-bottom: 15px;">🎟️ Generator Kodów Promocyjnych</h3>
-            <p style="color: #a0a0b0; font-size: 0.9rem; margin-bottom: 15px;">Wygeneruj nowy kod. Bot automatycznie wyśle ogłoszenie na wybrany kanał Discord!</p>
-            
             <input type="text" id="adminPromoCode" placeholder="Nazwa kodu (np. ROBUX2026)" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
-            
             <div style="display: flex; gap: 15px; margin-bottom: 20px;">
                 <input type="number" id="adminPromoReward" placeholder="Nagroda w R$" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
                 <input type="number" id="adminPromoUses" placeholder="Limit użyć (np. 100)" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
             </div>
-            
             <button class="btn-action" style="width: 100%; margin: 0; padding: 15px; font-size: 1.1rem;" onclick="createAdminPromoCode()">🚀 Wygeneruj Kod i Powiadom Discord</button>
         </div>
-      </main>
-        <h2 class="section-title" data-lang="navAdmin">⚙️ Admin</h2>
-        <div class="content-box"><p style="color: #a0a0b0;">Admin panel active.</p></div>
       </main>
 
       <footer>
@@ -681,7 +680,6 @@
     </div>
   </div>
 
-  <!-- PŁYWAJĄCY WIDŻET TWITCH (TYLKO PC) - ZAMIENIONY NA INTELIGENTNY SKRYPT -->
   <div class="twitch-floating" id="twitchWidget">
       <div class="twitch-header">
           <span>🔴 TTV_YTdoog3YT LIVE</span>
@@ -690,7 +688,6 @@
       <div id="twitch-embed-player" style="flex: 1; width: 100%; height: 100%;"></div>
   </div>
 
-  <!-- CZAT -->
   <div id="chatWidget" class="chat-widget minimized">
       <div class="chat-header" onclick="toggleChat()">
           <span data-lang="globalChat">🌍 Global Chat</span>
@@ -730,7 +727,6 @@
       </div>
   </div>
 
-  <!-- MODAL DLA ANKIET -->
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
       <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">×</span></div>
@@ -749,14 +745,7 @@
     let userGoals = [];
     let currentUserCpxUrl = ""; 
     let currentUserTheoremReachUrl = "";
-
-    const LEVEL_THRESHOLDS = { 
-        1: { reqPoints: 10, reqXp: 1000, reward: 3 }, 
-        2: { reqPoints: 50, reqXp: 5000, reward: 8 }, 
-        3: { reqPoints: 150, reqXp: 15000, reward: 20 }, 
-        4: { reqPoints: 400, reqXp: 40000, reward: 50 }, 
-        5: { reqPoints: 1000, reqXp: 100000, reward: 100 } 
-    };
+    const LEVEL_THRESHOLDS = { 1: { reqPoints: 10, reqXp: 1000, reward: 3 }, 2: { reqPoints: 50, reqXp: 5000, reward: 8 }, 3: { reqPoints: 150, reqXp: 15000, reward: 20 }, 4: { reqPoints: 400, reqXp: 40000, reward: 50 }, 5: { reqPoints: 1000, reqXp: 100000, reward: 100 } };
 
     function acceptCookies() { localStorage.setItem('cookie_accepted', 'true'); document.getElementById('cookieBanner').style.display = 'none'; }
     function checkCookieConsent() { if (!localStorage.getItem('cookie_accepted')) document.getElementById('cookieBanner').style.display = 'flex'; }
@@ -906,42 +895,15 @@
     let socket = null;
     try { if (typeof io !== 'undefined') socket = io(); } catch (e) {}
 
-    // --- NOWA INTELIGENTNA FUNKCJA TWITCH API ---
     let twitchPlayer = null;
     function initTwitchWidget() {
-        if (sessionStorage.getItem('twitch_closed') === 'true') {
-            document.getElementById('twitchWidget').style.display = 'none';
-            return;
-        }
-        
-        const options = {
-            width: "100%",
-            height: "100%",
-            channel: "ttv_ytdoog3yt",
-            parent: ["rbx-rewards.onrender.com", "localhost"],
-            muted: true
-        };
-        
+        if (sessionStorage.getItem('twitch_closed') === 'true') { document.getElementById('twitchWidget').style.display = 'none'; return; }
+        const options = { width: "100%", height: "100%", channel: "ttv_ytdoog3yt", parent: ["rbx-rewards.onrender.com", "localhost"], muted: true };
         twitchPlayer = new Twitch.Player("twitch-embed-player", options);
-        
-        // POJAWIA SIĘ TYLKO GDY JESTEŚ LIVE
-        twitchPlayer.addEventListener(Twitch.Player.ONLINE, () => {
-            if (sessionStorage.getItem('twitch_closed') !== 'true') {
-                document.getElementById('twitchWidget').style.display = 'flex';
-            }
-        });
-        
-        // ZNIKA GDY JESTEŚ OFFLINE
-        twitchPlayer.addEventListener(Twitch.Player.OFFLINE, () => {
-            document.getElementById('twitchWidget').style.display = 'none';
-        });
+        twitchPlayer.addEventListener(Twitch.Player.ONLINE, () => { if (sessionStorage.getItem('twitch_closed') !== 'true') document.getElementById('twitchWidget').style.display = 'flex'; });
+        twitchPlayer.addEventListener(Twitch.Player.OFFLINE, () => { document.getElementById('twitchWidget').style.display = 'none'; });
     }
-
-    function closeTwitchWidget() {
-        document.getElementById('twitchWidget').style.display = 'none';
-        sessionStorage.setItem('twitch_closed', 'true'); // Zapamiętuje zamknięcie na czas sesji
-        if (twitchPlayer) twitchPlayer.pause();
-    }
+    function closeTwitchWidget() { document.getElementById('twitchWidget').style.display = 'none'; sessionStorage.setItem('twitch_closed', 'true'); if (twitchPlayer) twitchPlayer.pause(); }
 
     document.addEventListener("DOMContentLoaded", function() {
       checkCookieConsent();
@@ -949,7 +911,6 @@
       checkLoginStatus();
       changeLang(savedLang);
 
-      // INICJALIZACJA TWITCHA
       initTwitchWidget();
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -969,9 +930,8 @@
       if (savedAdminToken) {
           fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: savedAdminToken }) })
           .then(res => res.json()).then(data => {
-              if(data.success) {
-                  const deskAdmin = document.getElementById('nav-admin'); if(deskAdmin) deskAdmin.style.display = 'block';
-              } else { localStorage.removeItem('rbx_admin_token'); }
+              if(data.success) { const deskAdmin = document.getElementById('nav-admin'); if(deskAdmin) deskAdmin.style.display = 'block'; } 
+              else { localStorage.removeItem('rbx_admin_token'); }
           }).catch(() => {});
       }
 
@@ -993,14 +953,10 @@
         const deskNav = document.getElementById('nav-' + tabId); if(deskNav) deskNav.classList.add('active');
         const mobNav = document.getElementById('mob-nav-' + tabId); if(mobNav) mobNav.classList.add('active');
 
-        if(tabId === 'home') { document.body.classList.add('on-home-tab'); } 
-        else { document.body.classList.remove('on-home-tab'); }
-
+        if(tabId === 'home') document.body.classList.add('on-home-tab'); else document.body.classList.remove('on-home-tab');
         const sidebarAd = document.getElementById('sidebarAdContainer');
-        if (sidebarAd) {
-            if (tabId === 'home' || tabId === 'leaderboard') sidebarAd.style.display = 'flex';
-            else sidebarAd.style.display = 'none';
-        }
+        if (sidebarAd) { if (tabId === 'home' || tabId === 'leaderboard') sidebarAd.style.display = 'flex'; else sidebarAd.style.display = 'none'; }
+        
         if(tabId === 'referrals') loadReferralStats(); 
         if(tabId === 'promocodes') loadPromoHistory(); 
         if(tabId === 'leaderboard') loadLeaderboard();
@@ -1012,8 +968,7 @@
 
     function toggleFaq(element) {
         const answer = element.querySelector('.faq-answer'); const icon = element.querySelector('.faq-question b');
-        if (answer.style.display === 'block') { answer.style.display = 'none'; icon.innerText = '▼'; } 
-        else { answer.style.display = 'block'; icon.innerText = '▲'; }
+        if (answer.style.display === 'block') { answer.style.display = 'none'; icon.innerText = '▼'; } else { answer.style.display = 'block'; icon.innerText = '▲'; }
     }
 
     function copyRefLink() {
@@ -1059,14 +1014,12 @@
         const contactInput = document.getElementById("ticketContactInput"); const messageInput = document.getElementById("ticketMessageInput");
         const contact = contactInput.value.trim(); const message = messageInput.value.trim(); const username = localStorage.getItem("rbx_username");
         if (!username) return alert("Log in first!"); if (!message || message.length < 10) return alert("Message too short!");
-        const btn = document.getElementById("submitTicketBtn");
-        btn.innerText = "Wait..."; btn.disabled = true;
+        const btn = document.getElementById("submitTicketBtn"); btn.innerText = "Wait..."; btn.disabled = true;
         try {
             const response = await fetch('/api/support-ticket', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, contact, message }) });
             if (!response.ok) { alert("❌ Server Error!"); btn.innerText = "Submit Ticket"; btn.disabled = false; return; }
             const data = await response.json();
-            if (data.error) alert("❌ " + data.error);
-            else { alert("✅ " + data.message); contactInput.value = ""; messageInput.value = ""; switchTab('home'); }
+            if (data.error) alert("❌ " + data.error); else { alert("✅ " + data.message); contactInput.value = ""; messageInput.value = ""; switchTab('home'); }
         } catch (error) { alert("Connection Error"); }
         btn.innerText = "Submit Ticket"; btn.disabled = false;
     }
@@ -1076,28 +1029,16 @@
       const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return;
       try {
         const response = await fetch(`/api/points/${savedUser}`); const data = await response.json();
-        const pts = parseFloat(data.points) || 0;
-        previousPoints = pts; 
+        const pts = parseFloat(data.points) || 0; previousPoints = pts; 
         
-        const safePoints = Math.floor(pts * 100) / 100;
-        document.getElementById("userPoints").innerText = safePoints.toFixed(2);
-
-        const homeBigPointsEl = document.getElementById("homeBigPoints");
-        if(homeBigPointsEl) homeBigPointsEl.innerText = safePoints.toFixed(2) + " R$";
-        const homeBigUsdEl = document.getElementById("homeBigUsd");
-        const usdValue = safePoints * 0.025;
-        if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
+        const safePoints = Math.floor(pts * 100) / 100; document.getElementById("userPoints").innerText = safePoints.toFixed(2);
+        const homeBigPointsEl = document.getElementById("homeBigPoints"); if(homeBigPointsEl) homeBigPointsEl.innerText = safePoints.toFixed(2) + " R$";
+        const homeBigUsdEl = document.getElementById("homeBigUsd"); const usdValue = safePoints * 0.025; if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
         
-        localStorage.setItem("rbx_points", pts);
-        localStorage.setItem("rbx_linked_paypal", data.linkedPayPal || "");
+        localStorage.setItem("rbx_points", pts); localStorage.setItem("rbx_linked_paypal", data.linkedPayPal || "");
 
         const statsRes = await fetch(`/api/user-stats/${savedUser}`);
-        if(statsRes.ok) {
-            userStats = await statsRes.json();
-            updateWheelUI();
-            if(document.getElementById('tab-levels').style.display !== 'none') renderLevelsUI();
-        }
-        
+        if(statsRes.ok) { userStats = await statsRes.json(); updateWheelUI(); if(document.getElementById('tab-levels').style.display !== 'none') renderLevelsUI(); }
         await fetchGoals(true);
       } catch (error) {}
     }
@@ -1112,73 +1053,40 @@
     }
 
     async function fetchGoals(silent = false) {
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return;
-        try {
-            const response = await fetch(`/api/goals/${username}`);
-            userGoals = await response.json();
-            updateGlobalGoalBar();
-            if (!silent) renderGoalsUI();
-        } catch (error) {}
+        const username = localStorage.getItem("rbx_username"); if (!username) return;
+        try { const response = await fetch(`/api/goals/${username}`); userGoals = await response.json(); updateGlobalGoalBar(); if (!silent) renderGoalsUI(); } catch (error) {}
     }
 
     function updateGlobalGoalBar() {
-        const bar = document.getElementById('globalGoalBar');
-        if (!bar) return;
-        const savedUser = localStorage.getItem("rbx_username");
-        if (!savedUser) { bar.classList.remove('active'); return; }
-
+        const bar = document.getElementById('globalGoalBar'); if (!bar) return;
+        const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) { bar.classList.remove('active'); return; }
         const activeGoals = (userGoals || []).filter(g => g.status === 'active').sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
         if (activeGoals.length > 0) {
-            const oldest = activeGoals[0];
-            let pct = (oldest.current / oldest.target) * 100;
-            if (pct > 100) pct = 100;
-            document.getElementById('globalGoalTitle').innerText = oldest.title;
-            document.getElementById('globalGoalFill').style.width = pct + '%';
-            document.getElementById('globalGoalText').innerText = `${oldest.current.toFixed(2)} / ${oldest.target} R$`;
+            const oldest = activeGoals[0]; let pct = (oldest.current / oldest.target) * 100; if (pct > 100) pct = 100;
+            document.getElementById('globalGoalTitle').innerText = oldest.title; document.getElementById('globalGoalFill').style.width = pct + '%'; document.getElementById('globalGoalText').innerText = `${oldest.current.toFixed(2)} / ${oldest.target} R$`;
             bar.classList.add('active');
-        } else {
-            bar.classList.remove('active');
-        }
+        } else { bar.classList.remove('active'); }
     }
 
     function renderGoalsUI() {
-        const listDiv = document.getElementById("goalsListContainer");
-        if (!listDiv) return;
-        const lang = localStorage.getItem('rbx_lang') || 'en';
-        const tLang = translations[lang] ? lang : 'en';
-
-        if (!userGoals || userGoals.length === 0) {
-            listDiv.innerHTML = '<p style="color: #888;">No goals yet.</p>';
-            return;
-        }
-
+        const listDiv = document.getElementById("goalsListContainer"); if (!listDiv) return;
+        const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
+        if (!userGoals || userGoals.length === 0) { listDiv.innerHTML = '<p style="color: #888;">No goals yet.</p>'; return; }
         let sorted = [...userGoals].sort((a, b) => {
-            if (a.status === 'active' && b.status !== 'active') return -1;
-            if (a.status !== 'active' && b.status === 'active') return 1;
-            return new Date(b.createdAt) - new Date(a.createdAt);
+            if (a.status === 'active' && b.status !== 'active') return -1; if (a.status !== 'active' && b.status === 'active') return 1; return new Date(b.createdAt) - new Date(a.createdAt);
         });
-
         let html = "";
         sorted.forEach(goal => {
             let pct = (goal.current / goal.target) * 100; if (pct > 100) pct = 100;
-            let statusText = translations[tLang].statusActive || "ACTIVE";
-            let statusClass = "status-active";
+            let statusText = translations[tLang].statusActive || "ACTIVE"; let statusClass = "status-active";
             let cancelBtn = `<button class="btn-action" style="padding: 6px 12px; font-size: 0.85rem; background: #ff3333; color: #fff; margin-top: 5px;" onclick="cancelGoal('${goal.id}')">${translations[tLang].btnGoalCancel || 'Cancel'}</button>`;
-            
             if (goal.status === 'completed') { statusText = translations[tLang].statusCompleted || "COMPLETED"; statusClass = "status-completed"; cancelBtn = ''; }
             if (goal.status === 'canceled') { statusText = translations[tLang].statusCanceled || "CANCELED"; statusClass = "status-canceled"; cancelBtn = ''; }
-
             let imgHtml = `<div class="goal-img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">🎯</div>`;
-
             html += `
-            <div class="goal-card">
-                ${imgHtml}
+            <div class="goal-card">${imgHtml}
                 <div class="goal-details">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
-                        <h4 style="margin:0;">${goal.title}</h4>
-                        <span class="goal-status ${statusClass}">${statusText}</span>
-                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;"><h4 style="margin:0;">${goal.title}</h4><span class="goal-status ${statusClass}">${statusText}</span></div>
                     <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$  |  ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
                     <div class="progress-bar-bg" style="margin-bottom: 10px;"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
                     ${cancelBtn}
@@ -1189,36 +1097,21 @@
     }
 
     async function addGoal() {
-        const username = localStorage.getItem("rbx_username");
-        if (!username) return alert("Log in first!");
-        
-        let title = document.getElementById("goalTitleInput").value.trim();
-        let target = 0;
-        const btn = document.getElementById("btnAddGoalBtn");
-
-        if (currentGoalMode === 'robux') {
-            target = parseFloat(document.getElementById("goalRobuxValue").value);
-        } else if (currentGoalMode === 'usd') {
-            let usd = parseFloat(document.getElementById("goalUsdValue").value);
-            if (usd) target = usd / 0.025;
-        }
-
-        if (!target || target <= 0) { return alert("Invalid target amount!"); }
-
+        const username = localStorage.getItem("rbx_username"); if (!username) return alert("Log in first!");
+        let title = document.getElementById("goalTitleInput").value.trim(); let target = 0; const btn = document.getElementById("btnAddGoalBtn");
+        if (currentGoalMode === 'robux') target = parseFloat(document.getElementById("goalRobuxValue").value);
+        else if (currentGoalMode === 'usd') { let usd = parseFloat(document.getElementById("goalUsdValue").value); if (usd) target = usd / 0.025; }
+        if (!target || target <= 0) return alert("Invalid target amount!");
         btn.disabled = true; btn.innerText = "Adding...";
         try {
             const res = await fetch('/api/goals/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, title, target }) });
             const data = await res.json();
-            if (data.error) { alert("❌ " + data.error); }
-            else { 
-                document.getElementById("goalTitleInput").value = ""; 
-                document.getElementById("goalRobuxValue").value = "";
-                document.getElementById("goalUsdValue").value = ""; 
+            if (data.error) alert("❌ " + data.error); else { 
+                document.getElementById("goalTitleInput").value = ""; document.getElementById("goalRobuxValue").value = ""; document.getElementById("goalUsdValue").value = ""; 
                 userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI();
             }
         } catch(e) { alert("Error"); }
-        const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
-        btn.disabled = false; btn.innerText = translations[tLang].btnAddGoal || "Add Goal";
+        const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en'; btn.disabled = false; btn.innerText = translations[tLang].btnAddGoal || "Add Goal";
     }
 
     async function cancelGoal(goalId) {
@@ -1226,9 +1119,7 @@
         const username = localStorage.getItem("rbx_username");
         try {
             const res = await fetch('/api/goals/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, goalId }) });
-            const data = await res.json();
-            if (data.error) alert(data.error);
-            else { userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI(); }
+            const data = await res.json(); if (data.error) alert(data.error); else { userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI(); }
         } catch(e) {}
     }
 
@@ -1237,190 +1128,80 @@
         const username = localStorage.getItem("rbx_username");
         try {
             const res = await fetch('/api/goals/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
-            const data = await res.json();
-            if (data.error) alert(data.error);
-            else { userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI(); }
+            const data = await res.json(); if (data.error) alert(data.error); else { userGoals = data.goals; updateGlobalGoalBar(); renderGoalsUI(); }
         } catch(e) {}
     }
 
     function formatDuration(ms) {
-        const totalSec = Math.max(0, Math.floor(ms / 1000));
-        const h = Math.floor(totalSec / 3600);
-        const m = Math.floor((totalSec % 3600) / 60);
-        const s = totalSec % 60;
+        const totalSec = Math.max(0, Math.floor(ms / 1000)); const h = Math.floor(totalSec / 3600); const m = Math.floor((totalSec % 3600) / 60); const s = totalSec % 60;
         return `${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
     }
 
     function updateWheelUI() {
-        const lang = localStorage.getItem('rbx_lang') || 'en'; 
-        const tLang = translations[lang] ? lang : 'en';
-        
-        const earnedEl = document.getElementById("uiWheelEarned");
-        const streakEl = document.getElementById("uiWheelStreak");
-        const btnSpin = document.getElementById("btnSpinWheel"); 
+        const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
+        const earnedEl = document.getElementById("uiWheelEarned"); const streakEl = document.getElementById("uiWheelStreak"); const btnSpin = document.getElementById("btnSpinWheel"); 
         if (!earnedEl || !streakEl || !btnSpin) return;
-
         const dailyEarned = parseFloat(userStats.dailyEarned) || 0;
-        earnedEl.innerText = `${dailyEarned.toFixed(2)} / 4.50 R$`;
-        streakEl.innerText = `${userStats.wheelStreak || 0} ${tLang === 'pl' ? 'Dni' : 'Days'} 🔥`;
-
+        earnedEl.innerText = `${dailyEarned.toFixed(2)} / 4.50 R$`; streakEl.innerText = `${userStats.wheelStreak || 0} ${tLang === 'pl' ? 'Dni' : 'Days'} 🔥`;
         updateWheelTimer();
     }
 
     function updateWheelTimer() {
-        const btnSpin = document.getElementById("btnSpinWheel");
-        const timerEl = document.getElementById("wheelTimer");
-        if (!btnSpin || !timerEl) return;
-
-        const lang = localStorage.getItem('rbx_lang') || 'en';
-        const tLang = translations[lang] ? lang : 'en';
-        const dailyEarned = parseFloat(userStats.dailyEarned) || 0;
-
-        const H24 = 24 * 60 * 60 * 1000;
-        const H48 = 48 * 60 * 60 * 1000;
-
+        const btnSpin = document.getElementById("btnSpinWheel"); const timerEl = document.getElementById("wheelTimer"); if (!btnSpin || !timerEl) return;
+        const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en'; const dailyEarned = parseFloat(userStats.dailyEarned) || 0;
+        const H24 = 24 * 60 * 60 * 1000; const H48 = 48 * 60 * 60 * 1000;
         if (userStats.lastWheelSpin) {
-            const now = new Date();
-            const lastSpin = new Date(userStats.lastWheelSpin);
-            const diffMs = now - lastSpin;
-
+            const now = new Date(); const lastSpin = new Date(userStats.lastWheelSpin); const diffMs = now - lastSpin;
             if (diffMs < H24) {
-                const leftLockMs = H24 - diffMs;
-                btnSpin.disabled = true;
-                btnSpin.innerText = (tLang === 'pl') ? "⏳ Koło Zablokowane (24h)" : "⏳ Cooldown (24h Lock)";
-                timerEl.style.display = "block";
-                timerEl.style.color = "#ff3333";
-                timerEl.style.borderColor = "#ff3333";
-                timerEl.innerText = (tLang === 'pl') 
-                    ? `🔒 Blokada koła: ${formatDuration(leftLockMs)}` 
-                    : `🔒 Cooldown lock: ${formatDuration(leftLockMs)}`;
-                return;
+                const leftLockMs = H24 - diffMs; btnSpin.disabled = true; btnSpin.innerText = (tLang === 'pl') ? "⏳ Koło Zablokowane (24h)" : "⏳ Cooldown (24h Lock)";
+                timerEl.style.display = "block"; timerEl.style.color = "#ff3333"; timerEl.style.borderColor = "#ff3333"; timerEl.innerText = (tLang === 'pl') ? `🔒 Blokada koła: ${formatDuration(leftLockMs)}` : `🔒 Cooldown lock: ${formatDuration(leftLockMs)}`; return;
             }
-
             if (diffMs < H48) {
-                const leftClaimMs = H48 - diffMs;
-                timerEl.style.display = "block";
-                timerEl.style.color = "#ffb703";
-                timerEl.style.borderColor = "#ffb703";
-                timerEl.innerText = (tLang === 'pl') 
-                    ? `🔥 Czas na odebranie nagrody (Streak): ${formatDuration(leftClaimMs)}` 
-                    : `🔥 Time left to claim reward (Streak): ${formatDuration(leftClaimMs)}`;
-
-                if (dailyEarned >= 4.5) {
-                    btnSpin.disabled = false;
-                    btnSpin.innerText = translations[tLang].btnSpinReady || "🎰 Spin the Wheel!";
-                } else {
-                    btnSpin.disabled = true;
-                    btnSpin.innerText = translations[tLang].btnSpinLocked || "🔒 Locked (Earn 4.5 R$)";
-                }
-                return;
+                const leftClaimMs = H48 - diffMs; timerEl.style.display = "block"; timerEl.style.color = "#ffb703"; timerEl.style.borderColor = "#ffb703";
+                timerEl.innerText = (tLang === 'pl') ? `🔥 Czas na odebranie nagrody (Streak): ${formatDuration(leftClaimMs)}` : `🔥 Time left to claim reward (Streak): ${formatDuration(leftClaimMs)}`;
+                if (dailyEarned >= 4.5) { btnSpin.disabled = false; btnSpin.innerText = translations[tLang].btnSpinReady || "🎰 Spin the Wheel!"; } else { btnSpin.disabled = true; btnSpin.innerText = translations[tLang].btnSpinLocked || "🔒 Locked (Earn 4.5 R$)"; } return;
             }
-
-            timerEl.style.display = "block";
-            timerEl.style.color = "#888";
-            timerEl.style.borderColor = "#2a2e39";
-            timerEl.innerText = (tLang === 'pl') 
-                ? "⚠️ Czas 24h na odebranie minął! Zakręć, aby zacząć nowy Streak od 1 dnia." 
-                : "⚠️ 24h claim window expired! Spin to start a new Streak.";
-        } else {
-            timerEl.style.display = "none";
-        }
-
-        if (dailyEarned >= 4.5) {
-            btnSpin.disabled = false;
-            btnSpin.innerText = translations[tLang].btnSpinReady || "🎰 Spin the Wheel!";
-        } else {
-            btnSpin.disabled = true;
-            btnSpin.innerText = translations[tLang].btnSpinLocked || "🔒 Locked (Earn 4.5 R$)";
-        }
+            timerEl.style.display = "block"; timerEl.style.color = "#888"; timerEl.style.borderColor = "#2a2e39";
+            timerEl.innerText = (tLang === 'pl') ? "⚠️ Czas 24h na odebranie minął! Zakręć, aby zacząć nowy Streak od 1 dnia." : "⚠️ 24h claim window expired! Spin to start a new Streak.";
+        } else { timerEl.style.display = "none"; }
+        if (dailyEarned >= 4.5) { btnSpin.disabled = false; btnSpin.innerText = translations[tLang].btnSpinReady || "🎰 Spin the Wheel!"; } else { btnSpin.disabled = true; btnSpin.innerText = translations[tLang].btnSpinLocked || "🔒 Locked (Earn 4.5 R$)"; }
     }
 
     async function startSpinner() {
-        const username = localStorage.getItem("rbx_username");
-        const btnSpin = document.getElementById("btnSpinWheel");
-        btnSpin.disabled = true; btnSpin.innerText = "🎰 Spinning...";
-        
+        const username = localStorage.getItem("rbx_username"); const btnSpin = document.getElementById("btnSpinWheel"); btnSpin.disabled = true; btnSpin.innerText = "🎰 Spinning...";
         try {
             const response = await fetch('/api/spin-wheel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
             const data = await response.json();
-            if (data.error) {
-                alert("❌ " + data.error);
-                updateWheelUI();
-                return;
-            }
-
-            const track = document.getElementById("spinnerTrack");
-            track.style.transition = 'none'; track.style.transform = 'translateX(0)';
-            
+            if (data.error) { alert("❌ " + data.error); updateWheelUI(); return; }
+            const track = document.getElementById("spinnerTrack"); track.style.transition = 'none'; track.style.transform = 'translateX(0)';
             let tilesHtml = "";
             for(let i=0; i<50; i++) {
                 let r = 0.1; let c = 'tile-common';
-                if (i === 42) {
-                    r = data.reward;
-                } else {
-                    let rand = Math.random();
-                    if(rand<0.05) r = 2.5; else if(rand<0.15) r = 1.0; else if(rand<0.4) r = 0.5; else if(rand<0.7) r = 0.2;
-                }
-
-                if (r === 2.5) c = 'tile-jackpot';
-                else if (r === 1.0) c = 'tile-legend';
-                else if (r === 0.5) c = 'tile-epic';
-                else if (r === 0.2) c = 'tile-rare';
-
+                if (i === 42) r = data.reward; else { let rand = Math.random(); if(rand<0.05) r = 2.5; else if(rand<0.15) r = 1.0; else if(rand<0.4) r = 0.5; else if(rand<0.7) r = 0.2; }
+                if (r === 2.5) c = 'tile-jackpot'; else if (r === 1.0) c = 'tile-legend'; else if (r === 0.5) c = 'tile-epic'; else if (r === 0.2) c = 'tile-rare';
                 tilesHtml += `<div class="spinner-tile ${c}">${r.toFixed(2)} R$</div>`;
             }
-            track.innerHTML = tilesHtml;
-            void track.offsetWidth; 
-
-            let randomOffset = Math.floor(Math.random() * 80) - 40; 
-            let finalTransform = - (42 * 110 + 55) + randomOffset;
-
-            track.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)';
-            track.style.transform = `translateX(${finalTransform}px)`;
-
-            setTimeout(() => {
-                alert(`🎉 WOW! You won ${data.reward} R$!\nCurrent Streak: ${data.streak} Days 🔥`);
-                fetchUserPoints(); 
-            }, 5500);
-
-        } catch (error) {
-            alert("Connection Error");
-            updateWheelUI();
-        }
+            track.innerHTML = tilesHtml; void track.offsetWidth; 
+            let randomOffset = Math.floor(Math.random() * 80) - 40; let finalTransform = - (42 * 110 + 55) + randomOffset;
+            track.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)'; track.style.transform = `translateX(${finalTransform}px)`;
+            setTimeout(() => { alert(`🎉 WOW! You won ${data.reward} R$!\nCurrent Streak: ${data.streak} Days 🔥`); fetchUserPoints(); }, 5500);
+        } catch (error) { alert("Connection Error"); updateWheelUI(); }
     }
 
     function renderLevelsUI() {
         const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
-        const xpEl = document.getElementById("uiTotalXp");
-        const listDiv = document.getElementById("levelsList"); 
-        if (!xpEl || !listDiv) return;
-
-        const currentXp = parseFloat(userStats.xp) || 0;
-        xpEl.innerText = `${currentXp.toFixed(0)} XP`;
-        let html = "";
-
+        const xpEl = document.getElementById("uiTotalXp"); const listDiv = document.getElementById("levelsList"); if (!xpEl || !listDiv) return;
+        const currentXp = parseFloat(userStats.xp) || 0; xpEl.innerText = `${currentXp.toFixed(0)} XP`; let html = "";
         for (let i = 1; i <= 5; i++) {
-            const lvl = LEVEL_THRESHOLDS[i];
-            const isClaimed = (userStats.claimedLevels && userStats.claimedLevels.includes(i));
-            const isUnlocked = (currentXp >= lvl.reqXp);
-            
+            const lvl = LEVEL_THRESHOLDS[i]; const isClaimed = (userStats.claimedLevels && userStats.claimedLevels.includes(i)); const isUnlocked = (currentXp >= lvl.reqXp);
             let btnClass = "btn-action"; let btnText = translations[tLang].btnClaimLevel || "Claim Reward"; let btnDisabled = ""; let btnAction = `onclick="claimLevel(${i})"`;
             if (isClaimed) { btnClass = ""; btnText = `✅ ${translations[tLang].btnLevelClaimed || "Claimed"}`; btnDisabled = "disabled style='background: #14171d; color: #00e676; border: 1px solid #00e676;'"; btnAction = ""; } 
             else if (!isUnlocked) { btnClass = ""; btnText = `🔒 ${translations[tLang].btnLevelLocked || "Locked"}`; btnDisabled = "disabled style='background: #252a34; color: #666;'"; btnAction = ""; }
-
             let progressPct = (currentXp / lvl.reqXp) * 100; if (progressPct > 100) progressPct = 100;
-
             html += `
             <div class="level-card">
-                <div class="level-info">
-                    <h4>Level ${i}</h4>
-                    <p>${translations[tLang].lvlReq || "Requires:"} ${lvl.reqPoints} R$ (${lvl.reqXp} XP)</p>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${progressPct}%"></div></div>
-                </div>
-                <div style="text-align: right;">
-                    <div class="level-reward" style="margin-bottom: 10px;">${translations[tLang].lvlReward || "Reward:"} <strong>${lvl.reward} R$</strong></div>
-                    <button class="${btnClass}" ${btnDisabled} ${btnAction} style="padding: 8px 15px; width: 100%; border-radius: 6px;">${btnText}</button>
-                </div>
+                <div class="level-info"><h4>Level ${i}</h4><p>${translations[tLang].lvlReq || "Requires:"} ${lvl.reqPoints} R$ (${lvl.reqXp} XP)</p><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${progressPct}%"></div></div></div>
+                <div style="text-align: right;"><div class="level-reward" style="margin-bottom: 10px;">${translations[tLang].lvlReward || "Reward:"} <strong>${lvl.reward} R$</strong></div><button class="${btnClass}" ${btnDisabled} ${btnAction} style="padding: 8px 15px; width: 100%; border-radius: 6px;">${btnText}</button></div>
             </div>`;
         }
         listDiv.innerHTML = html;
@@ -1431,8 +1212,7 @@
         try {
             const response = await fetch('/api/claim-level', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, level }) });
             const data = await response.json();
-            if (data.error) alert("❌ " + data.error);
-            else { alert(`🎉 Level ${level} Unlocked! You claimed ${data.reward} R$!`); fetchUserPoints(); }
+            if (data.error) alert("❌ " + data.error); else { alert(`🎉 Level ${level} Unlocked! You claimed ${data.reward} R$!`); fetchUserPoints(); }
         } catch (error) { alert("Connection Error"); }
     }
 
@@ -1440,62 +1220,41 @@
         const username = localStorage.getItem("rbx_username"); if (!username || !code) return;
         try {
             const response = await fetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, code }) });
-            const data = await response.json();
-            if (!data.error) { 
-                alert(`🎁 Invited by: ${code}!`); 
-                const sec = document.getElementById("redeemCodeSection"); if (sec) sec.style.display = "none"; 
-            }
-        } catch (error) {}
-        localStorage.removeItem('pending_ref');
+            const data = await response.json(); if (!data.error) { alert(`🎁 Invited by: ${code}!`); const sec = document.getElementById("redeemCodeSection"); if (sec) sec.style.display = "none"; }
+        } catch (error) {} localStorage.removeItem('pending_ref');
     }
 
     async function submitReferralCode() {
         const inputEl = document.getElementById("friendCodeInput"); if (!inputEl) return;
         const code = inputEl.value.trim(); const username = localStorage.getItem("rbx_username");
-        if (!username) return alert("Log in first!");
-        if (!code) return alert("Enter code!");
+        if (!username) return alert("Log in first!"); if (!code) return alert("Enter code!");
         try {
             const response = await fetch('/api/redeem-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, code }) });
             const data = await response.json();
-            if (data.error) alert("❌ " + data.error); 
-            else { 
-                alert("✅ " + data.message); 
-                const sec = document.getElementById("redeemCodeSection"); if (sec) sec.style.display = "none"; 
-            }
+            if (data.error) alert("❌ " + data.error); else { alert("✅ " + data.message); const sec = document.getElementById("redeemCodeSection"); if (sec) sec.style.display = "none"; }
         } catch (error) { alert("Error"); }
     }
 
     async function submitPromoCode() {
         const codeInput = document.getElementById("promoCodeInput"); const rawCode = codeInput.value.trim();
         const secretCode = "© 2026 RBX Rewards. Not affiliated with Roblox Corporation.";
-        if (rawCode.toLowerCase() === secretCode.toLowerCase() || rawCode === "(c) 2026 RBX Rewards. Not affiliated with Roblox Corporation.") {
-            codeInput.value = ""; window.location.href = '/api/admin/login'; return;
-        }
-
+        if (rawCode.toLowerCase() === secretCode.toLowerCase() || rawCode === "(c) 2026 RBX Rewards. Not affiliated with Roblox Corporation.") { codeInput.value = ""; window.location.href = '/api/admin/login'; return; }
         const username = localStorage.getItem("rbx_username");
-        if (!rawCode) return alert("Enter code!");
-        if (!username) return alert("Log in first!");
-
+        if (!rawCode) return alert("Enter code!"); if (!username) return alert("Log in first!");
         try {
             const response = await fetch('/api/redeem-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, promoCode: rawCode }) });
             const data = await response.json();
-            if (data.error) alert("❌ " + data.error);
-            else { alert("✅ " + data.message); codeInput.value = ""; fetchUserPoints(); loadPromoHistory(); }
+            if (data.error) alert("❌ " + data.error); else { alert("✅ " + data.message); codeInput.value = ""; fetchUserPoints(); loadPromoHistory(); }
         } catch (error) { alert("Error"); }
     }
 
     async function loadReferralStats() {
         const username = localStorage.getItem("rbx_username"); if (!username) return;
-        const filterEl = document.getElementById("refFilterSelect");
-        const tableBody = document.getElementById("refTableBody");
-        if (!filterEl || !tableBody) return;
-        const period = filterEl.value;
-        tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        const filterEl = document.getElementById("refFilterSelect"); const tableBody = document.getElementById("refTableBody"); if (!filterEl || !tableBody) return;
+        const period = filterEl.value; tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
-            const response = await fetch(`/api/referral-stats/${username}?period=${period}`);
-            const stats = await response.json();
-            const lang = localStorage.getItem('rbx_lang') || 'en';
-            const tLang = translations[lang] ? lang : 'en';
+            const response = await fetch(`/api/referral-stats/${username}?period=${period}`); const stats = await response.json();
+            const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
             if (!stats || stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">${translations[tLang].historyEmpty || "No actions yet!"}</td></tr>`;
             else {
                 let rows = ''; stats.forEach(user => { const e = parseFloat(user.earned) || 0; rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">+${e.toFixed(2)} R$</td></tr>`; });
@@ -1506,13 +1265,11 @@
 
     async function loadPromoHistory() {
         const username = localStorage.getItem("rbx_username"); if (!username) return;
-        const tableBody = document.getElementById("promoHistoryTableBody");
-        if (!tableBody) return;
+        const tableBody = document.getElementById("promoHistoryTableBody"); if (!tableBody) return;
         tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
             const response = await fetch(`/api/promo-history/${username}`); const history = await response.json();
-            const lang = localStorage.getItem('rbx_lang') || 'en';
-            const tLang = translations[lang] ? lang : 'en';
+            const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
             if (!history || history.length === 0) tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${translations[tLang].historyEmpty || "No actions yet!"}</td></tr>`;
             else {
                 let rows = ''; history.forEach(item => { const codeName = item.code || item; const reward = item.reward ? `+${parseFloat(item.reward).toFixed(2)} R$` : "0.00 R$"; const date = item.date ? new Date(item.date).toLocaleDateString() : "-"; rows += `<tr><td style="color: #a0a0b0;">📅 ${date}</td><td style="font-weight: bold; color: #fff;">🎟️ ${codeName}</td><td style="color: #00e676; font-weight: bold;">${reward}</td></tr>`; });
@@ -1526,55 +1283,43 @@
         const podiumArea = document.getElementById("podiumArea"); const tableBody = document.getElementById("leaderboardTableBody");
         podiumArea.innerHTML = '<p style="color:#888;">Loading podium...</p>'; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
-            const response = await fetch(`/api/leaderboard?period=${period}`);
-            if (!response.ok) throw new Error("Błąd");
+            const response = await fetch(`/api/leaderboard?period=${period}`); if (!response.ok) throw new Error("Błąd");
             const data = await response.json();
             if (!data || data.length === 0) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">No data for this period!</td></tr>`; return; }
-            const top3 = data.slice(0, 3); const rest = data.slice(3, 100);
-            let podiumHtml = '';
+            const top3 = data.slice(0, 3); const rest = data.slice(3, 100); let podiumHtml = '';
             if (top3[1]) podiumHtml += `<div class="podium-step podium-2"><div class="podium-avatar">🥈</div><div class="podium-name">${top3[1].username}</div><div class="podium-score">${(parseFloat(top3[1].earned)||0).toFixed(2)} R$</div></div>`;
             if (top3[0]) podiumHtml += `<div class="podium-step podium-1"><div class="podium-avatar">👑</div><div class="podium-name">${top3[0].username}</div><div class="podium-score">${(parseFloat(top3[0].earned)||0).toFixed(2)} R$</div></div>`;
             if (top3[2]) podiumHtml += `<div class="podium-step podium-3"><div class="podium-avatar">🥉</div><div class="podium-name">${top3[2].username}</div><div class="podium-score">${(parseFloat(top3[2].earned)||0).toFixed(2)} R$</div></div>`;
             podiumArea.innerHTML = podiumHtml;
-            let rows = '';
-            rest.forEach((user, index) => { rows += `<tr><td class="rank-number">#${index + 4}</td><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">${(parseFloat(user.earned)||0).toFixed(2)} R$</td></tr>`; });
-            if(rows === '') rows = `<tr><td colspan="3" style="text-align: center; color: #555;">No more players to show.</td></tr>`;
-            tableBody.innerHTML = rows;
+            let rows = ''; rest.forEach((user, index) => { rows += `<tr><td class="rank-number">#${index + 4}</td><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">${(parseFloat(user.earned)||0).toFixed(2)} R$</td></tr>`; });
+            if(rows === '') rows = `<tr><td colspan="3" style="text-align: center; color: #555;">No more players to show.</td></tr>`; tableBody.innerHTML = rows;
         } catch (error) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error loading leaderboard.</td></tr>`; }
     }
 
-    function openHistoryModal() {
-        const username = localStorage.getItem("rbx_username"); if (!username) return alert("You must log in first!");
-        document.getElementById('historyModal').style.display = 'flex'; loadEarningHistory(username);
-    }
+    function openHistoryModal() { const username = localStorage.getItem("rbx_username"); if (!username) return alert("You must log in first!"); document.getElementById('historyModal').style.display = 'flex'; loadEarningHistory(username); }
     function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
 
     async function loadEarningHistory(username) {
         const tableBody = document.getElementById("historyTableBody"); tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
             const response = await fetch(`/api/earning-history/${username}`); if (!response.ok) throw new Error("Błąd serwera");
-            const history = await response.json();
-            const lang = localStorage.getItem('rbx_lang') || 'en';
-            const tLang = translations[lang] ? lang : 'en';
-
+            const history = await response.json(); const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
             if (!history || history.length === 0) { tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703; padding: 20px;">${translations[tLang].historyEmpty}</td></tr>`; return; }
-
             let rows = '';
             history.forEach(item => {
                 const date = new Date(item.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 let actionText = ""; let amountHtml = "";
                 if (item.recordType === 'payout') {
-                    actionText = translations[tLang].historyPayout || "Reward Claim";
-                    const pts = parseFloat(item.pointsWithdrawn) || 0;
-                    amountHtml = `<td style="color: #ff3333; font-weight: bold; padding: 10px 5px;">-${pts.toFixed(2)} R$</td>`;
+                    actionText = translations[tLang].historyPayout || "Reward Claim"; const pts = parseFloat(item.pointsWithdrawn) || 0; amountHtml = `<td style="color: #ff3333; font-weight: bold; padding: 10px 5px;">-${pts.toFixed(2)} R$</td>`;
                 } else {
                     const amt = parseFloat(item.amount) || 0;
                     if (item.source === 'Promo') { actionText = translations[tLang].historyPromo; if (item.details) actionText += ` (${item.details})`; } 
                     else if (item.source === 'Referral') { actionText = translations[tLang].historyRef; if (item.details) { const fromText = translations[tLang].historyFrom || "od:"; actionText += ` (${fromText} ${item.details})`; } } 
                     else if (item.source === 'LevelUp') { actionText = translations[tLang].historyLevel || "Level Reward"; if (item.details) actionText += ` (${item.details})`; }
                     else if (item.source === 'Wheel' || item.source === 'Spinner') { actionText = translations[tLang].historyWheel || "Wheel of Fortune"; if (item.details) actionText += ` (${item.details})`; }
+                    else if (item.source === 'Admin') { actionText = "Admin Panel"; if (item.details) actionText += ` (${item.details})`; }
                     else { actionText = amt < 1.0 ? translations[tLang].historyPartial : translations[tLang].historySurvey; }
-                    amountHtml = `<td style="color: #00e676; font-weight: bold; padding: 10px 5px;">+${amt.toFixed(2)} R$</td>`;
+                    amountHtml = `<td style="color: #00e676; font-weight: bold; padding: 10px 5px;">${amt > 0 ? '+' : ''}${amt.toFixed(2)} R$</td>`;
                 }
                 rows += `<tr style="border-bottom: 1px solid #2a2e39;"><td style="color: #a0a0b0; font-size: 0.85rem; padding: 10px 5px;">📅 ${timeString}</td><td style="color: #fff; padding: 10px 5px;">📋 ${actionText}</td>${amountHtml}</tr>`;
             });
@@ -1584,16 +1329,8 @@
 
     async function fetchLiveEarners() {
       try {
-        const response = await fetch('/api/latest-earners'); 
-        const earners = await response.json();
-        const lang = localStorage.getItem('rbx_lang') || 'en';
-        const tLang = translations[lang] ? lang : 'en';
-
-        if (!earners || earners.length === 0) {
-            const emptyMsg = translations[tLang].emptyEarners || "Be the first!";
-            document.getElementById('liveTicker').innerHTML = `<div class="ticker-item" style="color:#ffb703;">${emptyMsg}</div>`;
-            return;
-        }
+        const response = await fetch('/api/latest-earners'); const earners = await response.json(); const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
+        if (!earners || earners.length === 0) { const emptyMsg = translations[tLang].emptyEarners || "Be the first!"; document.getElementById('liveTicker').innerHTML = `<div class="ticker-item" style="color:#ffb703;">${emptyMsg}</div>`; return; }
         let tickerHTML = '';
         earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
         earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
@@ -1603,23 +1340,13 @@
 
     async function fetchLatestPayouts() {
         try {
-            const response = await fetch('/api/latest-payouts'); 
-            if (!response.ok) return;
-            const payouts = await response.json(); 
-            const tbody = document.getElementById('recentPayoutsBody'); 
-            if (!tbody) return;
-            const lang = localStorage.getItem('rbx_lang') || 'en';
-            const tLang = translations[lang] ? lang : 'en';
-            const emptyMsg = translations[tLang].emptyCashouts || "No claims yet!";
-            if (!payouts || payouts.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`; return; 
-            }
+            const response = await fetch('/api/latest-payouts'); if (!response.ok) return; const payouts = await response.json(); const tbody = document.getElementById('recentPayoutsBody'); if (!tbody) return;
+            const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en'; const emptyMsg = translations[tLang].emptyCashouts || "No claims yet!";
+            if (!payouts || payouts.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`; return; }
             let html = '';
             payouts.forEach(p => {
-                const date = new Date(p.createdAt); 
-                const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const rawPts = p.pointsWithdrawn !== undefined ? p.pointsWithdrawn : p.points;
-                const pts = parseFloat(rawPts) || 0;
+                const date = new Date(p.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const rawPts = p.pointsWithdrawn !== undefined ? p.pointsWithdrawn : p.points; const pts = parseFloat(rawPts) || 0;
                 html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${p.username}</td><td style="color: #ffb703; font-weight: bold;">-${pts.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
             });
             tbody.innerHTML = html;
@@ -1629,86 +1356,39 @@
     function checkLoginStatus() {
       const savedUser = localStorage.getItem("rbx_username");
       if (savedUser) {
-        injectProtectedContent();
-        const activeLang = localStorage.getItem('rbx_lang') || 'en';
-        applyTranslationsToDOM(activeLang);
-
-        document.getElementById("loginBtn").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        document.getElementById("loggedUserName").innerText = savedUser;
-
+        injectProtectedContent(); const activeLang = localStorage.getItem('rbx_lang') || 'en'; applyTranslationsToDOM(activeLang);
+        document.getElementById("loginBtn").style.display = "none"; document.getElementById("logoutBtn").style.display = "inline-block"; document.getElementById("loggedUserName").innerText = savedUser;
         const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "none";
-        document.getElementById("home-logged-in").style.display = "block"; 
-        document.getElementById("home-logged-out").style.display = "none";
+        document.getElementById("home-logged-in").style.display = "block"; document.getElementById("home-logged-out").style.display = "none";
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => { const d = document.getElementById("nav-" + id); if(d) d.style.display = "block"; const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "block"; });
+        const fullLink = window.location.origin + "/?ref=" + savedUser; const refDisplay = document.getElementById("myRefLinkDisplay"); if(refDisplay) refDisplay.innerText = fullLink;
+        document.getElementById("chatWidget").style.display = "flex"; fetchUserPoints(); fetchInbox();
         
-        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
-            const d = document.getElementById("nav-" + id); if(d) d.style.display = "block";
-            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "block";
-        });
+        if (socket) socket.emit('user_joined', savedUser); // Informuje serwer o obecności online
 
-        const fullLink = window.location.origin + "/?ref=" + savedUser; 
-        const refDisplay = document.getElementById("myRefLinkDisplay"); if(refDisplay) refDisplay.innerText = fullLink;
-
-        document.getElementById("chatWidget").style.display = "flex";
-        fetchUserPoints(); 
-        fetchInbox();
-        
-        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt"; 
-        const secureHashParam = md5(savedUser + "-" + appSecureHash);
+        const appSecureHash = "fUsYa1sxJbhryJOhNBlM2QFsr2t3AFgt"; const secureHashParam = md5(savedUser + "-" + appSecureHash);
         currentUserCpxUrl = `https://offers.cpx-research.com/index.php?app_id=35170&ext_user_id=${encodeURIComponent(savedUser)}&secure_hash=${secureHashParam}&username=${encodeURIComponent(savedUser)}&email=&subid_1=&subid_2=`;
         currentUserTheoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${theoremReachApiKey}&user_id=${encodeURIComponent(savedUser)}`;
       } else {
-        document.getElementById("loginBtn").style.display = "inline-block"; 
-        document.getElementById("logoutBtn").style.display = "none";
+        document.getElementById("loginBtn").style.display = "inline-block"; document.getElementById("logoutBtn").style.display = "none";
         const earnLoginPrompt = document.getElementById("earnLoginPrompt"); if (earnLoginPrompt) earnLoginPrompt.style.display = "block";
         const offerwallSection = document.getElementById("offerwallSection"); if (offerwallSection) { offerwallSection.innerHTML = ""; offerwallSection.style.display = "none"; }
-        document.getElementById("home-logged-in").style.display = "none"; 
-        document.getElementById("home-logged-out").style.display = "block";
-        
-        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => {
-            const d = document.getElementById("nav-" + id); if(d) d.style.display = "none";
-            const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "none";
-        });
-        
-        document.getElementById("userPoints").innerText = "0.00"; 
-        document.getElementById("homeBigPoints").innerText = "0.00 R$"; 
-        document.getElementById("homeBigUsd").innerText = "$0.00";
-        document.getElementById("chatWidget").style.display = "none";
-        updateGlobalGoalBar();
+        document.getElementById("home-logged-in").style.display = "none"; document.getElementById("home-logged-out").style.display = "block";
+        ['goals', 'wheel', 'levels', 'referrals', 'promocodes'].forEach(id => { const d = document.getElementById("nav-" + id); if(d) d.style.display = "none"; const m = document.getElementById("mob-nav-" + id); if(m) m.style.display = "none"; });
+        document.getElementById("userPoints").innerText = "0.00"; document.getElementById("homeBigPoints").innerText = "0.00 R$"; document.getElementById("homeBigUsd").innerText = "$0.00"; document.getElementById("chatWidget").style.display = "none"; updateGlobalGoalBar();
       }
     }
 
-    function logoutUser() { 
-        localStorage.removeItem("rbx_username"); 
-        localStorage.removeItem("rbx_points"); 
-        localStorage.removeItem("rbx_linked_paypal"); 
-        window.location.reload(); 
-    }
+    function logoutUser() { localStorage.removeItem("rbx_username"); localStorage.removeItem("rbx_points"); localStorage.removeItem("rbx_linked_paypal"); window.location.reload(); }
     
-    // POPRAWKA DLA TELEFONÓW: Ukrywamy nav-bar na czas ankiety
     function openOfferwall(networkId, networkName) {
       const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return openLoginModal();
       document.getElementById('offerModalTitle').innerText = networkName; let finalUrl = "";
       if (networkId === 'CPX') finalUrl = currentUserCpxUrl; else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl;
-      
-      if (finalUrl) { 
-          document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
-          document.getElementById('offerModal').style.display = 'flex'; 
-          
-          const mobNav = document.querySelector('.mobile-nav');
-          if (mobNav) mobNav.style.display = 'none'; // CHOWA ZABEZPIECZAJĄCE MENU
-      }
+      if (finalUrl) { document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; document.getElementById('offerModal').style.display = 'flex'; const mobNav = document.querySelector('.mobile-nav'); if (mobNav) mobNav.style.display = 'none'; }
     }
     
-    // POPRAWKA DLA TELEFONÓW: Przywracamy nav-bar po zamknięciu ankiety
-    function closeOfferModal() { 
-        document.getElementById('offerModal').style.display = 'none'; 
-        document.getElementById('iframeContainer').innerHTML = ''; 
-        
-        const mobNav = document.querySelector('.mobile-nav');
-        if (mobNav) mobNav.style.display = ''; // PRZYWRACA MENU
-    }
-    
+    function closeOfferModal() { document.getElementById('offerModal').style.display = 'none'; document.getElementById('iframeContainer').innerHTML = ''; const mobNav = document.querySelector('.mobile-nav'); if (mobNav) mobNav.style.display = ''; }
     window.onclick = function(event) { if (event.target === document.getElementById('offerModal')) closeOfferModal(); }
 
     function openLoginModal() { document.getElementById("loginModal").style.display = "flex"; }
@@ -1716,70 +1396,32 @@
     
     function saveUsername() {
       const input = document.getElementById("usernameInput").value.trim();
-      if (input) { 
-          localStorage.setItem("rbx_username", input); 
-          closeLoginModal(); 
-          checkLoginStatus(); 
-          const pendingRef = localStorage.getItem('pending_ref'); 
-          if (pendingRef) autoApplyReferral(pendingRef); 
-      } else { 
-          alert("Invalid username!"); 
-      }
+      if (input) { localStorage.setItem("rbx_username", input); closeLoginModal(); checkLoginStatus(); const pendingRef = localStorage.getItem('pending_ref'); if (pendingRef) autoApplyReferral(pendingRef); } 
+      else { alert("Invalid username!"); }
     }
     
     function openWithdrawModal() { 
-        injectProtectedContent();
-        const activeLang = localStorage.getItem('rbx_lang') || 'en'; applyTranslationsToDOM(activeLang);
-        document.getElementById("withdrawModal").style.display = "flex"; 
-        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
+        injectProtectedContent(); const activeLang = localStorage.getItem('rbx_lang') || 'en'; applyTranslationsToDOM(activeLang);
+        document.getElementById("withdrawModal").style.display = "flex"; const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
         document.getElementById("modalCurrentPoints").innerText = safePoints.toFixed(2) + " R$";
-        
-        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); 
-        const addressInput = document.getElementById("paypalEmail");
-        const lockWarning = document.getElementById("paypalLockWarning"); 
-        const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
-        
-        if (linkedAddress && linkedAddress !== "null" && linkedAddress !== "") {
-            addressInput.value = linkedAddress; 
-            addressInput.readOnly = true; 
-            addressInput.style.opacity = "0.5"; 
-            addressInput.style.cursor = "not-allowed"; 
-            lockWarning.style.display = "block"; 
-            firstTimeWarning.style.display = "none";
-        } else { 
-            addressInput.value = ""; 
-            addressInput.readOnly = false; 
-            addressInput.style.opacity = "1"; 
-            addressInput.style.cursor = "text"; 
-            lockWarning.style.display = "none"; 
-            firstTimeWarning.style.display = "block"; 
-        }
+        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("paypalEmail"); const lockWarning = document.getElementById("paypalLockWarning"); const firstTimeWarning = document.getElementById("paypalFirstTimeWarning");
+        if (linkedAddress && linkedAddress !== "null" && linkedAddress !== "") { addressInput.value = linkedAddress; addressInput.readOnly = true; addressInput.style.opacity = "0.5"; addressInput.style.cursor = "not-allowed"; lockWarning.style.display = "block"; firstTimeWarning.style.display = "none"; } 
+        else { addressInput.value = ""; addressInput.readOnly = false; addressInput.style.opacity = "1"; addressInput.style.cursor = "text"; lockWarning.style.display = "none"; firstTimeWarning.style.display = "block"; }
     }
 
-    function setMaxPoints() {
-        const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100;
-        document.getElementById("withdrawPoints").value = safePoints.toFixed(2); calculateUSD();
-    }
+    function setMaxPoints() { const currentPoints = parseFloat(localStorage.getItem("rbx_points") || 0); const safePoints = Math.floor(currentPoints * 100) / 100; document.getElementById("withdrawPoints").value = safePoints.toFixed(2); calculateUSD(); }
     
     function closeWithdrawModal() { 
-        document.getElementById("withdrawModal").style.display = "none"; 
-        const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("paypalEmail");
+        document.getElementById("withdrawModal").style.display = "none"; const linkedAddress = localStorage.getItem("rbx_linked_paypal"); const addressInput = document.getElementById("paypalEmail");
         if (addressInput && (!linkedAddress || linkedAddress === "null" || linkedAddress === "")) { addressInput.value = ""; }
         const wp = document.getElementById("withdrawPoints"); if (wp) wp.value = ""; const ur = document.getElementById("usdResult"); if (ur) ur.innerText = "$0.00";
     }
     
-    function calculateUSD() {
-        const points = parseFloat(document.getElementById("withdrawPoints").value) || 0; const usdValue = points * 0.025; document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2);
-    }
+    function calculateUSD() { const points = parseFloat(document.getElementById("withdrawPoints").value) || 0; const usdValue = points * 0.025; document.getElementById("usdResult").innerText = "$" + usdValue.toFixed(2); }
     
     async function submitWithdraw() {
-        const address = document.getElementById("paypalEmail").value.trim(); 
-        const points = parseFloat(document.getElementById("withdrawPoints").value);
-        const username = localStorage.getItem("rbx_username");
-        
-        if (!address || !address.includes("@")) return alert("Nieprawidłowy adres email PayPal.");
-        if (!points || points <= 0) return alert("Nieprawidłowa kwota R$.");
-        
+        const address = document.getElementById("paypalEmail").value.trim(); const points = parseFloat(document.getElementById("withdrawPoints").value); const username = localStorage.getItem("rbx_username");
+        if (!address || !address.includes("@")) return alert("Nieprawidłowy adres email PayPal."); if (!points || points <= 0) return alert("Nieprawidłowa kwota R$.");
         try {
             const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: 'PayPal', payoutAddress: address, points }) });
             if (!response.ok) { const data = await response.json().catch(() => null); if (data && data.error) return alert("❌ " + data.error); alert("❌ Server Error!"); return; }
@@ -1796,23 +1438,14 @@
         } catch (error) { alert("Connection Error"); }
     }
 
-    function startSocialTask(platform, url) {
-        window.open(url, '_blank');
-        const lang = document.getElementById('langSelect').value || 'en';
-        let msg = "Thank you for your support!";
-        if(lang === 'pl') msg = "Dzięki za wsparcie!";
-        if(lang === 'de') msg = "Danke für deine Unterstützung!";
-        if(lang === 'ru') msg = "Спасибо за поддержку!";
-        alert(msg);
-    }
+    function startSocialTask(platform, url) { window.open(url, '_blank'); const lang = document.getElementById('langSelect').value || 'en'; let msg = "Thank you for your support!"; if(lang === 'pl') msg = "Dzięki za wsparcie!"; if(lang === 'de') msg = "Danke für deine Unterstützung!"; if(lang === 'ru') msg = "Спасибо за поддержку!"; alert(msg); }
+
     // --- SKRYPTY PANELU ADMINA ---
     async function loadAdminStats() {
         const token = localStorage.getItem('rbx_admin_token');
         if (!token) return;
         try {
-            const res = await fetch('/api/admin/stats', {
-                headers: { 'Authorization': token }
-            });
+            const res = await fetch('/api/admin/stats', { headers: { 'Authorization': token } });
             const data = await res.json();
             if (!data.error) {
                 document.getElementById('adminStatOnline').innerText = data.online || 0;
@@ -1820,6 +1453,149 @@
                 document.getElementById('adminStatPending').innerText = (data.pendingRobux || 0).toFixed(2);
             }
         } catch (e) {}
+    }
+
+    async function showAdminOnlineUsers() {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return;
+        const box = document.getElementById('adminOnlineList');
+        const content = document.getElementById('adminOnlineListContent');
+        if (box.style.display === 'block') { box.style.display = 'none'; return; }
+        
+        box.style.display = 'block';
+        content.innerHTML = "Ładowanie...";
+        try {
+            const res = await fetch('/api/admin/online', { headers: { 'Authorization': token } });
+            const users = await res.json();
+            if (users.length === 0) content.innerHTML = "Nikt nie jest teraz zalogowany.";
+            else content.innerHTML = users.map(u => `<div>🟢 ${u}</div>`).join('');
+        } catch (e) { content.innerHTML = "Błąd pobierania listy."; }
+    }
+
+    async function showAdminPendingPayouts() {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return;
+        const box = document.getElementById('adminPendingList');
+        const tbody = document.getElementById('adminPendingListContent');
+        
+        // Pokaż/Ukryj po kliknięciu
+        if (box.style.display === 'block') { box.style.display = 'none'; return; }
+        box.style.display = 'block';
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Ładowanie...</td></tr>`;
+        
+        try {
+            const res = await fetch('/api/admin/pending-payouts', { headers: { 'Authorization': token } });
+            const payouts = await res.json();
+            if (payouts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#00e676;">Brak oczekujących wypłat! 🎉</td></tr>`;
+                return;
+            }
+            
+            let html = "";
+            payouts.forEach(p => {
+                const amount = (parseFloat(p.pointsWithdrawn) || 0).toFixed(2);
+                html += `
+                <tr style="border-bottom: 1px solid #2a2e39;">
+                    <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
+                    <td style="color: #a0a0b0;">${p.payoutMethod}: ${p.payoutAddress || p.paypalEmail}</td>
+                    <td style="color: #ffb703; font-weight: bold;">${amount} R$</td>
+                    <td>
+                        <button style="background: #00e676; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 5px;" onclick="resolvePayout('${p.Math_id || p._id}', 'complete', this)">Wysłane</button>
+                        <button style="background: #ff3333; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer;" onclick="resolvePayout('${p.Math_id || p._id}', 'reject', this)">Odrzuć</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        } catch (e) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Błąd ładowania</td></tr>`; }
+    }
+
+    async function resolvePayout(payoutId, action, btnElement) {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return;
+        
+        if (action === 'reject' && !confirm("Na pewno odrzucić tę wypłatę? R$ wrócą na konto gracza.")) return;
+        
+        btnElement.disabled = true;
+        btnElement.innerText = "...";
+        
+        try {
+            const res = await fetch('/api/admin/resolve-payout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ payoutId, action })
+            });
+            const data = await res.json();
+            if (data.error) {
+                alert('Błąd: ' + data.error);
+                btnElement.disabled = false;
+            } else {
+                // Odświeżamy tabelę i statystyki ogólne
+                document.getElementById('adminPendingList').style.display = 'none';
+                showAdminPendingPayouts();
+                loadAdminStats();
+            }
+        } catch (e) { alert("Błąd połączenia."); btnElement.disabled = false; }
+    }
+
+    async function searchAdminUsers() {
+        const q = document.getElementById('adminSearchUser').value;
+        const dropdown = document.getElementById('adminUserDropdown');
+        if (q.length < 1) { dropdown.style.display = 'none'; return; }
+        
+        const token = localStorage.getItem('rbx_admin_token');
+        const res = await fetch(`/api/admin/users/search?q=${q}`, { headers: { 'Authorization': token }});
+        const users = await res.json();
+        
+        dropdown.innerHTML = '';
+        if (users.length > 0) {
+            users.forEach(u => {
+                const li = document.createElement('li');
+                li.style.padding = '10px 15px';
+                li.style.cursor = 'pointer';
+                li.style.borderBottom = '1px solid #333';
+                li.style.color = '#fff';
+                li.innerText = u;
+                li.onmouseover = () => li.style.background = '#252a34';
+                li.onmouseout = () => li.style.background = 'transparent';
+                li.onclick = () => {
+                    document.getElementById('adminSearchUser').value = u;
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(li);
+            });
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.style.display = 'none';
+        }
+    }
+
+    async function adminManageBalance(action) {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return alert('Brak autoryzacji administratora!');
+        
+        const username = document.getElementById('adminSearchUser').value.trim();
+        const amount = document.getElementById('adminBalanceAmount').value;
+        
+        if (!username || !amount || amount <= 0) return alert('Wpisz prawidłową nazwę gracza i kwotę!');
+        if (!confirm(`Na pewno chcesz ${action === 'add' ? 'DODAĆ' : 'ODJĄĆ'} ${amount} R$ z konta gracza ${username}?`)) return;
+
+        try {
+            const res = await fetch('/api/admin/manage-balance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ username, amount, action })
+            });
+            const data = await res.json();
+            
+            if (data.error) {
+                alert('❌ Błąd: ' + data.error);
+            } else {
+                alert(`✅ Zakończono sukcesem! Nowy stan konta gracza ${username}: ${data.newBalance.toFixed(2)} R$`);
+                document.getElementById('adminSearchUser').value = '';
+                document.getElementById('adminBalanceAmount').value = '';
+                loadAdminStats(); // Odświeża total R$ na dashboardzie
+            }
+        } catch (e) { alert('Błąd połączenia z serwerem.'); }
     }
 
     async function createAdminPromoCode() {
@@ -1832,34 +1608,23 @@
         
         if (!code || !reward || !maxUses) return alert('Uzupełnij wszystkie pola!');
         
-        const btn = event.target;
-        btn.disabled = true;
-        btn.innerText = "⏳ Generowanie...";
-
+        const btn = event.target; btn.disabled = true; btn.innerText = "⏳ Generowanie...";
         try {
             const res = await fetch('/api/admin/create-code', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': token 
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': token },
                 body: JSON.stringify({ code, reward, maxUses })
             });
             const data = await res.json();
-            
-            if (data.error) {
-                alert('❌ Błąd: ' + data.error);
-            } else {
+            if (data.error) { alert('❌ Błąd: ' + data.error); } 
+            else {
                 alert('✅ Pomyślnie stworzono kod! Wysłano powiadomienie na Discord.');
                 document.getElementById('adminPromoCode').value = '';
                 document.getElementById('adminPromoReward').value = '';
                 document.getElementById('adminPromoUses').value = '';
             }
-        } catch (e) { 
-            alert('Błąd połączenia z serwerem.'); 
-        }
-        btn.disabled = false;
-        btn.innerText = "🚀 Wygeneruj Kod i Powiadom Discord";
+        } catch (e) { alert('Błąd połączenia z serwerem.'); }
+        btn.disabled = false; btn.innerText = "🚀 Wygeneruj Kod i Powiadom Discord";
     }
   </script>
 </body>
