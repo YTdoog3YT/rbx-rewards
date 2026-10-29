@@ -12,7 +12,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -207,6 +206,12 @@
     .cookie-banner a { color: #00e676; }
     .cookie-banner button { background: #00e676; color: #000; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     
+    /* STYLE DLA PŁYWAJĄCEGO TWITCHA */
+    .twitch-floating { position: fixed; bottom: 20px; left: 20px; width: 320px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid #9146FF; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1000; background: #181b22; display: flex; flex-direction: column; }
+    .twitch-header { background: #9146FF; color: #fff; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .twitch-header span:last-child { cursor: pointer; transition: 0.2s; padding: 0 5px; }
+    .twitch-header span:last-child:hover { color: #ff3333; }
+    
     @media (max-width: 900px) { 
         .side-nav-container { display: none; } 
         .mobile-nav { display: flex; }
@@ -217,6 +222,7 @@
         .podium-step { width: 32%; padding: 10px; }
         .podium-name { font-size: 0.9rem; }
         .podium-score { font-size: 0.9rem; }
+        .twitch-floating { display: none !important; } /* UKRYWA TWITCHA NA TELEFONACH */
     }
     @media (max-width: 600px) {
         body { padding: 10px; }
@@ -416,27 +422,13 @@
           </div>
       </main>
 
-<!-- ZAKŁADKA EARN -->
+      <!-- ZAKŁADKA EARN -->
       <main id="tab-earn" style="display: none;">
-        
-        <!-- TWITCH STREAM (IFRAME) -->
-        <div style="margin-bottom: 25px; border-radius: 12px; overflow: hidden; border: 1px solid #2a2e39; box-shadow: 0 5px 20px rgba(0,0,0,0.5); width: 100%; display: block; clear: both;">
-            <iframe
-                src="https://player.twitch.tv/?channel=ttv_ytdoog3yt&parent=rbx-rewards.onrender.com&parent=localhost&muted=true"
-                height="480"
-                width="100%"
-                allowfullscreen="true"
-                style="border: none; display: block; width: 100%;">
-            </iframe>
-        </div>
-
         <div class="ticker-wrap" style="width: 100%; clear: both;">
           <div class="ticker-title" data-lang="liveEarners">🔥 Live Activity</div>
           <div class="ticker-container"><div class="ticker-move" id="liveTicker"><div class="ticker-item" data-lang="loadingStats">Loading live stats...</div></div></div>
         </div>
-        
         <h2 class="section-title" data-lang="earnTitle">Complete Quests & Collect R$!</h2>
-        
         <div id="earnLoginPrompt" class="login-container" style="height: auto; margin-bottom: 30px; padding: 20px 0;">
             <div class="login-box" style="margin: 0 auto; width: 100%; max-width: 450px; text-align: center; background-color: #181b22; border: 1px solid #2a2e39; padding: 40px 20px; border-radius: 12px; box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.5);">
                 <img src="/logo.png" alt="RBX Rewards Logo" class="login-banner-logo" style="max-width: 180px; width: 100%; filter: drop-shadow(0px 0px 15px rgba(0, 230, 118, 0.6)); margin-bottom: 25px;">
@@ -445,7 +437,6 @@
                 <button class="btn-action" style="width: 100%;" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
             </div>
         </div>
-        
         <div id="offerwallSection" class="content-box" style="padding: 15px; display: none;"></div>
         
         <div class="content-box" id="recentPayoutsBox">
@@ -645,9 +636,24 @@
               <a href="terms.html" target="_blank">Terms of Service</a> | 
               <a href="privacy.html" target="_blank">Privacy Policy</a>
           </div>
-          <p style="color: #666; margin-bottom: 5px;">&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
+          <p style="color: #666; margin-bottom: 5px;">© 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
       </footer>
     </div>
+  </div>
+
+  <!-- PŁYWAJĄCY WIDŻET TWITCH (TYLKO PC) -->
+  <div class="twitch-floating" id="twitchWidget">
+      <div class="twitch-header">
+          <span>🔴 TTV_YTdoog3YT LIVE</span>
+          <span onclick="document.getElementById('twitchWidget').style.display='none'" title="Zamknij stream">✖</span>
+      </div>
+      <iframe
+          src="https://player.twitch.tv/?channel=ttv_ytdoog3yt&parent=rbx-rewards.onrender.com&parent=localhost&muted=true"
+          height="100%"
+          width="100%"
+          allowfullscreen="true"
+          style="border: none; flex: 1;">
+      </iframe>
   </div>
 
   <!-- CZAT -->
@@ -692,7 +698,7 @@
 
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
-      <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">&times;</span></div>
+      <div class="offer-modal-header"><h2 id="offerModalTitle">Quest Wall</h2><span class="offer-close-btn" onclick="closeOfferModal()">×</span></div>
       <div id="iframeContainer"></div>
     </div>
   </div>
@@ -1097,7 +1103,7 @@
                         <h4 style="margin:0;">${goal.title}</h4>
                         <span class="goal-status ${statusClass}">${statusText}</span>
                     </div>
-                    <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$ &nbsp;|&nbsp; ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
+                    <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$  |  ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
                     <div class="progress-bar-bg" style="margin-bottom: 10px;"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
                     ${cancelBtn}
                 </div>
