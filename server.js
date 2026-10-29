@@ -43,7 +43,7 @@ function escapeRegex(text) {
     return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Dokładna północ czasu polskiego (Europe/Warsaw)
+// Funkcja obliczająca czas o północy w POLSCE (reset statystyk)
 function getPolandMidnight() {
     const now = new Date();
     const polandTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
@@ -104,9 +104,9 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
     try {
         const polandMidnight = getPolandMidnight();
 
-        // Liczy zarobione przez graczy R$ dzisiaj od 00:00 czasu PL (bez ręcznych edycji admina)
+        // Liczy zarobione przez graczy R$ dzisiaj od 00:00 czasu PL (pomija promokody i edycje admina)
         const dailyPointsAggr = await Earning.aggregate([
-            { $match: { createdAt: { $gte: polandMidnight }, source: { $ne: 'Admin' } } },
+            { $match: { createdAt: { $gte: polandMidnight }, source: { $nin: ['Admin', 'Promo'] } } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const dailyRobux = dailyPointsAggr.length > 0 ? dailyPointsAggr[0].total : 0;
