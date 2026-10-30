@@ -322,6 +322,7 @@ app.get('/postback', async (req, res) => {
 
 app.all('/api/theoremreach-postback', async (req, res) => {
     const uid = req.query.user_id || req.body.user_id || req.query.uid || req.body.uid; const reward = parseFloat(req.query.reward || req.body.reward); const isReversal = req.query.reversal === 'true' || req.query.reversal === true;
+        console.log('[TR postback]', { uid, reward, tx_id: req.query.tx_id, reversal: req.query.reversal, debug: req.query.debug });
     if (!uid || isNaN(reward)) return res.status(400).send('0'); if (isReversal) return res.status(200).send('1');
     if (reward > 0) {
         try { let user = await User.findOne({ username: uid }); if (!user) user = new User({ username: uid, points: 0 }); user.points += reward; await addXPAndDailyEarned(user, reward); allocateGoalProgress(user, reward); await user.save(); await new Earning({ username: uid, amount: reward, source: 'Survey' }).save(); await processReferralBonus(uid, reward); return res.status(200).send('1'); } 
