@@ -267,7 +267,8 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-const EarningSchema = new mongoose.Schema({ username: String, amount: Number, source: { type: String, default: 'Survey' }, details: { type: String, default: '' }, createdAt: { type: Date, default: Date.now } });
+const EarningSchema = new mongoose.Schema({ username: String, amount: Number, source: { type: String, default: 'Survey' }, details: { type: String, default: '' }, txId: String, createdAt: { type: Date, default: Date.now } });
+EarningSchema.index({ source: 1, txId: 1 }, { unique: true, partialFilterExpression: { txId: { $type: 'string' } } });
 const Earning = mongoose.model('Earning', EarningSchema);
 
 const PayoutSchema = new mongoose.Schema({ 
@@ -309,26 +310,99 @@ async function addXPAndDailyEarned(user, amount) {
     user.dailyEarned += amount; user.xp += amount * 100;
 }
 
-app.get('/postback', async (req, res) => {
-    const userId = req.query.user_id; const amount = parseFloat(req.query.amount_local); const status = req.query.status;
-    res.status(200).send('OK');
-    if ((status === '1' || status === '2') && userId && amount) {
-        try { let user = await User.findOne({ username: userId }); if (!user) user = new User({ username: userId, points: 0 });
-            user.points += amount; await addXPAndDailyEarned(user, amount); allocateGoalProgress(user, amount); await user.save();
-            await new Earning({ username: userId, amount: amount, source: 'Survey' }).save(); await processReferralBonus(userId, amount);
-        } catch (error) {}
+const POSTBACK_KEY = process.env.POSTBACK_KEY || '';
+const POSTBACK_ENFORCE = process.env.POSTBACK_ENFORCE === 'true';
+const MAX_SURVEY_REWARD = 500;
+
+function postbackAllowed(givenKey, label) {
+    const a = Buffer.from(String(givenKey || ''));
+    const b = Buffer.from(POSTBACK_KEY);
+    if (b.length > 0 && a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
+    console.warn(`[postback] ${label}: brak lub zły klucz`);
+    return !POSTBACK_ENFORCE;
+}
+
+function findUserCI(name) {
+    return User.findOne({ username: new RegExp(`^${escapeRegex(name)}$`, 'i') });
+}
+
+async function creditSurvey(userId, amount, txId) {
+    let user = await findUserCI(userId);
+    const name = user ? user.username : userId;
+    const earning = new Earning({ username: name, amount, source: 'Survey', txId });
+    try { await earning.save(); }
+    catch (e) { if (e && e.code === 11000) return 'duplicate'; throw e; }
+    try {
+        if (!user) user = new User({ username: name, points: 0 });
+        user.points += amount;
+        await addXPAndDailyEarned(user, amount);
+        allocateGoalProgress(user, amount);
+        await user.save();
+    } catch (e) {
+        await Earning.deleteOne({ _id: earning._id }).catch(() => {});
+        throw e;
     }
+    await processReferralBonus(name, amount);
+    return 'ok';
+}
+
+async function reverseSurvey(userId, txId, fallbackAmount) {
+    const user = await findUserCI(userId);
+    if (!user) return 'no_user';
+    const original = await Earning.findOne({ source: 'Survey', txId: 'cpx:' + txId });
+    const amount = original ? original.amount : fallbackAmount;
+    if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_SURVEY_REWARD) return 'bad_amount';
+
+    try { await new Earning({ username: user.username, amount: -amount, source: 'Reversal', details: 'CPX Research', txId: 'cpx-rev:' + txId }).save(); }
+    catch (e) { if (e && e.code === 11000) return 'duplicate'; throw e; }
+
+    await User.updateOne({ _id: user._id }, { $inc: { points: -amount } });
+
+    if (user.referredBy) {
+        const bonus = parseFloat((amount * 0.15).toFixed(2));
+        if (bonus > 0) {
+            const referrer = await User.findOneAndUpdate({ username: user.referredBy }, { $inc: { points: -bonus } });
+            if (referrer) await new Earning({ username: referrer.username, amount: -bonus, source: 'ReferralReversal', details: user.username }).save();
+        }
+    }
+    return 'ok';
+}
+
+app.get('/postback', async (req, res) => {
+    const userId = String(req.query.user_id || '').trim();
+    const amount = parseFloat(req.query.amount_local);
+    const status = String(req.query.status || '');
+    const txId = String(req.query.trans_id || '').trim();
+
+    if (!postbackAllowed(req.query.key, 'CPX')) return res.status(403).send('Forbidden');
+    res.status(200).send('OK');
+
+    if (!userId || !txId) return console.warn('[postback] CPX: brak user_id lub trans_id');
+    try {
+        if (status === '1') {
+            if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_SURVEY_REWARD) return console.warn('[postback] CPX: zła kwota');
+            await creditSurvey(userId, amount, 'cpx:' + txId);
+        } else if (status === '2') {
+            await reverseSurvey(userId, txId, amount);
+        }
+    } catch (e) { console.error('[postback] CPX błąd:', e.message); }
 });
 
-app.all('/api/theoremreach-postback', async (req, res) => {
-    const uid = req.query.user_id || req.body.user_id || req.query.uid || req.body.uid; const reward = parseFloat(req.query.reward || req.body.reward); const isReversal = req.query.reversal === 'true' || req.query.reversal === true;
-        console.log('[TR postback]', { uid, reward, tx_id: req.query.tx_id, reversal: req.query.reversal, debug: req.query.debug });
-    if (!uid || isNaN(reward)) return res.status(400).send('0'); if (isReversal) return res.status(200).send('1');
-    if (reward > 0) {
-        try { let user = await User.findOne({ username: uid }); if (!user) user = new User({ username: uid, points: 0 }); user.points += reward; await addXPAndDailyEarned(user, reward); allocateGoalProgress(user, reward); await user.save(); await new Earning({ username: uid, amount: reward, source: 'Survey' }).save(); await processReferralBonus(uid, reward); return res.status(200).send('1'); } 
-        catch (error) { return res.status(500).send('0'); }
-    }
-    res.status(200).send('1');
+app.all('/api/theoremreach-postback/:key?', async (req, res) => {
+    const q = { ...(req.body || {}), ...req.query };
+    const uid = String(q.user_id || q.uid || '').trim();
+    const reward = parseFloat(q.reward);
+    const txId = String(q.tx_id || '').trim();
+    const isReversal = String(q.reversal) === 'true';
+    console.log('[TR postback]', { uid, reward, tx_id: txId, reversal: q.reversal, debug: q.debug });
+
+    if (!postbackAllowed(req.params.key, 'TheoremReach')) return res.status(403).send('0');
+    if (String(q.debug) === 'true') return res.status(200).send('1');
+    if (!uid || !Number.isFinite(reward)) return res.status(400).send('0');
+    if (isReversal || reward <= 0) return res.status(200).send('1');
+    if (reward > MAX_SURVEY_REWARD || !txId) return res.status(400).send('0');
+    try { await creditSurvey(uid, reward, 'tr:' + txId); return res.status(200).send('1'); }
+    catch (e) { console.error('[postback] TR błąd:', e.message); return res.status(500).send('0'); }
 });
 
 app.get('/api/goals/:username', async (req, res) => {
