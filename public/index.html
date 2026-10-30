@@ -621,7 +621,8 @@
                 <p id="adminStatDaily" style="color: #ffb703; font-size: 2.2rem; font-weight: 900;">0.00</p>
                 <div style="margin-top: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
                     <p id="adminStatDailyUsdRevenue" style="color: #00e676; font-size: 0.95rem; font-weight: bold; margin-bottom: 4px;" title="Całkowity przychód z ankiet (1 USD = 15 R$)">💰 Przychód: $0.00 USD</p>
-                    <p id="adminStatDailyUsdCost" style="color: #ff3333; font-size: 0.95rem; font-weight: bold;" title="Koszt na wypłaty dla graczy (1 R$ = 0.025 USD)">💸 Wypłaty: $0.00 USD</p>
+                    <p id="adminStatDailyUsdCost" style="color: #ff3333; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px;" title="Koszt na wypłaty dla graczy (1 R$ = 0.025 USD)">💸 Wypłaty: $0.00 USD</p>
+                    <p id="adminStatDailyUsdProfit" style="color: #ffb703; font-size: 1.05rem; font-weight: 900; border-top: 1px solid #333; padding-top: 5px; text-shadow: 0 0 10px rgba(255, 183, 3, 0.3);" title="Twój dochód na czysto (Przychód minus Wypłaty)">👑 Czysty Zysk: $0.00 USD</p>
                 </div>
             </div>
             <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminPendingPayouts()">
@@ -1027,10 +1028,11 @@
       }
     }
 
-    function logoutUser() { 
+function logoutUser() { 
         localStorage.removeItem("rbx_username"); 
         localStorage.removeItem("rbx_points"); 
         localStorage.removeItem("rbx_linked_paypal"); 
+        localStorage.removeItem("rbx_admin_token"); 
         window.location.reload(); 
     }
     
@@ -1545,9 +1547,22 @@
                     else if (item.source === 'Referral') { actionText = translations[tLang].historyRef; if (item.details) { const fromText = translations[tLang].historyFrom || "od:"; actionText += ` (${fromText} ${item.details})`; } } 
                     else if (item.source === 'LevelUp') { actionText = translations[tLang].historyLevel || "Level Reward"; if (item.details) actionText += ` (${item.details})`; }
                     else if (item.source === 'Wheel' || item.source === 'Spinner') { actionText = translations[tLang].historyWheel || "Wheel of Fortune"; if (item.details) actionText += ` (${item.details})`; }
-                    else if (item.source === 'Admin') { actionText = "Admin Panel"; if (item.details) actionText += ` (${item.details})`; }
+else if (item.source === 'Admin') {
+                        if (amt >= 0) {
+                            actionText = `<span style="display: inline-block; background: rgba(0, 230, 118, 0.15); color: #00e676; font-weight: 900; padding: 4px 10px; border-radius: 6px; border: 1px solid #00e676; text-shadow: 0 0 10px rgba(0, 230, 118, 0.8); box-shadow: 0 0 12px rgba(0, 230, 118, 0.3);">👑 ADMIN: Dodano R$</span>`;
+                        } else {
+                            actionText = `<span style="display: inline-block; background: rgba(255, 51, 51, 0.18); color: #ff4d4d; font-weight: 900; padding: 4px 10px; border-radius: 6px; border: 2px solid #ffb703; box-shadow: 0 0 12px rgba(255, 183, 3, 0.4); text-shadow: 0 0 8px rgba(255, 51, 51, 0.6);">⚠️ ADMIN: Usunięto R$</span>`;
+                        }
+                    }
                     else { actionText = amt < 1.0 ? translations[tLang].historyPartial : translations[tLang].historySurvey; }
-                    amountHtml = `<td style="color: ${amt >= 0 ? '#00e676' : '#ff3333'}; font-weight: bold; padding: 10px 5px;">${amt > 0 ? '+' : ''}${amt.toFixed(2)} R$</td>`;
+                    
+                    if (item.source === 'Admin' && amt >= 0) {
+                        amountHtml = `<td style="color: #00e676; font-weight: 900; padding: 10px 5px; text-shadow: 0 0 12px rgba(0, 230, 118, 0.9); font-size: 1.05rem;">+${amt.toFixed(2)} R$ ✨</td>`;
+                    } else if (item.source === 'Admin' && amt < 0) {
+                        amountHtml = `<td style="padding: 10px 5px;"><span style="color: #ff4d4d; font-weight: 900; border: 1.5px solid #ffb703; padding: 3px 8px; border-radius: 6px; background: rgba(255, 51, 51, 0.15); box-shadow: 0 0 8px rgba(255, 183, 3, 0.3);">${amt.toFixed(2)} R$</span></td>`;
+                    } else {
+                        amountHtml = `<td style="color: ${amt >= 0 ? '#00e676' : '#ff3333'}; font-weight: bold; padding: 10px 5px;">${amt > 0 ? '+' : ''}${amt.toFixed(2)} R$</td>`;
+                    }
                 }
                 rows += `<tr style="border-bottom: 1px solid #2a2e39;"><td style="color: #a0a0b0; font-size: 0.85rem; padding: 10px 5px;">📅 ${timeString}</td><td style="color: #fff; padding: 10px 5px;">📋 ${actionText}</td>${amountHtml}</tr>`;
             });
@@ -1593,11 +1608,18 @@
                 document.getElementById('adminStatOnline').innerText = data.online || 0;
                 document.getElementById('adminStatDaily').innerText = dailyR.toFixed(2);
                 
+const revenueUsd = dailyR / 15;
+                const costUsd = dailyR * 0.025;
+                const profitUsd = revenueUsd - costUsd;
+
                 const revEl = document.getElementById('adminStatDailyUsdRevenue');
-                if(revEl) revEl.innerText = '💰 Przychód: $' + (dailyR / 15).toFixed(2) + ' USD';
+                if(revEl) revEl.innerText = '💰 Przychód: $' + revenueUsd.toFixed(2) + ' USD';
                 
                 const costEl = document.getElementById('adminStatDailyUsdCost');
-                if(costEl) costEl.innerText = '💸 Wypłaty: $' + (dailyR * 0.025).toFixed(2) + ' USD';
+                if(costEl) costEl.innerText = '💸 Wypłaty: $' + costUsd.toFixed(2) + ' USD';
+
+                const profitEl = document.getElementById('adminStatDailyUsdProfit');
+                if(profitEl) profitEl.innerText = '👑 Czysty Zysk: $' + profitUsd.toFixed(2) + ' USD';
                 
                 document.getElementById('adminStatPending').innerText = (data.pendingRobux || 0).toFixed(2);
             }
