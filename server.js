@@ -422,13 +422,41 @@ app.post('/api/support-ticket', async (req, res) => {
     try { const { username, contact, message } = req.body; if (!username || !message) return res.status(400).json({ error: 'Brak wymaganych danych.' }); discordBot.sendTicketAlert(username, contact, message); return res.json({ success: true, message: 'Ticket pomyślnie wysłany!' }); } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
+const MIN_PAYOUT = 1;
+
 app.post('/api/withdraw', async (req, res) => {
-    const paypalEmail = req.body.paypalEmail || req.body.payoutAddress; const { username, points } = req.body;
+    const paypalEmail = String(req.body.paypalEmail || req.body.payoutAddress || '').trim().toLowerCase();
+    const username = String(req.body.username || '').trim();
+    const pts = Math.round(Number(req.body.points) * 100) / 100;
+
+    if (!username) return res.status(400).json({ error: 'Brak nazwy użytkownika.' });
+    if (!Number.isFinite(pts) || pts < MIN_PAYOUT) return res.status(400).json({ error: `Minimalna wypłata to ${MIN_PAYOUT} R$.` });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)) return res.status(400).json({ error: 'Nieprawidłowy adres PayPal.' });
+
     try {
         const safe = escapeRegex(username);
-        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user || user.points < points) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-        if (user.linkedPayPal) { if (user.linkedPayPal.toLowerCase() !== paypalEmail.toLowerCase()) return res.status(400).json({ error: `Konto przypisane do adresu: ${user.linkedPayPal}` }); } else { user.linkedPayPal = paypalEmail.toLowerCase(); }
-        const usdAmount = parseFloat((points * 0.025).toFixed(2)); user.points -= points; await user.save(); const newPayout = await new Payout({ username: user.username, payoutMethod: 'PayPal', payoutAddress: paypalEmail.toLowerCase(), paypalEmail: paypalEmail.toLowerCase(), pointsWithdrawn: points, usdAmount, status: 'Pending Manual' }).save(); discordBot.sendPayoutAlert(newPayout); res.json({ success: true, newBalance: user.points, usd: usdAmount });
+        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
+        if (!user) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+
+        if (user.linkedPayPal && user.linkedPayPal.toLowerCase() !== paypalEmail) {
+            return res.status(400).json({ error: `Konto przypisane do adresu: ${user.linkedPayPal}` });
+        }
+
+        // odejmij tylko wtedy, gdy saldo wystarcza (jedna operacja, bez wyścigu)
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id, points: { $gte: pts } },
+            { $inc: { points: -pts }, $set: { linkedPayPal: user.linkedPayPal || paypalEmail } },
+            { new: true }
+        );
+        if (!updated) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+
+        const usdAmount = parseFloat((pts * 0.025).toFixed(2));
+        const newPayout = await new Payout({
+            username: updated.username, payoutMethod: 'PayPal', payoutAddress: paypalEmail,
+            paypalEmail, pointsWithdrawn: pts, usdAmount, status: 'Pending Manual'
+        }).save();
+        discordBot.sendPayoutAlert(newPayout);
+        res.json({ success: true, newBalance: updated.points, usd: usdAmount });
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
