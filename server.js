@@ -13,7 +13,7 @@ const botTwitch = require('./bot-twitch.js');
 
 const ADMIN_DISCORD_ID = "398911896893521921";
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "1546268855708684318"; 
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || "sQ_3XRcNGuEHnoDUdy5zKfPvZOGry0FF"; 
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI || "https://rbx-rewards.onrender.com/api/admin/callback";
 const ADMIN_PROMO_CHANNEL_ID = "1556029618077704192";
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
@@ -248,7 +248,8 @@ app.post('/api/admin/delete-code', isAdmin, async (req, res) => {
 
 app.get('/ping', (req, res) => { res.status(200).send('OK'); });
 
-const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) { console.error('❌ Brak zmiennej MONGO_URI'); process.exit(1); }
 mongoose.connect(MONGO_URI).then(() => console.log('✅ Baza MongoDB gotowa!')).catch(err => console.error(err));
 
 // --- SCHEMATY BAZY DANYCH ---
