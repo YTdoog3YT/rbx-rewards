@@ -80,7 +80,7 @@ module.exports = {
                 }, minutes * 60 * 1000);
             }
             
-            // Tutaj masz stare komendy od kodów promocyjnych...
+// --- KOMENDY KODÓW PROMOCYJNYCH ---
             if (cmd === '!kod') {
                 if (args.length !== 4) return message.reply('⚠️ Użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`');
                 const codeName = args[1].toUpperCase(); const reward = parseFloat(args[2]); const maxUses = parseInt(args[3]);
@@ -89,11 +89,44 @@ module.exports = {
                     if (existing) {
                         existing.reward = reward; existing.maxUses = maxUses; existing.currentUses = 0; existing.usedBy = []; 
                         await existing.save();
-                        return message.reply(`♻️ **Kod odnowiony!** ${codeName} - ${reward} R$ (${maxUses} użyć).`);
+                        return message.reply(`♻️ **Kod odnowiony!** \`${codeName}\` — **${reward} R$** (Limit: ${maxUses} użyć).`);
                     }
                     await new dbModels.PromoCode({ code: codeName, reward: reward, maxUses: maxUses }).save();
-                    message.reply(`✅ **Kod utworzony!** ${codeName} - ${reward} R$ (${maxUses} użyć).`);
+                    message.reply(`✅ **Kod utworzony!** \`${codeName}\` — **${reward} R$** (Limit: ${maxUses} użyć).`);
                 } catch (err) {}
+            }
+
+            if (cmd === '!kody') {
+                try {
+                    const codes = await dbModels.PromoCode.find({});
+                    if (!codes || codes.length === 0) {
+                        return message.reply('📭 Brak jakichkolwiek kodów promocyjnych w bazie.');
+                    }
+                    let list = '🎟️ **Lista Kodów Promocyjnych:**\n\n';
+                    codes.forEach(c => {
+                        const isActive = c.currentUses < c.maxUses;
+                        const statusIcon = isActive ? '🟢 Aktywny' : '🔴 Wykorzystany';
+                        list += `${statusIcon} | Kod: \`${c.code}\` | Nagroda: **${c.reward} R$** | Użycia: **${c.currentUses}/${c.maxUses}**\n`;
+                    });
+                    message.reply(list);
+                } catch (err) {
+                    message.reply('❌ Błąd podczas pobierania kodów.');
+                }
+            }
+
+            if (cmd === '!usunkod') {
+                if (args.length !== 2) return message.reply('⚠️ Użycie: `!usunkod <NAZWA>`');
+                const codeName = args[1].toUpperCase();
+                try {
+                    const deleted = await dbModels.PromoCode.findOneAndDelete({ code: codeName });
+                    if (deleted) {
+                        message.reply(`🗑️ Pomyślnie usunięto kod \`${codeName}\` z bazy danych!`);
+                    } else {
+                        message.reply(`❌ Nie znaleziono kodu o nazwie \`${codeName}\`.`);
+                    }
+                } catch (err) {
+                    message.reply('❌ Błąd podczas usuwania kodu.');
+                }
             }
         });
 
