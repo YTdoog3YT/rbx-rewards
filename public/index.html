@@ -674,14 +674,22 @@
             </div>
         </div>
 
-        <div class="content-box" style="text-align: left;">
+<div class="content-box" style="text-align: left;">
             <h3 style="color: #00e676; margin-bottom: 15px;">🎟️ Generator Kodów Promocyjnych</h3>
             <input type="text" id="adminPromoCode" placeholder="Nazwa kodu (np. ROBUX2026)" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
             <div style="display: flex; gap: 15px; margin-bottom: 20px;">
                 <input type="number" id="adminPromoReward" placeholder="Nagroda w R$" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
                 <input type="number" id="adminPromoUses" placeholder="Limit użyć (np. 100)" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
             </div>
-            <button class="btn-action" style="width: 100%; margin: 0; padding: 15px; font-size: 1.1rem;" onclick="createAdminPromoCode()">🚀 Wygeneruj Kod i Powiadom Discord</button>
+            <button class="btn-action" style="width: 100%; margin-bottom: 20px; padding: 15px; font-size: 1.1rem;" onclick="createAdminPromoCode()">🚀 Wygeneruj Kod i Powiadom Discord</button>
+            
+            <h4 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">📋 Top 5 Aktywnych Kodów</h4>
+            <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
+                <table class="ref-table" style="width: 100%; min-width: 400px; font-size: 0.9rem;">
+                    <thead><tr><th>Kod</th><th>Użycia</th><th>Wartość</th><th>Akcja</th></tr></thead>
+                    <tbody id="adminTop5CodesBody"><tr><td colspan="4" style="text-align:center; color:#888;">Ładowanie...</td></tr></tbody>
+                </table>
+            </div>
         </div>
 
         <div class="content-box" style="text-align: left;">
@@ -1193,8 +1201,11 @@ function logoutUser() {
         if(tabId === 'levels') renderLevelsUI(); 
         if(tabId === 'wheel') updateWheelUI();
         if(tabId === 'goals') fetchGoals();
-        if(tabId === 'admin') { loadAdminStats(); loadAdminTop10Payouts(); }
-    }
+if(tabId === 'admin') { 
+            loadAdminStats(); 
+            loadAdminTop10Payouts();
+            loadAdminTop5Codes(); // ODPALA POBIERANIE KODÓW
+        }
 
     function toggleFaq(element) {
         const answer = element.querySelector('.faq-answer'); const icon = element.querySelector('.faq-question b');
@@ -1858,6 +1869,63 @@ const revenueUsd = dailyR / 15;
             }
         } catch (e) { alert('Błąd połączenia z serwerem.'); }
         btn.disabled = false; btn.innerText = "🚀 Wygeneruj Kod i Powiadom Discord";
+    }
+    async function loadAdminTop5Codes() {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return;
+        const tbody = document.getElementById('adminTop5CodesBody');
+        try {
+            const res = await fetch('/api/admin/promo-codes', { headers: { 'Authorization': token } });
+            const codes = await res.json();
+            
+            if (codes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Brak aktywnych kodów.</td></tr>`;
+                return;
+            }
+            
+            const top5 = codes.slice(0, 5); // Bierzemy maksymalnie 5 najnowszych
+            let html = "";
+            top5.forEach(c => {
+                html += `
+                <tr style="border-bottom: 1px solid #2a2e39;">
+                    <td style="font-weight: bold; color: #fff;">🎟️ ${c.code}</td>
+                    <td style="color: #ffb703; font-weight: bold;">${c.currentUses} / ${c.maxUses}</td>
+                    <td style="color: #00e676; font-weight: bold;">+${c.reward} R$</td>
+                    <td>
+                        <button style="background: #ff3333; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.8rem;" onclick="deleteAdminPromoCode('${c._id}', this)">Usuń</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Błąd ładowania</td></tr>`;
+        }
+    }
+
+    async function deleteAdminPromoCode(codeId, btnElement) {
+        const token = localStorage.getItem('rbx_admin_token');
+        if (!token) return;
+        if (!confirm("Na pewno usunąć ten kod?")) return;
+        
+        btnElement.disabled = true;
+        btnElement.innerText = "...";
+        try {
+            const res = await fetch('/api/admin/delete-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ codeId })
+            });
+            const data = await res.json();
+            if (data.error) {
+                alert('Błąd: ' + data.error);
+                btnElement.disabled = false;
+            } else {
+                loadAdminTop5Codes(); // Odświeża listę, a stara pozycja znika i dociąga kolejną z góry!
+            }
+        } catch (e) {
+            alert('Błąd połączenia.');
+            btnElement.disabled = false;
+        }
     }
   </script>
 </body>

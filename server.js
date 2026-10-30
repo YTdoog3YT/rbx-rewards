@@ -227,6 +227,25 @@ app.post('/api/admin/create-code', isAdmin, async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd dodawania kodu. Kod już istnieje?' }); }
 });
 
+// Pobieranie aktywnych kodów dla panelu admina
+app.get('/api/admin/promo-codes', isAdmin, async (req, res) => {
+    try {
+        const codes = await PromoCode.find({}).sort({ _id: -1 });
+        // Automatycznie odrzucamy te, które w pełni wygasły (currentUses >= maxUses)
+        const activeCodes = codes.filter(c => c.currentUses < c.maxUses);
+        res.json(activeCodes);
+    } catch (e) { res.status(500).json([]); }
+});
+
+// Usuwanie kodu przez admina
+app.post('/api/admin/delete-code', isAdmin, async (req, res) => {
+    try {
+        const { codeId } = req.body;
+        await PromoCode.findByIdAndDelete(codeId);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: 'Błąd usuwania kodu' }); }
+});
+
 app.get('/ping', (req, res) => { res.status(200).send('OK'); });
 
 const MONGO_URI = 'mongodb+srv://contactcatlover_db_user:E8zvsX5pv1oMtKNE@robux.h3weh54.mongodb.net/?appName=Robux';
