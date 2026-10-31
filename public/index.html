@@ -212,6 +212,21 @@
     .twitch-header { background: #9146FF; color: #fff; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
     .twitch-header span:last-child { cursor: pointer; transition: 0.2s; padding: 0 5px; }
     .twitch-header span:last-child:hover { color: #ff3333; }
+
+    .verified-badge { display: none; align-items: center; justify-content: center; height: 38px; padding: 0 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; white-space: nowrap; }
+    .verified-badge.is-verified { background: rgba(0, 230, 118, 0.12); color: #00e676; border: 1px solid #00e676; }
+    .verified-badge.not-verified { background: rgba(160, 160, 160, 0.1); color: #a0a0a0; border: 1px solid #555; }
+    .bundle-cats, .bundle-offers { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+    .bundle-cat-card, .bundle-offer { background: #1e1e26; border: 1px solid #2a2e39; border-radius: 12px; padding: 20px 10px; cursor: pointer; text-align: center; transition: 0.3s; }
+    .bundle-cat-card:hover, .bundle-offer:hover, .bundle-cat-card.active { border-color: #00e676; transform: translateY(-4px); }
+    .bundle-cat-card .card-icon { font-size: 35px; margin-bottom: 10px; }
+    .bundle-offer h4 { color: #fff; font-size: 1.1rem; margin-bottom: 8px; }
+    .bundle-offer .bundle-price { color: #ffb703; font-weight: 900; font-size: 1.25rem; }
+    .bundle-card { background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 18px; margin-bottom: 15px; text-align: left; }
+    .mini-bundle { background: #14171d; border: 1px solid #333947; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; text-align: left; cursor: pointer; }
+    .mini-bundle:hover { border-color: #00e676; }
+    .mini-bundle-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: #fff; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; }
+    .mini-bundle-top span:last-child { color: #ffb703; }
     
     @media (max-width: 900px) { 
         .side-nav-container { display: none; } 
@@ -266,6 +281,9 @@
       <div class="nav-item" id="mob-nav-levels" onclick="switchTab('levels')" style="display: none;">
           <span>⭐</span> <div data-lang="navLevelsMob">Levels</div>
       </div>
+      <div class="nav-item" id="mob-nav-bundles" onclick="switchTab('bundles')">
+          <span>📦</span> <div data-lang="navBundlesMob">Bundles</div>
+      </div>
       <div class="nav-item" id="mob-nav-leaderboard" onclick="switchTab('leaderboard')">
           <span>🏆</span> <div data-lang="navLeadMob">Ranks</div>
       </div>
@@ -282,6 +300,7 @@
             <a id="nav-goals" class="nav-item" onclick="switchTab('goals')" style="display: none;"><span data-lang="navGoals">🎯 Goals</span></a>
             <a id="nav-wheel" class="nav-item" onclick="switchTab('wheel')" style="display: none;"><span data-lang="navWheel">🎡 Wheel of Fortune</span></a>
             <a id="nav-levels" class="nav-item" onclick="switchTab('levels')" style="display: none;"><span data-lang="navLevels">⭐ Levels</span></a>
+            <a id="nav-bundles" class="nav-item" onclick="switchTab('bundles')"><span data-lang="navBundles">📦 Bundles</span></a>
             <a id="nav-leaderboard" class="nav-item" onclick="switchTab('leaderboard')"><span data-lang="navLeaderboard">🏆 Leaderboard</span></a>
             
             <a id="nav-referrals" class="nav-item" onclick="switchTab('referrals')" style="display: none;"><span data-lang="navRef">👥 Referrals</span></a>
@@ -305,6 +324,7 @@
         </div>
         <div class="user-info">
           <div class="points-badge" onclick="openHistoryModal()" title="Click to view history">R$: <span id="userPoints" style="margin: 0 4px;">0.00</span></div>
+          <span class="verified-badge" id="verifiedBadge"></span>
           <button class="btn-logout" id="logoutBtn" onclick="logoutUser()"><span data-lang="btnLogout">Logout</span> (<span id="loggedUserName" style="opacity: 0.8; font-weight: normal;"></span>)</button>
           <button class="btn-login" id="loginBtn" onclick="openLoginModal()" data-lang="btnLogin">Login</button>
         </div>
@@ -383,6 +403,7 @@
               <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
               
               <h2 class="section-title" data-lang="homeDashboard">Your Dashboard</h2>
+              <div id="homeBundleBar" class="mini-bundle" style="display: none;"></div>
               <div class="content-box" style="padding: 50px 20px; border-color: #00e676; box-shadow: 0 0 30px rgba(0, 230, 118, 0.08); margin-bottom: 25px;">
                   <p style="color: #a0a0a0; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;" data-lang="homeCurrentBalance">Current Balance</p>
                   
@@ -437,6 +458,7 @@
             </div>
         </div>
         <div id="offerwallSection" class="content-box" style="padding: 15px; display: none;"></div>
+        <div id="earnBundleBar" class="mini-bundle" style="display: none;"></div>
         
         <div class="content-box" id="recentPayoutsBox">
             <h3 style="color: #ffb703; margin-bottom: 15px;" data-lang="recentCashouts">🎉 Recent Reward Claims</h3>
@@ -526,6 +548,37 @@
         </div>
       </main>
 
+            <!-- ZAKŁADKA BUNDLES -->
+      <main id="tab-bundles" style="display: none;">
+        <h2 class="section-title" data-lang="bundlesTitle">📦 Bundles</h2>
+        <div id="bundlesLoginPrompt" class="content-box" style="display: none;">
+            <p style="color: #a0a0b0; margin-bottom: 10px;" data-lang="bundlesLoginNeeded">Log in to order bundles.</p>
+            <button class="btn-action" onclick="openLoginModal()" data-lang="btnConnect">Connect Account</button>
+        </div>
+        <div id="bundlesContent">
+            <div class="content-box">
+                <p style="color: #a0a0b0; margin-bottom: 5px;" data-lang="bundlesIntro">Spend your R$ on bundles. Pick a category and a bundle, then fill its progress bar with R$. Once it is fully paid, our team delivers it to you.</p>
+                <div class="bundle-cats">
+                    <div class="bundle-cat-card" data-cat="robux" onclick="openBundleCategory('robux')">
+                        <div class="card-icon">🟥</div>
+                        <h3 style="color: #fff;">Robux</h3>
+                        <p style="color: #a0a0b0; font-size: 0.85rem; margin-top: 5px;" data-lang="bundlesCatRobuxDesc">Robux packs</p>
+                    </div>
+                    <div class="bundle-cat-card" data-cat="wt" onclick="openBundleCategory('wt')">
+                        <div class="card-icon">🦅</div>
+                        <h3 style="color: #fff;">War Thunder</h3>
+                        <p style="color: #a0a0b0; font-size: 0.85rem; margin-top: 5px;" data-lang="bundlesCatWtDesc">Golden Eagles gifts</p>
+                    </div>
+                </div>
+                <div id="bundleOffersBox" style="display: none;"></div>
+            </div>
+            <div class="content-box" style="text-align: left;">
+                <h3 style="color: #fff; margin-bottom: 15px;" data-lang="bundlesMyTitle">Your bundles</h3>
+                <div id="bundlesList"><p style="color: #888;">...</p></div>
+            </div>
+        </div>
+      </main>
+
       <!-- ZAKŁADKA LEADERBOARD -->
       <main id="tab-leaderboard" style="display: none;">
           <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
@@ -610,6 +663,17 @@
       <!-- PANEL ADMINA -->
       <main id="tab-admin" style="display: none;">
         <h2 class="section-title" data-lang="navAdmin">⚙️ Admin Panel</h2>
+
+        <div class="content-box" style="text-align: left;">
+            <h3 style="color: #00e676; margin-bottom: 10px;">✅ Weryfikacja graczy (Pakiety)</h3>
+            <p style="color: #a0a0b0; font-size: 0.85rem; margin-bottom: 10px;">Sprawdź w opisie profilu Roblox gracza, czy jest tam jego nazwa Discord, i dopiero wtedy kliknij „Zweryfikuj".</p>
+            <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
+                <table class="ref-table" style="width: 100%; min-width: 500px; font-size: 0.9rem;">
+                    <thead><tr><th>Gracz</th><th>Roblox / Gaijin</th><th>Discord</th><th>Status</th><th>Akcja</th></tr></thead>
+                    <tbody id="adminBundleUsersBody"><tr><td colspan="5" style="text-align: center; color: #888;">Ładowanie...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
         
         <div class="steps-grid" style="margin-bottom: 20px;">
             <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminOnlineUsers()">
@@ -765,6 +829,22 @@
       </div>
   </div>
 
+    <!-- OKIENKO PAKIETU -->
+  <div class="modal" id="bundleModal">
+    <div class="modal-content">
+      <h3 style="color: #fff; margin-bottom: 5px;" data-lang="bundleModalTitle">Order a bundle</h3>
+      <p id="bundleModalOffer" style="color: #00e676; font-weight: bold; margin-bottom: 15px;"></p>
+      <label id="bundleGameLabel" style="display: block; text-align: left; color: #a0a0b0; font-size: 0.85rem; margin-bottom: 4px;"></label>
+      <input type="text" id="bundleGameId" maxlength="32" autocomplete="off">
+      <label style="display: block; text-align: left; color: #a0a0b0; font-size: 0.85rem; margin-bottom: 4px;" data-lang="bundleLabelDiscord">Discord name</label>
+      <input type="text" id="bundleDiscord" maxlength="32" autocomplete="off">
+      <p style="color: #a0a0b0; font-size: 0.8rem; text-align: left; margin-bottom: 8px;" data-lang="bundleLockedNote">These details are locked to your account after your first bundle. To change them, contact Support.</p>
+      <p style="color: #ffb703; font-size: 0.8rem; text-align: left; margin-bottom: 12px;" data-lang="bundleVerifyNote">Tip: put your Discord name in your Roblox profile description - our team uses it to verify you.</p>
+      <button class="btn-action" id="bundleSubmitBtn" style="width: 100%;" onclick="submitBundle()" data-lang="btnBundleSelect">Select</button>
+      <button style="background: transparent; color: #888; border: none; margin-top: 15px; cursor: pointer; width: 100%;" onclick="closeBundleModal()" data-lang="btnCancel">Cancel</button>
+    </div>
+  </div>
+
   <!-- OKIENKO ANKIET -->
   <div class="offer-modal-overlay" id="offerModal">
     <div class="offer-modal-box">
@@ -808,7 +888,8 @@
             cookieText: "We use cookies to ensure you get the best experience on our website. Read our", cookieLink: "Privacy Policy", cookieBtn: "Accept & Close",
             homeDashboard: "Your Dashboard", homeCurrentBalance: "Current Balance", btnGoEarn: "🚀 Start Quests", btnWithdrawNow: "💸 Claim Reward", homeSocialTasks: "Social Tasks", 
             homeSocialTasksDesc: "Follow our channels to get bonus R$ points!", ldToday: "Today", ld7Days: "Last 7 Days", ld30Days: "Last 30 Days", ldYear: "Last Year", ldAllTime: "All Time", liveEarners: "🔥 Live Activity", earnTitle: "Complete Quests & Collect R$!", loadingStats: "Loading...", emptyEarners: "Be the first to complete a quest today!", startEarning: "Start Completing Quests for R$! 💎", startDesc: "Enter your Roblox username below so we know where to assign your quest points. No passwords required.", btnConnect: "Connect Account", chooseOfferwall: "🚀 Choose a Quest Wall", offerDesc: "Select a partner wall below to start collecting R$ points.", cpxDesc: "High-reward partner quizzes", trDesc: "Fast & easy interactive tasks", recentCashouts: "🎉 Recent Reward Claims", loadingCashouts: "Loading recent claims...", emptyCashouts: "No claims yet!", tableUser: "User", tableAmount: "Amount", tableTime: "Time", faqTitle: "FAQ", q1: "Do you need my Roblox password?", a1: "No! We will never ask for your Roblox password. We only need your public username to track your quest progress and assign your points.", q2: "How fast are quest points added to my balance?", a2: "Once you complete a partner quest or quiz, points are credited to your account balance automatically within a few moments.", refTitle: "Invite Friends & Get +15% Bonus", refInfo: "Your Referral Info", refDesc: "Share your custom link! You will receive a massive 15% lifetime bonus of all R$ points your friends collect!", btnCopy: "📋 Copy", promoTitle: "Redeem Promo Codes", gotCode: "Got a Code?", btnRedeem: "Redeem", supportTitle: "Contact Support", btnSubmitTicket: "Submit Ticket", globalChat: "🌍 Global Chat", chatSystem: "SYSTEM:", chatWelcome: "Welcome to the Global Chat! Be respectful.", btnSend: "Send", modalLoginTitle: "Connect Roblox Account", btnConnectConfirm: "Confirm & Login", modalWithdrawTitle: "Claim Reward", rateInfo: "1 R$ Point = $0.025 USD • Minimum claim: 1 R$", youWillReceive: "You will receive:", btnReqPayout: "Request Payout", phFriendCode: "Enter friend's code", phPromoCode: "Enter promo code", phSupport: "Describe your issue...", phChat: "Say something...", historyTitle: "Account History", historyEmpty: "No actions yet!", historyAction: "Action", historySurvey: "Quest Completion", historyPartial: "Partial Bonus", historyPromo: "Promo Code", historyRef: "Referral Bonus", historyPayout: "Reward Claim", historyLevel: "Level Reward", historyWheel: "Wheel of Fortune", historyReversal: "Quest Reversal (canceled by partner)", historyRefReversal: "Referral Bonus Reversed (friend's quest canceled)", historyFrom: "from:", currentBalance: "Current Balance:", phSupportContact: "Your Discord / Email (optional)", paypalLocked: "🔒 Payout address is securely locked to this account.", paypalWarningInfo: "⚠️ Note: This payout address will be permanently linked to your account for security.",
-            phGoalName: "Name your goal", phGoalRobux: "Amount in R$", phGoalUsd: "Amount in USD (min $5)"
+            phGoalName: "Name your goal", phGoalRobux: "Amount in R$", phGoalUsd: "Amount in USD (min $5)",
+            navBundles: "📦 Bundles", navBundlesMob: "Bundles", bundlesTitle: "📦 Bundles", bundlesIntro: "Spend your R$ on bundles. Pick a category and a bundle, then fill its progress bar with R$. Once it is fully paid, our team delivers it to you.", bundlesFeeNote: "Prices include a 10% activation fee.", bundlesLoginNeeded: "Log in to order bundles.", bundlesCatRobuxDesc: "Robux packs", bundlesCatWtDesc: "Golden Eagles gifts", bundlesPickOffer: "Choose a bundle", bundlesCustomTitle: "Custom amount", bundlesCustomHint: "Whole amount in USD: $10 - $500", btnBundleChoose: "Choose", bundleModalTitle: "Order a bundle", bundleLabelGaijin: "Gaijin ID (from store.gaijin.net/user.php)", bundleLabelRoblox: "Roblox username", bundleLabelDiscord: "Discord name", bundleLockedNote: "These details are locked to your account after your first bundle. To change them, contact Support.", bundleVerifyNote: "Tip: put your Discord name in your Roblox profile description - our team uses it to verify you.", btnBundleSelect: "Select", bundlesMyTitle: "Your bundles", bundlesEmpty: "No bundles yet.", bundleStFilling: "FILLING", bundleStPaid: "PAID - WAITING FOR DELIVERY", bundleStDone: "DONE", bundleStRejected: "REJECTED - R$ REFUNDED", bundleStCanceled: "CANCELED", btnBundleDeposit: "Deposit", btnBundleWithdraw: "Withdraw", btnBundleCancel: "Cancel bundle", phBundleAmount: "Amount R$", bundleCreated: "Bundle added! Now deposit R$ into it.", bundlePaidMsg: "Bundle fully paid! Our team will deliver it soon.", bundleInvalidAmount: "Enter a valid amount.", bundleConfirmCancel: "Cancel this bundle? Your deposited R$ will be returned.", bundleInvalidCustom: "Enter a whole amount between $10 and $500.", bundlesVerified: "Verified", bundlesNotVerified: "Not verified", historyBundle: "Bundle", historyBundleRefund: "Bundle refund", historyBundleRejected: "Bundle rejected - refund", historyBundleDone: "Bundle delivered"
         },
         pl: {
             navHome: "🏠 Główna", navEarn: "🚀 Misje", navGoals: "🎯 Cele", navWheel: "🎡 Koło Fortuny", navLevels: "⭐ Poziomy", navLeaderboard: "🏆 Ranking", navRef: "👥 Poleceni", navPromo: "🎫 Kody", navSupport: "🛠️ Support", navAdmin: "⚙️ Admin",
@@ -822,7 +903,8 @@
             goalListTitle: "Twoje Cele", btnGoalClear: "Wyczyść Historię", btnGoalCancel: "Anuluj", statusActive: "AKTYWNY", statusCompleted: "UZBIERANO", statusCanceled: "ANULOWANO", activeGoal: "Aktywny Cel:",
             homeHeroTitle: "Wykonuj Misje i Odbieraj <span>Nagrody R$!</span>", homeHeroSub: "Połącz swój nick z Roblox, wykonuj interaktywne zadania, testuj gry i zbieraj punkty R$. Bezpiecznie i bez podawania hasła!", btnHeroStart: "POŁĄCZ KONTO I ZACZNIJ MISJE!", howItWorksTitle: "⚡ Jak To Działa?", step1Badge: "KROK 1", step1Title: "🎮 Podaj Swój Nick", step1Desc: "Kliknij przycisk logowania i wpisz swój nick z Robloxa. Nigdy nie prosimy o hasło ani dane logowania.", step2Badge: "KROK 2", step2Title: "🚀 Wykonuj Zadania", step2Desc: "Wybieraj misje społecznościowe, testuj nowe gry lub dziel się opinią w quizach naszych partnerów.", step3Badge: "KROK 3", step3Title: "💎 Odbieraj Nagrody R$", step3Desc: "Punkty trafiają na Twoje saldo automatycznie po ukończeniu misji. Wymieniaj zebrane R$ w każdej chwili!", guidesMainTitle: "📚 Poradniki Społeczności Roblox", g1Meta: "Poradnik Wydajności • Aktualizacja 2026", g1Title: "Jak Zoptymalizować Roblox pod Maksymalne FPS i Niski Ping w 2026 Roku", g1P1: "Spadki płynności (FPS) lub opóźnienia sieciowe potrafią zepsuć każdą rozgrywkę. Odpowiednia konfiguracja klienta pozwala drastycznie zwiększyć liczbę klatek i ustabilizować połączenie.", g1Sub1: "1. Ustawienia Grafiki i Renderowania w Grze", g1P2: "Rozpocznij od otwarcia menu (klawisz ESC) i przełączenia trybu grafiki na Ręczny (Manual). Obniżenie suwaka wyłącza zasobożerne cienie.", g2Meta: "Bezpieczeństwo Konta • Lektura Obowiązkowa", g2Title: "Kompletny Poradnik Bezpieczeństwa Konta Roblox", g2P1: "Ochrona konta staje się kluczowa wraz ze zdobywaniem rzadkich przedmiotów. Legalne portale społecznościowe nigdy nie proszą o hasło do gry.", g2Sub2: "2. Włączenie Weryfikacji Dwuetapowej (2FA)", g2P3: "Zawsze aktywuj weryfikację dwuetapową w ustawieniach konta Roblox, korzystając z dedykowanej aplikacji uwierzytelniającej.", cookieText: "Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. Przeczytaj naszą", cookieLink: "Politykę Prywatności", cookieBtn: "Akceptuję i Zamknij", homeDashboard: "Twój Panel", homeCurrentBalance: "Aktualny Stan Konta", btnGoEarn: "🚀 Zacznij Misje", btnWithdrawNow: "💸 Wypłać Nagrodę", homeSocialTasks: "Zadania Społecznościowe", 
             homeSocialTasksDesc: "Zaobserwuj nas, aby zdobyć dodatkowe punkty R$!", ldToday: "Dzisiaj", ld7Days: "Ostatnie 7 Dni", ld30Days: "Ostatnie 30 Dni", ldYear: "Ostatni Rok", ldAllTime: "Zawsze", liveEarners: "🔥 Na żywo", earnTitle: "Wykonuj Misje i Zbieraj Punkty R$!", loadingStats: "Ładowanie...", emptyEarners: "Bądź pierwszym, który ukończy dziś misję!", startEarning: "Zacznij Wykonywać Misje za R$! 💎", startDesc: "Wpisz poniżej swój nick z Roblox. Nigdy nie poprosimy Cię o hasło.", btnConnect: "Połącz Konto", chooseOfferwall: "🚀 Wybierz Ścianę Misji", offerDesc: "Wybierz partnera poniżej, aby zacząć zdobywać punkty R$.", cpxDesc: "Wysoko punktowane quizy i zadania", trDesc: "Szybkie i proste misje", recentCashouts: "🎉 Ostatnie Wypłaty Nagród", loadingCashouts: "Ładowanie wypłat...", emptyCashouts: "Brak wypłat! Bądź pierwszym, który odbierze nagrodę.", tableUser: "Gracz", tableAmount: "Kwota", tableTime: "Czas", faqTitle: "FAQ - Często Zadawane Pytania", q1: "Czy potrzebujecie mojego hasła?", a1: "Nie! Nigdy nie poprosimy o Twoje hasło do Robloxa. Wystarczy sam publiczny nick.", q2: "Jak szybko dodawane są punkty?", a2: "Zdobyte punkty dodają się automatycznie natychmiast po ukończeniu zadania.", refTitle: "Zaproś Znajomych (+15% Bonusu)", refInfo: "Twój Panel Poleceń", refDesc: "Wyślij znajomym swój link! Otrzymasz 15% bonusu od wszystkich zdobytych przez nich punktów na zawsze!", btnCopy: "📋 Kopiuj", promoTitle: "Kody Promocyjne", gotCode: "Masz Kod?", btnRedeem: "Odbierz", supportTitle: "Kontakt z Administracją", btnSubmitTicket: "Wyślij", globalChat: "🌍 Czat Globalny", chatSystem: "SYSTEM:", chatWelcome: "Witamy na czacie! Bądź kulturalny.", btnSend: "Wyślij", modalLoginTitle: "Połącz Konto Roblox", btnConnectConfirm: "Zaloguj się", modalWithdrawTitle: "Wypłata Nagrody", rateInfo: "1 R$ = $0.025 USD • Minimalna wypłata: 1 R$", youWillReceive: "Otrzymasz:", btnReqPayout: "Zleć Wypłatę", phFriendCode: "Kod znajomego...", phPromoCode: "Wpisz kod...", phSupport: "Opisz problem...", phChat: "Napisz coś...", historyTitle: "Historia Konta", historyEmpty: "Brak akcji na ten moment!", historyAction: "Akcja", historySurvey: "Ukończenie misji", historyPartial: "Bonus częściowy", historyPromo: "Kod Promocyjny", historyRef: "Bonus z Polecenia", historyPayout: "Wypłata nagrody", historyLevel: "Nagroda za Poziom", historyWheel: "Koło Fortuny", historyReversal: "Cofnięcie misji (anulowane przez partnera)", historyRefReversal: "Cofnięty bonus z polecenia (misja znajomego anulowana)", historyFrom: "od:", currentBalance: "Aktualny Stan Konta:", phSupportContact: "Twój Discord / Email (opcjonalnie)", paypalLocked: "🔒 Metoda wypłaty jest na stałe przypisana do konta.", paypalWarningInfo: "⚠️ Uwaga: Ten adres zostanie na stałe przypisany do Twojego konta ze względów bezpieczeństwa.",
-            phGoalName: "Nazwa celu", phGoalRobux: "Kwota w R$", phGoalUsd: "Kwota w USD (min 5$)"
+            phGoalName: "Nazwa celu", phGoalRobux: "Kwota w R$", phGoalUsd: "Kwota w USD (min 5$)",
+            navBundles: "📦 Pakiety", navBundlesMob: "Pakiety", bundlesTitle: "📦 Pakiety", bundlesIntro: "Wydaj swoje R$ na pakiety. Wybierz kategorię i pakiet, a potem uzupełniaj jego pasek postępu wpłatami R$. Gdy pakiet będzie w pełni opłacony, nasz zespół Ci go dostarczy.", bundlesFeeNote: "W cenach zawarta jest 10% opłata aktywacyjna.", bundlesLoginNeeded: "Zaloguj się, aby zamawiać pakiety.", bundlesCatRobuxDesc: "Pakiety Robux", bundlesCatWtDesc: "Prezenty Golden Eagles", bundlesPickOffer: "Wybierz pakiet", bundlesCustomTitle: "Własna kwota", bundlesCustomHint: "Pełna kwota w USD: $10 - $500", btnBundleChoose: "Wybierz", bundleModalTitle: "Zamów pakiet", bundleLabelGaijin: "ID Gaijin (ze store.gaijin.net/user.php)", bundleLabelRoblox: "Nick Roblox", bundleLabelDiscord: "Nazwa Discord", bundleLockedNote: "Po pierwszym pakiecie te dane zostają na stałe przypisane do konta. Zmiana tylko przez Support.", bundleVerifyNote: "Wskazówka: wpisz swoją nazwę Discord w opisie profilu Roblox, bo na tej podstawie weryfikujemy graczy.", btnBundleSelect: "Wybierz", bundlesMyTitle: "Twoje pakiety", bundlesEmpty: "Brak pakietów.", bundleStFilling: "UZUPEŁNIANIE", bundleStPaid: "OPŁACONY - CZEKA NA REALIZACJĘ", bundleStDone: "ZREALIZOWANY", bundleStRejected: "ODRZUCONY - ZWRÓCONO R$", bundleStCanceled: "ANULOWANY", btnBundleDeposit: "Wpłać", btnBundleWithdraw: "Wycofaj", btnBundleCancel: "Anuluj pakiet", phBundleAmount: "Kwota R$", bundleCreated: "Pakiet dodany! Teraz wpłać do niego R$.", bundlePaidMsg: "Pakiet w pełni opłacony! Nasz zespół wkrótce go zrealizuje.", bundleInvalidAmount: "Podaj prawidłową kwotę.", bundleConfirmCancel: "Anulować ten pakiet? Wpłacone R$ wrócą na Twoje konto.", bundleInvalidCustom: "Podaj pełną kwotę od $10 do $500.", bundlesVerified: "Zweryfikowany", bundlesNotVerified: "Niezweryfikowany", historyBundle: "Pakiet", historyBundleRefund: "Zwrot z pakietu", historyBundleRejected: "Pakiet odrzucony - zwrot", historyBundleDone: "Pakiet zrealizowany"
         },
         de: {
             navHome: "🏠 Startseite", navEarn: "🚀 Quests", navGoals: "🎯 Ziele", navWheel: "🎡 Glücksrad", navLevels: "⭐ Level", navLeaderboard: "🏆 Ränge", navRef: "👥 Partner", navPromo: "🎫 Codes", navSupport: "🛠️ Support", navAdmin: "⚙️ Admin",
@@ -836,7 +918,8 @@
             goalListTitle: "Deine Ziele", btnGoalClear: "Verlauf löschen", btnGoalCancel: "Abbrechen", statusActive: "AKTIV", statusCompleted: "ERREICHT", statusCanceled: "ABGEBROCHEN", activeGoal: "Aktives Ziel:",
             homeHeroTitle: "Quests abschließen & <span>R$ sichern!</span>", homeHeroSub: "Verbinde deinen Roblox-Namen, schließe Quests ab und sammle R$. Kein Passwort erforderlich!", btnHeroStart: "EINLOGGEN & STARTEN!", howItWorksTitle: "⚡ Wie funktioniert es?", step1Badge: "SCHRITT 1", step1Title: "🎮 Namen verbinden", step1Desc: "Gib deinen Roblox-Namen ein. Wir fragen nie nach dem Passwort.", step2Badge: "SCHRITT 2", step2Title: "🚀 Quests erledigen", step2Desc: "Nimm an Partner-Quizzen teil, um R$ zu sammeln.", step3Badge: "SCHRITT 3", step3Title: "💎 R$ einlösen", step3Desc: "Tausche deine R$-Punkte jederzeit ein!", guidesMainTitle: "📚 Roblox Community Guides", g1Meta: "Performance-Guide", g1Title: "Roblox FPS & Ping optimieren", g1P1: "Lag ruiniert das Spiel. Hier erfährst du, wie du Roblox optimierst.", g1Sub1: "1. Grafikeinstellungen", g1P2: "Reduziere die Grafikqualität für bessere FPS.", g2Meta: "Kontosicherheit", g2Title: "Kontosicherheit", g2P1: "Schütze dein Konto. Wir fragen nie nach deinem Passwort.", g2Sub2: "2. 2FA aktivieren", g2P3: "Nutze eine Authenticator-App für deinen Account.", cookieText: "Wir verwenden Cookies für die beste Erfahrung.", cookieLink: "Datenschutzerklärung", cookieBtn: "Akzeptieren", homeDashboard: "Dein Dashboard", homeCurrentBalance: "Aktueller Kontostand", btnGoEarn: "🚀 Quests starten", btnWithdrawNow: "💸 Einlösen", homeSocialTasks: "Soziale Aufgaben", 
             homeSocialTasksDesc: "Folge uns für Bonus-R$!", ldToday: "Heute", ld7Days: "Letzte 7 Tage", ld30Days: "Letzte 30 Tage", ldYear: "Letztes Jahr", ldAllTime: "Immer", liveEarners: "🔥 Live-Aktivität", earnTitle: "Sammle R$!", loadingStats: "Lädt...", emptyEarners: "Sei der Erste heute!", startEarning: "Starte jetzt!", startDesc: "Roblox-Namen eingeben (kein Passwort):", btnConnect: "Verbinden", chooseOfferwall: "🚀 Wähle eine Wall", offerDesc: "Wähle einen Partner.", cpxDesc: "Partner-Quizze", trDesc: "Einfache Quests", recentCashouts: "🎉 Letzte Einlösungen", loadingCashouts: "Lädt...", emptyCashouts: "Noch keine Einlösungen!", tableUser: "Nutzer", tableAmount: "Betrag", tableTime: "Zeit", faqTitle: "FAQ", q1: "Passwort?", a1: "Nein, nur dein Benutzername.", q2: "Wie schnell?", a2: "Sofort nach Abschluss.", refTitle: "Freunde Einladen (+15%)", refInfo: "Dein Link", refDesc: "Teile den Link für 15% Bonus!", btnCopy: "📋 Kopieren", promoTitle: "Promo-Codes", gotCode: "Code?", btnRedeem: "Einlösen", supportTitle: "Support", btnSubmitTicket: "Senden", globalChat: "🌍 Chat", chatSystem: "SYSTEM:", chatWelcome: "Willkommen im Chat!", btnSend: "Senden", modalLoginTitle: "Einloggen", btnConnectConfirm: "Bestätigen", modalWithdrawTitle: "Einlösen", rateInfo: "1 R$ = $0.025 USD • Mindestbetrag: 1 R$", youWillReceive: "Du erhältst:", btnReqPayout: "Auszahlen", phFriendCode: "Code eingeben", phPromoCode: "Code", phSupport: "Problem...", phChat: "Schreibe...", historyTitle: "Verlauf", historyEmpty: "Keine Aktionen!", historyAction: "Aktion", historySurvey: "Quest", historyPartial: "Teilbonus", historyPromo: "Promo-Code", historyRef: "Empfehlung", historyPayout: "Einlösung", historyLevel: "Level-Belohnung", historyWheel: "Glücksrad", historyReversal: "Quest-Rückbuchung (vom Partner storniert)", historyRefReversal: "Empfehlungsbonus zurückgebucht (Quest des Freundes storniert)", historyFrom: "von:", currentBalance: "Kontostand:", phSupportContact: "Discord / E-Mail", paypalLocked: "🔒 Auszahlungsadresse ist gesperrt.", paypalWarningInfo: "⚠️ Die Adresse wird dauerhaft verknüpft.",
-            phGoalName: "Zielname", phGoalRobux: "Betrag in R$", phGoalUsd: "Betrag in USD"
+            phGoalName: "Zielname", phGoalRobux: "Betrag in R$", phGoalUsd: "Betrag in USD",
+            navBundles: "📦 Pakete", navBundlesMob: "Pakete", bundlesTitle: "📦 Pakete", bundlesIntro: "Gib deine R$ für Pakete aus. Wähle eine Kategorie und ein Paket und fülle den Fortschrittsbalken mit R$. Sobald das Paket vollständig bezahlt ist, liefert unser Team es an dich.", bundlesFeeNote: "In den Preisen ist eine Aktivierungsgebühr von 10 % enthalten.", bundlesLoginNeeded: "Melde dich an, um Pakete zu bestellen.", bundlesCatRobuxDesc: "Robux-Pakete", bundlesCatWtDesc: "Golden-Eagles-Geschenke", bundlesPickOffer: "Paket wählen", bundlesCustomTitle: "Eigener Betrag", bundlesCustomHint: "Ganzer Betrag in USD: $10 - $500", btnBundleChoose: "Wählen", bundleModalTitle: "Paket bestellen", bundleLabelGaijin: "Gaijin-ID (von store.gaijin.net/user.php)", bundleLabelRoblox: "Roblox-Benutzername", bundleLabelDiscord: "Discord-Name", bundleLockedNote: "Nach deinem ersten Paket werden diese Daten fest an dein Konto gebunden. Änderungen nur über den Support.", bundleVerifyNote: "Tipp: Trage deinen Discord-Namen in deine Roblox-Profilbeschreibung ein, damit wir dich verifizieren können.", btnBundleSelect: "Auswählen", bundlesMyTitle: "Deine Pakete", bundlesEmpty: "Noch keine Pakete.", bundleStFilling: "WIRD GEFÜLLT", bundleStPaid: "BEZAHLT - WARTET AUF LIEFERUNG", bundleStDone: "ERLEDIGT", bundleStRejected: "ABGELEHNT - R$ ZURÜCKERSTATTET", bundleStCanceled: "ABGEBROCHEN", btnBundleDeposit: "Einzahlen", btnBundleWithdraw: "Zurückholen", btnBundleCancel: "Paket abbrechen", phBundleAmount: "Betrag R$", bundleCreated: "Paket hinzugefügt! Zahle jetzt R$ ein.", bundlePaidMsg: "Paket vollständig bezahlt! Unser Team liefert es bald.", bundleInvalidAmount: "Gib einen gültigen Betrag ein.", bundleConfirmCancel: "Dieses Paket abbrechen? Deine eingezahlten R$ werden zurückerstattet.", bundleInvalidCustom: "Gib einen ganzen Betrag zwischen $10 und $500 ein.", bundlesVerified: "Verifiziert", bundlesNotVerified: "Nicht verifiziert", historyBundle: "Paket", historyBundleRefund: "Paket-Rückerstattung", historyBundleRejected: "Paket abgelehnt - Rückerstattung", historyBundleDone: "Paket geliefert"
         },
         ru: {
             navHome: "🏠 Главная", navEarn: "🚀 Квесты", navGoals: "🎯 Цели", navWheel: "🎡 Колесо Фортуны", navLevels: "⭐ Уровни", navLeaderboard: "🏆 Топ", navRef: "👥 Рефы", navPromo: "🎫 Коды", navSupport: "🛠️ Помощь", navAdmin: "⚙️ Admin",
@@ -850,7 +933,8 @@
             goalListTitle: "Твои цели", btnGoalClear: "Очистить историю", btnGoalCancel: "Отменить", statusActive: "АКТИВНО", statusCompleted: "ВЫПОЛНЕНО", statusCanceled: "ОТМЕНЕНО", activeGoal: "Текущая цель:",
             homeHeroTitle: "Выполняй квесты и получай <span>R$!</span>", homeHeroSub: "Подключи ник, выполняй задания и собирай баллы. Пароль не требуется!", btnHeroStart: "НАЧАТЬ КВЕСТЫ!", howItWorksTitle: "⚡ Как это работает?", step1Badge: "ШАГ 1", step1Title: "🎮 Подключи ник", step1Desc: "Введи ник. Мы не просим пароль.", step2Badge: "ШАГ 2", step2Title: "🚀 Выполняй", step2Desc: "Проходи викторины.", step3Badge: "ШАГ 3", step3Title: "💎 Забирай R$", step3Desc: "Меняй баллы на награды!", guidesMainTitle: "📚 Гайды", g1Meta: "FPS", g1Title: "Оптимизация FPS", g1P1: "Как повысить FPS.", g1Sub1: "1. Графика", g1P2: "Снизьте графику.", g2Meta: "Защита", g2Title: "Безопасность", g2P1: "Никогда не давайте пароль.", g2Sub2: "2. 2FA", g2P3: "Включите 2FA.", cookieText: "Мы используем cookies.", cookieLink: "Политика", cookieBtn: "Принять", homeDashboard: "Панель", homeCurrentBalance: "Баланс", btnGoEarn: "🚀 Квесты", btnWithdrawNow: "💸 Вывести", homeSocialTasks: "Соцсети", 
             homeSocialTasksDesc: "Подпишись за R$!", ldToday: "Сегодня", ld7Days: "7 Дней", ld30Days: "30 Дней", ldYear: "Год", ldAllTime: "Все время", liveEarners: "🔥 Активность", earnTitle: "Собирай R$!", loadingStats: "Загрузка...", emptyEarners: "Будь первым!", startEarning: "Начни зарабатывать!", startDesc: "Введи никнейм:", btnConnect: "Подключить", chooseOfferwall: "🚀 Выбери стену", offerDesc: "Выбери партнера.", cpxDesc: "Викторины", trDesc: "Задания", recentCashouts: "🎉 Выплаты", loadingCashouts: "Загрузка...", emptyCashouts: "Пока нет выплат!", tableUser: "Игрок", tableAmount: "Сумма", tableTime: "Время", faqTitle: "FAQ", q1: "Пароль?", a1: "Нет, только ник.", q2: "Как быстро?", a2: "Мгновенно.", refTitle: "Пригласи друзей (+15%)", refInfo: "Твоя ссылка", refDesc: "Делись ссылкой!", btnCopy: "📋 Копия", promoTitle: "Промокоды", gotCode: "Есть код?", btnRedeem: "Активировать", supportTitle: "Поддержка", btnSubmitTicket: "Отправить", globalChat: "🌍 Чат", chatSystem: "СИСТЕМА:", chatWelcome: "Добро пожаловать!", btnSend: "Отправить", modalLoginTitle: "Войти", btnConnectConfirm: "Войти", modalWithdrawTitle: "Вывести", rateInfo: "1 R$ = $0.025 • Минимум: 1 R$", youWillReceive: "Вы получите:", btnReqPayout: "Вывести", phFriendCode: "Код друга", phPromoCode: "Промокод", phSupport: "Проблема...", phChat: "Напиши...", historyTitle: "История", historyEmpty: "Нет действий!", historyAction: "Действие", historySurvey: "Квест", historyPartial: "Частично", historyPromo: "Промокод", historyRef: "Реф", historyPayout: "Вывод", historyLevel: "Награда за уровень", historyWheel: "Колесо Фортуны", historyReversal: "Отмена квеста (отклонено партнером)", historyRefReversal: "Реферальный бонус отменен (квест друга аннулирован)", historyFrom: "от:", currentBalance: "Баланс:", phSupportContact: "Discord / Email", paypalLocked: "🔒 Кошелек привязан.", paypalWarningInfo: "⚠️ Кошелек будет привязан навсегда.",
-            phGoalName: "Название", phGoalRobux: "Сумма в R$", phGoalUsd: "Сумма в USD"
+            phGoalName: "Название", phGoalRobux: "Сумма в R$", phGoalUsd: "Сумма в USD",
+            navBundles: "📦 Пакеты", navBundlesMob: "Пакеты", bundlesTitle: "📦 Пакеты", bundlesIntro: "Тратьте R$ на пакеты. Выберите категорию и пакет, затем пополняйте его шкалу прогресса. Когда пакет будет полностью оплачен, наша команда доставит его вам.", bundlesFeeNote: "В цены включена комиссия за активацию 10%.", bundlesLoginNeeded: "Войдите, чтобы заказывать пакеты.", bundlesCatRobuxDesc: "Пакеты Robux", bundlesCatWtDesc: "Подарки Golden Eagles", bundlesPickOffer: "Выберите пакет", bundlesCustomTitle: "Своя сумма", bundlesCustomHint: "Целая сумма в USD: $10 - $500", btnBundleChoose: "Выбрать", bundleModalTitle: "Заказ пакета", bundleLabelGaijin: "ID Gaijin (со store.gaijin.net/user.php)", bundleLabelRoblox: "Ник Roblox", bundleLabelDiscord: "Имя в Discord", bundleLockedNote: "После первого пакета эти данные навсегда привязываются к аккаунту. Изменить их можно только через поддержку.", bundleVerifyNote: "Совет: укажите своё имя в Discord в описании профиля Roblox, по нему мы вас верифицируем.", btnBundleSelect: "Выбрать", bundlesMyTitle: "Ваши пакеты", bundlesEmpty: "Пока нет пакетов.", bundleStFilling: "ПОПОЛНЯЕТСЯ", bundleStPaid: "ОПЛАЧЕН - ЖДЁТ ВЫДАЧИ", bundleStDone: "ВЫПОЛНЕН", bundleStRejected: "ОТКЛОНЁН - R$ ВОЗВРАЩЕНЫ", bundleStCanceled: "ОТМЕНЁН", btnBundleDeposit: "Внести", btnBundleWithdraw: "Вернуть", btnBundleCancel: "Отменить пакет", phBundleAmount: "Сумма R$", bundleCreated: "Пакет добавлен! Теперь внесите в него R$.", bundlePaidMsg: "Пакет полностью оплачен! Наша команда скоро его выдаст.", bundleInvalidAmount: "Введите корректную сумму.", bundleConfirmCancel: "Отменить этот пакет? Внесённые R$ вернутся на ваш баланс.", bundleInvalidCustom: "Введите целую сумму от $10 до $500.", bundlesVerified: "Верифицирован", bundlesNotVerified: "Не верифицирован", historyBundle: "Пакет", historyBundleRefund: "Возврат из пакета", historyBundleRejected: "Пакет отклонён - возврат", historyBundleDone: "Пакет выдан"
         }
     };
 
@@ -929,6 +1013,7 @@
         fetchLiveEarners();
         fetchLatestPayouts();
         if (document.getElementById('tab-leaderboard').style.display !== 'none') loadLeaderboard();
+        renderBundlesAll(); renderBundleOffers();
     }
 
     let socket = null;
@@ -1181,7 +1266,7 @@ function logoutUser() {
     });
 
     function switchTab(tabId) {
-        const tabs = ['home', 'earn', 'goals', 'wheel', 'levels', 'leaderboard', 'referrals', 'promocodes', 'support', 'admin'];
+        const tabs = ['home', 'earn', 'goals', 'wheel', 'levels', 'bundles', 'leaderboard', 'referrals', 'promocodes', 'support', 'admin'];
         tabs.forEach(id => { const el = document.getElementById('tab-' + id); if (el) el.style.display = 'none'; });
         const targetEl = document.getElementById('tab-' + tabId);
         if (targetEl) targetEl.style.display = 'block';
@@ -1200,10 +1285,12 @@ function logoutUser() {
         if(tabId === 'levels') renderLevelsUI(); 
         if(tabId === 'wheel') updateWheelUI();
         if(tabId === 'goals') fetchGoals();
+        if(tabId === 'bundles') openBundlesTab();
 if(tabId === 'admin') { 
             loadAdminStats(); 
             loadAdminTop10Payouts();
             loadAdminTop5Codes(); // ODPALA POBIERANIE KODÓW
+            loadAdminBundleUsers();
         }
     }
 
@@ -1276,15 +1363,278 @@ if(tabId === 'admin') {
         const homeBigPointsEl = document.getElementById("homeBigPoints"); if(homeBigPointsEl) homeBigPointsEl.innerText = safePoints.toFixed(2) + " R$";
         const homeBigUsdEl = document.getElementById("homeBigUsd"); const usdValue = safePoints * 0.025; if(homeBigUsdEl) homeBigUsdEl.innerText = "$" + usdValue.toFixed(2);
         
-        localStorage.setItem("rbx_points", pts); localStorage.setItem("rbx_linked_paypal", data.linkedPayPal || "");
+        localStorage.setItem("rbx_points", pts); localStorage.setItem("rbx_linked_paypal", data.linkedPayPal || ""); updateVerifiedBadge(data.verified);
 
         const statsRes = await fetch(`/api/user-stats/${savedUser}`);
         if(statsRes.ok) { userStats = await statsRes.json(); updateWheelUI(); if(document.getElementById('tab-levels').style.display !== 'none') renderLevelsUI(); }
-        await fetchGoals(true);
+        await fetchGoals(true); await fetchBundles();
       } catch (error) {}
     }
 
-    let currentGoalMode = 'robux';
+    // ===================== BUNDLES (PAKIETY) =====================
+let bundlesState = { verified: false, profile: {}, bundles: [], current: null };
+let bundleOffersData = null;
+let bundleCategory = null;
+let bundlePending = null;
+let lastBundlesFetch = 0;
+let lastVerified = false;
+
+function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+function bt(key) {
+    const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
+    return translations[tLang][key] || translations.en[key] || key;
+}
+
+function updateVerifiedBadge(isVerified) {
+    if (isVerified !== undefined) lastVerified = !!isVerified;
+    const el = document.getElementById('verifiedBadge'); if (!el) return;
+    if (!localStorage.getItem('rbx_username')) { el.style.display = 'none'; return; }
+    el.className = 'verified-badge ' + (lastVerified ? 'is-verified' : 'not-verified');
+    el.style.display = 'inline-flex';
+    el.innerText = (lastVerified ? '✔ ' : '✖ ') + bt(lastVerified ? 'bundlesVerified' : 'bundlesNotVerified');
+}
+
+async function fetchBundles(force) {
+    const username = localStorage.getItem('rbx_username'); if (!username) return;
+    const tabEl = document.getElementById('tab-bundles');
+    const tabOpen = !!tabEl && tabEl.style.display !== 'none';
+    if (!force && Date.now() - lastBundlesFetch < (tabOpen ? 4000 : 15000)) return;
+    lastBundlesFetch = Date.now();
+    try {
+        const res = await fetch('/api/bundles/' + encodeURIComponent(username));
+        bundlesState = await res.json();
+        renderBundlesAll();
+    } catch (e) {}
+}
+
+function renderMiniBundle(elId) {
+    const el = document.getElementById(elId); if (!el) return;
+    const c = bundlesState.current;
+    if (!c || !localStorage.getItem('rbx_username')) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    el.style.display = 'block';
+    el.onclick = () => switchTab('bundles');
+    el.innerHTML = `<div class="mini-bundle-top"><span>📦 ${escHtml(c.categoryLabel)} – ${escHtml(c.title)}</span><span>${c.deposited.toFixed(2)} / ${c.price} R$ (${c.percent}%)</span></div>
+        <div class="progress-bar-bg" style="height: 12px; margin-bottom: 0;"><div class="progress-bar-fill" style="width: ${c.percent}%"></div></div>`;
+}
+
+function renderBundlesAll() {
+    renderMiniBundle('homeBundleBar');
+    renderMiniBundle('earnBundleBar');
+    renderBundlesList();
+    updateVerifiedBadge(bundlesState.verified);
+}
+
+function renderBundlesList() {
+    const box = document.getElementById('bundlesList'); if (!box) return;
+    const ae = document.activeElement;
+    if (ae && ae.id && ae.id.indexOf('bundleAmt_') === 0) return;
+    const saved = {};
+    box.querySelectorAll('input[id^="bundleAmt_"]').forEach(i => { saved[i.id] = i.value; });
+    const list = bundlesState.bundles || [];
+    if (!list.length) { box.innerHTML = `<p style="color: #888;">${escHtml(bt('bundlesEmpty'))}</p>`; return; }
+    const stMap = { filling: ['bundleStFilling', '#00e676'], paid: ['bundleStPaid', '#ffb703'], done: ['bundleStDone', '#00e676'], rejected: ['bundleStRejected', '#ff3333'], canceled: ['bundleStCanceled', '#888'] };
+    let html = '';
+    list.forEach(b => {
+        const st = stMap[b.status] || stMap.filling;
+        const approx = b.approxRobux > 0 ? ` (≈ ${b.approxRobux} Robux)` : '';
+        let actions = '';
+        if (b.status === 'filling') {
+            actions = `<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+                <input type="number" id="bundleAmt_${b.id}" min="0" step="0.01" placeholder="${escHtml(bt('phBundleAmount'))}" style="flex: 1; min-width: 110px; padding: 8px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff;">
+                <button style="background: #333; color: #fff; border: 1px solid #444; border-radius: 6px; padding: 8px 12px; font-weight: bold; cursor: pointer;" onclick="bundleMax('${b.id}')">MAX</button>
+                <button style="background: #00e676; color: #000; border: none; border-radius: 6px; padding: 8px 14px; font-weight: bold; cursor: pointer;" onclick="bundleDeposit('${b.id}')">${escHtml(bt('btnBundleDeposit'))}</button>
+                <button style="background: #ffb703; color: #000; border: none; border-radius: 6px; padding: 8px 14px; font-weight: bold; cursor: pointer;" onclick="bundleWithdraw('${b.id}')">${escHtml(bt('btnBundleWithdraw'))}</button>
+                <button style="background: transparent; color: #ff3333; border: 1px solid #ff3333; border-radius: 6px; padding: 8px 14px; font-weight: bold; cursor: pointer;" onclick="bundleCancel('${b.id}')">${escHtml(bt('btnBundleCancel'))}</button>
+            </div>`;
+        }
+        html += `<div class="bundle-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
+                <h4 style="color: #fff; margin: 0;">${escHtml(b.categoryLabel)} – ${escHtml(b.title)}${escHtml(approx)}</h4>
+                <span style="font-weight: bold; font-size: 0.8rem; color: ${st[1]};">${escHtml(bt(st[0]))}</span>
+            </div>
+            <div class="goal-meta">${b.deposited.toFixed(2)} / ${b.price} R$ &nbsp;|&nbsp; ${b.percent}%</div>
+            <div class="progress-bar-bg" style="margin-bottom: 0;"><div class="progress-bar-fill" style="width: ${b.percent}%"></div></div>
+            ${actions}
+        </div>`;
+    });
+    box.innerHTML = html;
+    Object.keys(saved).forEach(id => { const el = document.getElementById(id); if (el) el.value = saved[id]; });
+}
+
+function openBundlesTab() {
+    const logged = !!localStorage.getItem('rbx_username');
+    document.getElementById('bundlesLoginPrompt').style.display = logged ? 'none' : 'block';
+    document.getElementById('bundlesContent').style.display = logged ? 'block' : 'none';
+    if (!logged) return;
+    loadBundleOffers().then(() => renderBundleOffers());
+    fetchBundles(true);
+}
+
+async function loadBundleOffers() {
+    if (bundleOffersData) return;
+    try { const res = await fetch('/api/bundles/offers'); bundleOffersData = await res.json(); } catch (e) {}
+}
+
+async function openBundleCategory(cat) {
+    await loadBundleOffers();
+    bundleCategory = cat;
+    document.querySelectorAll('.bundle-cat-card').forEach(el => el.classList.toggle('active', el.dataset.cat === cat));
+    renderBundleOffers();
+}
+
+function renderBundleOffers() {
+    const box = document.getElementById('bundleOffersBox'); if (!box) return;
+    if (!bundleOffersData || !bundleCategory) { box.style.display = 'none'; return; }
+    const cat = bundleCategory;
+    const offers = (bundleOffersData.offers && bundleOffersData.offers[cat]) || [];
+    let html = `<h3 style="color: #00e676; margin-top: 20px; text-align: left;">${escHtml(bt('bundlesPickOffer'))}: ${escHtml(bundleOffersData.categories[cat])}</h3>
+        <p style="color: #a0a0b0; font-size: 0.85rem; text-align: left; margin-top: 5px;">${escHtml(bt('bundlesFeeNote'))}</p>
+        <div class="bundle-offers">`;
+    offers.forEach(o => {
+        html += `<div class="bundle-offer" onclick="openBundleModal('${cat}', '${o.id}')"><h4>${escHtml(o.title)}</h4><div class="bundle-price">${o.price} R$</div></div>`;
+    });
+    if (cat === 'robux' && bundleOffersData.custom) {
+        const c = bundleOffersData.custom;
+        html += `<div class="bundle-offer" style="cursor: default;">
+            <h4>${escHtml(bt('bundlesCustomTitle'))}</h4>
+            <input type="number" id="bundleCustomUsd" min="${c.minUsd}" max="${c.maxUsd}" step="1" placeholder="$${c.minUsd} – $${c.maxUsd}" oninput="updateCustomPreview()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 8px;">
+            <div id="bundleCustomPreview" style="color: #a0a0b0; font-size: 0.85rem; min-height: 34px;">${escHtml(bt('bundlesCustomHint'))}</div>
+            <button class="btn-action" style="margin-top: 8px; padding: 8px 16px;" onclick="openBundleModal('robux', 'custom')">${escHtml(bt('btnBundleChoose'))}</button>
+        </div>`;
+    }
+    html += '</div>';
+    box.innerHTML = html;
+    box.style.display = 'block';
+}
+
+function customUsdValue() {
+    const input = document.getElementById('bundleCustomUsd'); if (!input || !bundleOffersData) return null;
+    const v = Number(input.value); const c = bundleOffersData.custom;
+    return (input.value !== '' && Number.isInteger(v) && v >= c.minUsd && v <= c.maxUsd) ? v : null;
+}
+
+function updateCustomPreview() {
+    const el = document.getElementById('bundleCustomPreview'); if (!el || !bundleOffersData) return;
+    const usd = customUsdValue(); const c = bundleOffersData.custom;
+    if (!usd) { el.innerText = bt('bundlesCustomHint'); return; }
+    el.innerText = `$${usd} = ${usd * c.rsPerUsd} R$ (≈ ${Math.floor(usd * c.approxRobuxPerUsd)} Robux)`;
+}
+
+function setLockedInput(id, val) {
+    const el = document.getElementById(id); if (!el) return;
+    el.value = val || ''; el.readOnly = !!val;
+    el.style.opacity = val ? '0.6' : '1'; el.style.cursor = val ? 'not-allowed' : 'text';
+}
+
+function openBundleModal(cat, offerId) {
+    if (!localStorage.getItem('rbx_username')) return openLoginModal();
+    if (!bundleOffersData) return;
+    let offer = null;
+    if (offerId === 'custom') {
+        const usd = customUsdValue(); if (!usd) return alert(bt('bundleInvalidCustom'));
+        offer = { id: 'custom', title: 'Custom $' + usd, price: usd * bundleOffersData.custom.rsPerUsd, customUsd: usd };
+    } else {
+        offer = (bundleOffersData.offers[cat] || []).find(o => o.id === offerId);
+    }
+    if (!offer) return;
+    bundlePending = { category: cat, offerId: offer.id, customUsd: offer.customUsd || 0 };
+    document.getElementById('bundleModalOffer').innerText = `${bundleOffersData.categories[cat]} – ${offer.title} • ${offer.price} R$`;
+    document.getElementById('bundleGameLabel').innerText = bt(cat === 'wt' ? 'bundleLabelGaijin' : 'bundleLabelRoblox');
+    const p = bundlesState.profile || {};
+    setLockedInput('bundleGameId', cat === 'wt' ? p.gaijinId : p.robloxName);
+    setLockedInput('bundleDiscord', p.discordName);
+    document.getElementById('bundleModal').style.display = 'flex';
+}
+
+function closeBundleModal() { document.getElementById('bundleModal').style.display = 'none'; }
+
+async function submitBundle() {
+    const username = localStorage.getItem('rbx_username'); if (!username || !bundlePending) return;
+    const gameId = document.getElementById('bundleGameId').value.trim();
+    const discord = document.getElementById('bundleDiscord').value.trim();
+    const btn = document.getElementById('bundleSubmitBtn'); btn.disabled = true;
+    try {
+        const res = await fetch('/api/bundles/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, category: bundlePending.category, offerId: bundlePending.offerId, customUsd: bundlePending.customUsd, gameId, discord }) });
+        const data = await res.json();
+        if (!res.ok || data.error) alert('❌ ' + (data.error || 'Error'));
+        else { closeBundleModal(); alert('✅ ' + bt('bundleCreated')); await fetchBundles(true); }
+    } catch (e) { alert('Connection Error'); }
+    btn.disabled = false;
+}
+
+function bundleMax(id) {
+    const b = (bundlesState.bundles || []).find(x => x.id === id); const input = document.getElementById('bundleAmt_' + id); if (!b || !input) return;
+    const balance = Math.floor(parseFloat(localStorage.getItem('rbx_points') || 0) * 100 + 1e-6) / 100;
+    const remaining = Math.round((b.price - b.deposited) * 100) / 100;
+    input.value = Math.max(0, Math.min(balance, remaining)).toFixed(2);
+}
+
+async function bundlePost(url, body) {
+    const username = localStorage.getItem('rbx_username'); if (!username) return null;
+    try {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, ...body }) });
+        const data = await res.json();
+        if (!res.ok || data.error) { alert('❌ ' + (data.error || 'Error')); return null; }
+        return data;
+    } catch (e) { alert('Connection Error'); return null; }
+}
+
+async function bundleDeposit(id) {
+    const amount = parseFloat(document.getElementById('bundleAmt_' + id).value);
+    if (!amount || amount <= 0) return alert(bt('bundleInvalidAmount'));
+    const data = await bundlePost('/api/bundles/deposit', { bundleId: id, amount });
+    if (!data) return;
+    if (data.bundle && data.bundle.status === 'paid') alert('🎉 ' + bt('bundlePaidMsg'));
+    fetchUserPoints(); fetchBundles(true);
+}
+
+async function bundleWithdraw(id) {
+    const amount = parseFloat(document.getElementById('bundleAmt_' + id).value);
+    if (!amount || amount <= 0) return alert(bt('bundleInvalidAmount'));
+    const data = await bundlePost('/api/bundles/withdraw', { bundleId: id, amount });
+    if (!data) return;
+    fetchUserPoints(); fetchBundles(true);
+}
+
+async function bundleCancel(id) {
+    if (!confirm(bt('bundleConfirmCancel'))) return;
+    const data = await bundlePost('/api/bundles/withdraw', { bundleId: id, cancel: true });
+    if (!data) return;
+    fetchUserPoints(); fetchBundles(true);
+}
+
+// --- ADMIN: weryfikacja graczy ---
+async function loadAdminBundleUsers() {
+    const token = localStorage.getItem('rbx_admin_token'); if (!token) return;
+    const tbody = document.getElementById('adminBundleUsersBody'); if (!tbody) return;
+    try {
+        const res = await fetch('/api/admin/bundle-users', { headers: { 'Authorization': token } });
+        const users = await res.json();
+        if (!Array.isArray(users) || users.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">Brak graczy z pakietami.</td></tr>`; return; }
+        tbody.innerHTML = users.map(u => {
+            const ids = [u.robloxName ? 'RB: ' + u.robloxName : '', u.gaijinId ? 'WT: ' + u.gaijinId : ''].filter(Boolean).join(' • ');
+            const status = u.verified ? '<span style="color: #00e676; font-weight: bold;">✔ Verified</span>' : '<span style="color: #a0a0a0;">✖ Not verified</span>';
+            const btn = u.verified
+                ? `<button style="background: #ff3333; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer;" data-user="${escHtml(u.username)}" onclick="adminSetVerified(this.dataset.user, false, this)">Cofnij</button>`
+                : `<button style="background: #00e676; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer;" data-user="${escHtml(u.username)}" onclick="adminSetVerified(this.dataset.user, true, this)">Zweryfikuj</button>`;
+            return `<tr style="border-bottom: 1px solid #2a2e39;"><td style="font-weight: bold; color: #fff;">👤 ${escHtml(u.username)}</td><td style="color: #a0a0b0;">${escHtml(ids)}</td><td style="color: #fff;">${escHtml(u.discordName || '')}</td><td>${status}</td><td>${btn}</td></tr>`;
+        }).join('');
+    } catch (e) { tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Błąd ładowania</td></tr>`; }
+}
+
+async function adminSetVerified(username, verified, btn) {
+    const token = localStorage.getItem('rbx_admin_token'); if (!token) return;
+    if (btn) btn.disabled = true;
+    try {
+        const res = await fetch('/api/admin/set-verified', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ username, verified }) });
+        const data = await res.json();
+        if (data.error) { alert('Błąd: ' + data.error); if (btn) btn.disabled = false; return; }
+        loadAdminBundleUsers();
+    } catch (e) { alert('Błąd połączenia.'); if (btn) btn.disabled = false; }
+}
+
+let currentGoalMode = 'robux';
     function switchGoalTab(mode, btnElement) {
         currentGoalMode = mode;
         document.querySelectorAll('.goal-tab').forEach(el => el.classList.remove('active'));
@@ -1558,6 +1908,10 @@ if(tabId === 'admin') {
                     else if (item.source === 'Referral') { actionText = translations[tLang].historyRef; if (item.details) { const fromText = translations[tLang].historyFrom || "od:"; actionText += ` (${fromText} ${item.details})`; } } 
                     else if (item.source === 'LevelUp') { actionText = translations[tLang].historyLevel || "Level Reward"; if (item.details) actionText += ` (${item.details})`; }
                     else if (item.source === 'Wheel' || item.source === 'Spinner') { actionText = translations[tLang].historyWheel || "Wheel of Fortune"; if (item.details) actionText += ` (${item.details})`; }
+                    else if (item.source === 'BundleDeposit') { actionText = (translations[tLang].historyBundle || "Bundle") + (item.details ? ` – ${item.details}` : ''); }
+                    else if (item.source === 'BundleRefund') { actionText = (translations[tLang].historyBundleRefund || "Bundle refund") + (item.details ? ` – ${item.details}` : ''); }
+                    else if (item.source === 'BundleRejected') { actionText = (translations[tLang].historyBundleRejected || "Bundle rejected - refund") + (item.details ? ` – ${item.details}` : ''); }
+                    else if (item.source === 'BundleDone') { actionText = (translations[tLang].historyBundleDone || "Bundle delivered") + (item.details ? ` – ${item.details}` : ''); }
                     else if (item.source === 'Reversal') { actionText = translations[tLang].historyReversal || "Quest Reversal (canceled by partner)"; if (item.details) actionText += ` (${item.details})`; }
                     else if (item.source === 'ReferralReversal') { actionText = translations[tLang].historyRefReversal || "Referral Bonus Reversed"; if (item.details) actionText += ` (${translations[tLang].historyFrom || "from:"} ${item.details})`; }
 else if (item.source === 'Admin') {
