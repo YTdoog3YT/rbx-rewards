@@ -1,7 +1,7 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType } = require('discord.js');
 
 // Twoje kanały
-const KANAL_PUBLICZNY_ID = "1547480985506029639";
+const KANAL_PUBLICZNY_ID = "1566002632848449616";
 const KANAL_ADMIN_ID = "1548618275083264060";
 const KANAL_ZLECENIA_ID = "1548683873012162601";
 const ADMIN_DISCORD_ID = "398911896893521921";

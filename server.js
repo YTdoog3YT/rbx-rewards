@@ -104,7 +104,7 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         const polandMidnight = getPolandMidnight();
 
         const dailyPointsAggr = await Earning.aggregate([
-            { $match: { createdAt: { $gte: polandMidnight }, source: { $nin: ['Admin', 'Promo'] } } },
+            { $match: { createdAt: { $gte: polandMidnight }, source: { $nin: ['Admin', 'Promo', 'BundleDeposit', 'BundleRefund'] } } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const dailyRobux = dailyPointsAggr.length > 0 ? dailyPointsAggr[0].total : 0;
@@ -264,7 +264,8 @@ const UserSchema = new mongoose.Schema({
     inbox: { type: [{ message: String, date: { type: Date, default: Date.now }, read: { type: Boolean, default: false } }], default: [] },
     linkedPayPal: { type: String, default: null }, xp: { type: Number, default: 0 }, claimedLevels: { type: [Number], default: [] },
     dailyEarned: { type: Number, default: 0 }, lastEarnedDate: { type: String, default: "" }, lastWheelSpin: { type: Date, default: null },
-    wheelStreak: { type: Number, default: 0 }, goals: [GoalSchema]
+    wheelStreak: { type: Number, default: 0 }, goals: [GoalSchema],
+    verified: { type: Boolean, default: false }, robloxName: { type: String, default: '' }, gaijinId: { type: String, default: '' }, discordName: { type: String, default: '' }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -281,7 +282,17 @@ const Payout = mongoose.model('Payout', PayoutSchema);
 const PromoCodeSchema = new mongoose.Schema({ code: { type: String, unique: true, uppercase: true }, reward: Number, maxUses: Number, currentUses: { type: Number, default: 0 }, usedBy: [String] });
 const PromoCode = mongoose.model('PromoCode', PromoCodeSchema);
 
-const dbModels = { User, Earning, Payout, PromoCode };
+const BundleSchema = new mongoose.Schema({
+    username: String, category: String, offerId: String, title: String,
+    priceC: Number, depositedC: { type: Number, default: 0 },
+    customUsd: { type: Number, default: 0 }, approxRobux: { type: Number, default: 0 },
+    gameId: String, discord: String,
+    status: { type: String, default: 'filling' },
+    createdAt: { type: Date, default: Date.now }, paidAt: Date, doneAt: Date
+});
+const Bundle = mongoose.model('Bundle', BundleSchema);
+
+const dbModels = { User, Earning, Payout, PromoCode, Bundle };
 
 function allocateGoalProgress(user, amountToAllocate) {
     let remaining = amountToAllocate;
@@ -436,7 +447,7 @@ app.post('/api/goals/clear', async (req, res) => {
 });
 
 app.get('/api/points/:username', async (req, res) => {
-    try { const safe = escapeRegex(req.params.username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) { user = new User({ username: req.params.username.trim(), points: 0 }); await user.save(); } res.json({ points: user.points, referredBy: user.referredBy, linkedPayPal: user.linkedPayPal }); } catch (error) { res.json({ points: 0 }); }
+    try { const safe = escapeRegex(req.params.username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) { user = new User({ username: req.params.username.trim(), points: 0 }); await user.save(); } res.json({ points: user.points, referredBy: user.referredBy, linkedPayPal: user.linkedPayPal, verified: !!user.verified });; } catch (error) { res.json({ points: 0 }); }
 });
 
 app.get('/api/user-stats/:username', async (req, res) => {
@@ -480,7 +491,7 @@ app.get('/api/latest-earners', async (req, res) => { try { res.json(await Earnin
 app.get('/api/latest-payouts', async (req, res) => { try { res.json(await Payout.find({ status: 'Completed' }).sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
 app.get('/api/leaderboard', async (req, res) => {
     try {
-        const period = req.query.period || '7days'; const now = new Date(); let matchStage = { source: { $nin: ['Promo', 'Admin'] } }; 
+        const period = req.query.period || '7days'; const now = new Date(); let matchStage = { source: { $nin: ['Promo', 'Admin', 'BundleDeposit', 'BundleRefund'] } }; 
         if (period !== 'alltime') { let startDate = new Date(); if (period === 'today') startDate = getPolandMidnight(); else if (period === '7days') startDate.setDate(now.getDate() - 7); else if (period === '30days') startDate.setDate(now.getDate() - 30); else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1); matchStage.createdAt = { $gte: startDate }; }
         const leaderboard = await Earning.aggregate([{ $match: matchStage }, { $group: { _id: "$username", earned: { $sum: "$amount" } } }, { $sort: { earned: -1 } }, { $limit: 100 }, { $project: { _id: 0, username: "$_id", earned: 1 } }]); res.json(leaderboard);
     } catch (error) { res.status(500).json({ error: "Błąd podczas ładowania rankingu." }); }
@@ -566,6 +577,205 @@ app.get('/api/referral-stats/:username', async (req, res) => {
 });
 
 io.on('connection', (socket) => { 
+    // =================== PAKIETY (BUNDLES) ===================
+const BUNDLE_CATEGORIES = { robux: 'Robux', wt: 'War Thunder' };
+const BUNDLE_OFFERS = {
+    robux: [
+        { id: 'rb50',  title: '50 Robux',  price: 80 },
+        { id: 'rb100', title: '100 Robux', price: 150 },
+        { id: 'rb175', title: '175 Robux', price: 195 },
+        { id: 'rb200', title: '200 Robux', price: 225 }
+    ],
+    wt: [
+        { id: 'wt150',   title: '150 GE',   price: 50 },
+        { id: 'wt1000',  title: '1000 GE',  price: 325 },
+        { id: 'wt2500',  title: '2500 GE',  price: 815 },
+        { id: 'wt5000',  title: '5000 GE',  price: 1250 },
+        { id: 'wt10000', title: '10000 GE', price: 2440 },
+        { id: 'wt25000', title: '25000 GE', price: 5620 }
+    ]
+};
+const BUNDLE_CUSTOM = { minUsd: 10, maxUsd: 500, rsPerUsd: 44, approxRobuxPerUsd: 65.4 };
+const BUNDLE_MAX_OPEN = 2;
+const BUNDLE_NAME_RE = /^[A-Za-z0-9_.\-]{2,32}$/;
+
+const toC = v => Math.round(Number(v) * 100);
+const fromC = c => c / 100;
+const cleanName = v => String(v || '').trim();
+const sameText = (a, b) => String(a || '').toLowerCase() === String(b || '').toLowerCase();
+const bundleLabel = b => `${BUNDLE_CATEGORIES[b.category]} – ${b.title}`;
+
+function resolveBundleOffer(category, offerId, customUsd) {
+    if (!BUNDLE_CATEGORIES[category]) return null;
+    if (category === 'robux' && offerId === 'custom') {
+        const usd = Number(customUsd);
+        if (!Number.isInteger(usd) || usd < BUNDLE_CUSTOM.minUsd || usd > BUNDLE_CUSTOM.maxUsd) return null;
+        return { id: 'custom', title: `Custom $${usd}`, price: usd * BUNDLE_CUSTOM.rsPerUsd, customUsd: usd, approxRobux: Math.floor(usd * BUNDLE_CUSTOM.approxRobuxPerUsd) };
+    }
+    const offer = BUNDLE_OFFERS[category].find(o => o.id === offerId);
+    return offer ? { ...offer, customUsd: 0, approxRobux: 0 } : null;
+}
+
+function bundleView(b) {
+    return {
+        id: String(b._id), category: b.category, categoryLabel: BUNDLE_CATEGORIES[b.category], title: b.title,
+        price: fromC(b.priceC), deposited: fromC(b.depositedC),
+        percent: Math.min(100, Math.round(b.depositedC / b.priceC * 1000) / 10),
+        status: b.status, approxRobux: b.approxRobux || 0, createdAt: b.createdAt, paidAt: b.paidAt || null
+    };
+}
+
+app.get('/api/bundles/offers', (req, res) => {
+    res.json({ categories: BUNDLE_CATEGORIES, offers: BUNDLE_OFFERS, custom: BUNDLE_CUSTOM, maxOpen: BUNDLE_MAX_OPEN });
+});
+
+app.get('/api/bundles/:username', async (req, res) => {
+    try {
+        const user = await findUserCI(cleanName(req.params.username));
+        const empty = { verified: false, profile: { robloxName: '', gaijinId: '', discordName: '' }, bundles: [], current: null };
+        if (!user) return res.json(empty);
+        const all = await Bundle.find({ username: user.username }).sort({ createdAt: 1 }).lean();
+        const filling = all.filter(b => b.status === 'filling');
+        const paid = all.filter(b => b.status === 'paid');
+        const closed = all.filter(b => b.status !== 'filling' && b.status !== 'paid').reverse().slice(0, 30);
+        res.json({
+            verified: !!user.verified,
+            profile: { robloxName: user.robloxName || '', gaijinId: user.gaijinId || '', discordName: user.discordName || '' },
+            bundles: [...filling, ...paid, ...closed].map(bundleView),
+            current: filling.length ? bundleView(filling[0]) : null
+        });
+    } catch (e) { console.error('[bundles] list:', e.message); res.json({ verified: false, profile: {}, bundles: [], current: null }); }
+});
+
+app.post('/api/bundles/create', async (req, res) => {
+    try {
+        const category = String(req.body.category || '');
+        const offer = resolveBundleOffer(category, String(req.body.offerId || ''), req.body.customUsd);
+        if (!offer) return res.status(400).json({ error: 'Nieprawidłowy pakiet.' });
+
+        const gameId = cleanName(req.body.gameId);
+        const discord = cleanName(req.body.discord);
+        if (!BUNDLE_NAME_RE.test(gameId)) return res.status(400).json({ error: category === 'wt' ? 'Nieprawidłowe ID Gaijin.' : 'Nieprawidłowy nick Roblox.' });
+        if (!BUNDLE_NAME_RE.test(discord)) return res.status(400).json({ error: 'Nieprawidłowa nazwa Discord.' });
+
+        const user = await findUserCI(cleanName(req.body.username));
+        if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
+
+        const gameField = category === 'wt' ? 'gaijinId' : 'robloxName';
+        if (user[gameField] && !sameText(user[gameField], gameId)) return res.status(400).json({ error: `To konto ma na stałe przypisane: ${user[gameField]}. Zmiana tylko przez Support.` });
+        if (user.discordName && !sameText(user.discordName, discord)) return res.status(400).json({ error: `To konto ma na stałe przypisany Discord: ${user.discordName}. Zmiana tylko przez Support.` });
+
+        const open = await Bundle.countDocuments({ username: user.username, category, status: { $in: ['filling', 'paid'] } });
+        if (open >= BUNDLE_MAX_OPEN) return res.status(400).json({ error: `Możesz mieć maksymalnie ${BUNDLE_MAX_OPEN} aktywne pakiety w tej kategorii.` });
+
+        const set = {};
+        if (!user[gameField]) set[gameField] = gameId;
+        if (!user.discordName) set.discordName = discord;
+        if (Object.keys(set).length) await User.updateOne({ _id: user._id }, { $set: set });
+
+        const bundle = await new Bundle({
+            username: user.username, category, offerId: offer.id, title: offer.title, priceC: toC(offer.price),
+            customUsd: offer.customUsd, approxRobux: offer.approxRobux, gameId: user[gameField] || gameId, discord: user.discordName || discord
+        }).save();
+        res.json({ success: true, bundle: bundleView(bundle) });
+    } catch (e) { console.error('[bundles] create:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/bundles/deposit', async (req, res) => {
+    try {
+        const user = await findUserCI(cleanName(req.body.username));
+        if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
+        const amountC = toC(req.body.amount);
+        if (!Number.isInteger(amountC) || amountC <= 0) return res.status(400).json({ error: 'Nieprawidłowa kwota.' });
+        if (!mongoose.Types.ObjectId.isValid(req.body.bundleId)) return res.status(400).json({ error: 'Nieprawidłowy pakiet.' });
+
+        const bundle = await Bundle.findOne({ _id: req.body.bundleId, username: user.username });
+        if (!bundle) return res.status(404).json({ error: 'Nie znaleziono pakietu.' });
+        if (bundle.status !== 'filling') return res.status(400).json({ error: 'Ten pakiet jest już opłacony lub zamknięty.' });
+        const remainingC = bundle.priceC - bundle.depositedC;
+        if (amountC > remainingC) return res.status(400).json({ error: `Do pełnej kwoty pakietu brakuje ${fromC(remainingC).toFixed(2)} R$.` });
+
+        const amount = fromC(amountC);
+        const charged = await User.findOneAndUpdate({ _id: user._id, points: { $gte: amount } }, { $inc: { points: -amount } }, { new: true });
+        if (!charged) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+        await new Earning({ username: user.username, amount: -amount, source: 'BundleDeposit', details: bundleLabel(bundle) }).save();
+
+        const filled = await Bundle.findOneAndUpdate(
+            { _id: bundle._id, status: 'filling', depositedC: { $lte: bundle.priceC - amountC } },
+            { $inc: { depositedC: amountC } }, { new: true }
+        );
+        if (!filled) {
+            await User.updateOne({ _id: user._id }, { $inc: { points: amount } });
+            await new Earning({ username: user.username, amount: amount, source: 'BundleRefund', details: bundleLabel(bundle) }).save();
+            return res.status(400).json({ error: 'Pakiet właśnie się zmienił, spróbuj ponownie.' });
+        }
+
+        let current = filled;
+        if (filled.depositedC >= filled.priceC) {
+            const paidBundle = await Bundle.findOneAndUpdate(
+                { _id: bundle._id, status: 'filling', depositedC: { $gte: bundle.priceC } },
+                { $set: { status: 'paid', paidAt: new Date() } }, { new: true }
+            );
+            if (paidBundle) {
+                current = paidBundle;
+                try { if (typeof discordBot.sendBundleAlert === 'function') await discordBot.sendBundleAlert(paidBundle, charged); }
+                catch (err) { console.error('[bundles] alert Discord:', err.message); }
+            }
+        }
+        res.json({ success: true, newBalance: charged.points, bundle: bundleView(current) });
+    } catch (e) { console.error('[bundles] deposit:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/bundles/withdraw', async (req, res) => {
+    try {
+        const user = await findUserCI(cleanName(req.body.username));
+        if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
+        if (!mongoose.Types.ObjectId.isValid(req.body.bundleId)) return res.status(400).json({ error: 'Nieprawidłowy pakiet.' });
+        const bundle = await Bundle.findOne({ _id: req.body.bundleId, username: user.username });
+        if (!bundle) return res.status(404).json({ error: 'Nie znaleziono pakietu.' });
+        if (bundle.status !== 'filling') return res.status(400).json({ error: 'Z opłaconego pakietu nie można wycofać R$.' });
+
+        let refundC = 0;
+        if (req.body.cancel === true) {
+            const old = await Bundle.findOneAndUpdate({ _id: bundle._id, status: 'filling' }, { $set: { status: 'canceled', doneAt: new Date() } });
+            if (!old) return res.status(400).json({ error: 'Pakiet właśnie się zmienił, spróbuj ponownie.' });
+            refundC = old.depositedC;
+        } else {
+            const amountC = toC(req.body.amount);
+            if (!Number.isInteger(amountC) || amountC <= 0) return res.status(400).json({ error: 'Nieprawidłowa kwota.' });
+            const dec = await Bundle.findOneAndUpdate({ _id: bundle._id, status: 'filling', depositedC: { $gte: amountC } }, { $inc: { depositedC: -amountC } });
+            if (!dec) return res.status(400).json({ error: 'Tyle nie masz wpłacone w tym pakiecie.' });
+            refundC = amountC;
+        }
+
+        let newBalance = user.points;
+        if (refundC > 0) {
+            const refund = fromC(refundC);
+            const updated = await User.findOneAndUpdate({ _id: user._id }, { $inc: { points: refund } }, { new: true });
+            newBalance = updated.points;
+            await new Earning({ username: user.username, amount: refund, source: 'BundleRefund', details: bundleLabel(bundle) }).save();
+        }
+        res.json({ success: true, refunded: fromC(refundC), newBalance });
+    } catch (e) { console.error('[bundles] withdraw:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/admin/set-verified', isAdmin, async (req, res) => {
+    try {
+        const user = await findUserCI(cleanName(req.body.username));
+        if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza.' });
+        const verified = req.body.verified === true;
+        await User.updateOne({ _id: user._id }, { $set: { verified } });
+        res.json({ success: true, username: user.username, verified });
+    } catch (e) { res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.get('/api/admin/bundle-users', isAdmin, async (req, res) => {
+    try {
+        const users = await User.find({ discordName: { $exists: true, $nin: ['', null] } })
+            .select('username verified robloxName gaijinId discordName').sort({ verified: 1, username: 1 }).limit(200).lean();
+        res.json(users);
+    } catch (e) { res.status(500).json([]); }
+});
     socket.on('user_joined', (username) => { if(username) onlineUsersMap.set(socket.id, username); });
     socket.on('chatMessage', (data) => { io.emit('chatMessage', data); }); 
     socket.on('disconnect', () => { onlineUsersMap.delete(socket.id); });
