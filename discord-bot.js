@@ -4,6 +4,9 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBui
 const KANAL_PUBLICZNY_ID = "1566002632848449616";
 const KANAL_ADMIN_ID = "1548618275083264060";
 const KANAL_ZLECENIA_ID = "1548683873012162601";
+const KANAL_PAKIETY_ROBUX_ID = "1565989968050913310";
+const KANAL_PAKIETY_WT_ID = "1566002493966516354";
+const BUNDLE_CAT_LABELS = { robux: 'Robux', wt: 'War Thunder' };
 const ADMIN_DISCORD_ID = "398911896893521921";
 
 let client;
@@ -210,6 +213,70 @@ module.exports = {
                 } catch (err) { interaction.reply({ content: "Błąd bazy danych.", ephemeral: true }); }
             }
 
+// 2b. Pakiety: Done / Reject
+            if (interaction.isButton() && interaction.customId.startsWith('bundle_')) {
+                if (!interaction.member.permissions.has('Administrator') && interaction.user.id !== ADMIN_DISCORD_ID) {
+                    return interaction.reply({ content: "❌ Brak uprawnień!", ephemeral: true });
+                }
+
+                const parts = interaction.customId.split('_');
+                const action = parts[1]; // 'done' lub 'reject'
+                const bundleId = parts[2];
+                if (action !== 'done' && action !== 'reject') return;
+
+                let bundle = null;
+                try {
+                    // atomowo: tylko jeden admin może przetworzyć pakiet w statusie "paid"
+                    bundle = await dbModels.Bundle.findOneAndUpdate(
+                        { _id: bundleId, status: 'paid' },
+                        { $set: { status: action === 'done' ? 'done' : 'rejected', doneAt: new Date() } },
+                        { new: true }
+                    );
+                } catch (err) {
+                    console.error('[bundles] discord (status):', err.message);
+                    return interaction.reply({ content: "Błąd bazy danych.", ephemeral: true }).catch(() => {});
+                }
+                if (!bundle) return interaction.reply({ content: "⚠️ Ten pakiet został już przetworzony!", ephemeral: true });
+
+                const label = `${BUNDLE_CAT_LABELS[bundle.category] || bundle.category} – ${bundle.title}`;
+                const embed = interaction.message.embeds[0];
+
+                if (action === 'reject') {
+                    try {
+                        const refund = bundle.depositedC / 100;
+                        const refunded = await dbModels.User.findOneAndUpdate({ username: bundle.username }, { $inc: { points: refund } });
+                        if (!refunded) throw new Error('nie znaleziono gracza');
+                        try { await new dbModels.Earning({ username: bundle.username, amount: refund, source: 'BundleRejected', details: label }).save(); }
+                        catch (e) { console.error('[bundles] discord (historia zwrotu):', e.message); }
+                    } catch (err) {
+                        console.error('[bundles] discord (zwrot):', err.message);
+                        await dbModels.Bundle.updateOne({ _id: bundleId }, { $set: { status: 'paid' } }).catch(() => {});
+                        return interaction.reply({ content: "❌ Nie udało się zwrócić R$ — pakiet wrócił do statusu 'opłacony', spróbuj ponownie.", ephemeral: true }).catch(() => {});
+                    }
+                    try { await interaction.update({ embeds: [{ ...embed.data, title: "❌ PAKIET ODRZUCONY (zwrot R$)", color: 0xff3333 }], components: [] }); } catch (e) {}
+                    return;
+                }
+
+                // done
+                try { await new dbModels.Earning({ username: bundle.username, amount: 0, source: 'BundleDone', details: label }).save(); }
+                catch (e) { console.error('[bundles] discord (historia realizacji):', e.message); }
+                try {
+                    const publicChannel = client.channels.cache.get(KANAL_PUBLICZNY_ID);
+                    if (publicChannel) {
+                        publicChannel.send({
+                            embeds: [{
+                                title: "📦 PAKIET ZREALIZOWANY!",
+                                description: `👤 **${bundle.username}** kupił pakiet **${label}**!`,
+                                color: 0x00FFAA,
+                                thumbnail: { url: "https://rbx-rewards.onrender.com/logo.png" }
+                            }]
+                        });
+                    }
+                } catch (e) {}
+                try { await interaction.update({ embeds: [{ ...embed.data, title: "✅ PAKIET ZREALIZOWANY", color: 0x00FFAA }], components: [] }); } catch (e) {}
+                return;
+            }
+
             // 3. Kliknięcie w odpowiedź na Support
             if (interaction.isButton() && interaction.customId.startsWith('reply_ticket_')) {
                 const targetUser = interaction.customId.replace('reply_ticket_', '');
@@ -287,6 +354,36 @@ module.exports = {
                 description: `**Gracz:** ${payoutData.username}\n**Email PayPal:** \`${payoutData.paypalEmail}\`\n\n💰 **Zlecone Robuxy:** ${payoutData.pointsWithdrawn} R$\n💵 **Do przelewu (USD):** **$${payoutData.usdAmount.toFixed(2)}**\n\n*Po ręcznym wysłaniu kasy na PayPal, kliknij zatwierdź.*`,
                 color: 0xFF9900
             }],
+            components: [row]
+        });
+    },
+
+// Funkcja wywoływana z server.js gdy pakiet zostanie w pełni opłacony
+    sendBundleAlert: async (bundle, user) => {
+        const isWt = bundle.category === 'wt';
+        const channelId = isWt ? KANAL_PAKIETY_WT_ID : KANAL_PAKIETY_ROBUX_ID;
+        const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
+        if (!channel) { console.error('[bundles] brak dostępu do kanału pakietów:', channelId); return; }
+
+        const lines = [
+            `**Gracz (strona):** \`${bundle.username}\``,
+            isWt ? `**ID Gaijin:** \`${bundle.gameId}\`` : `**Nick Roblox:** \`${bundle.gameId}\``,
+            `**Discord:** \`${bundle.discord}\``,
+            `**Weryfikacja:** ${user && user.verified ? '✅ zweryfikowany' : '⚠️ NIEZWERYFIKOWANY (sprawdź opis profilu Roblox)'}`,
+            '',
+            `📦 **Pakiet:** ${BUNDLE_CAT_LABELS[bundle.category] || bundle.category} – **${bundle.title}**`,
+            `💰 **Opłacono:** ${bundle.priceC / 100} R$`
+        ];
+        if (bundle.customUsd > 0) lines.push(`💵 **Custom:** $${bundle.customUsd} ≈ ${bundle.approxRobux} Robux (szacunek)`);
+        lines.push('', '*Po wysłaniu pakietu kliknij ZREALIZOWANY. Odrzucenie zwraca R$ graczowi.*');
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId(`bundle_done_${bundle._id}`).setLabel('✅ ZREALIZOWANY').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId(`bundle_reject_${bundle._id}`).setLabel('❌ ODRZUĆ (Zwrot R$)').setStyle(ButtonStyle.Danger)
+        );
+
+        await channel.send({
+            embeds: [{ title: `⚠️ NOWY PAKIET: ${isWt ? 'WAR THUNDER' : 'ROBUX'}`, description: lines.join('\n'), color: 0xFF9900 }],
             components: [row]
         });
     },

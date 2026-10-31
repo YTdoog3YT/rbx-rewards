@@ -1378,6 +1378,7 @@ let bundleCategory = null;
 let bundlePending = null;
 let lastBundlesFetch = 0;
 let lastVerified = false;
+let lastBundlesSig = '';
 
 function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
@@ -1429,10 +1430,14 @@ function renderBundlesList() {
     const box = document.getElementById('bundlesList'); if (!box) return;
     const ae = document.activeElement;
     if (ae && ae.id && ae.id.indexOf('bundleAmt_') === 0) return;
+    const sig = (localStorage.getItem('rbx_lang') || 'en') + JSON.stringify(bundlesState.bundles || []);
+    if (sig === lastBundlesSig && box.innerHTML.trim() !== '') { fitBundlesList(); return; }
+    lastBundlesSig = sig;
+    const prevScroll = box.scrollTop;
     const saved = {};
     box.querySelectorAll('input[id^="bundleAmt_"]').forEach(i => { saved[i.id] = i.value; });
     const list = bundlesState.bundles || [];
-    if (!list.length) { box.innerHTML = `<p style="color: #888;">${escHtml(bt('bundlesEmpty'))}</p>`; return; }
+    if (!list.length) { box.innerHTML = `<p style="color: #888;">${escHtml(bt('bundlesEmpty'))}</p>`; fitBundlesList(); return; }
     const stMap = { filling: ['bundleStFilling', '#00e676'], paid: ['bundleStPaid', '#ffb703'], done: ['bundleStDone', '#00e676'], rejected: ['bundleStRejected', '#ff3333'], canceled: ['bundleStCanceled', '#888'] };
     let html = '';
     list.forEach(b => {
@@ -1460,7 +1465,25 @@ function renderBundlesList() {
     });
     box.innerHTML = html;
     Object.keys(saved).forEach(id => { const el = document.getElementById(id); if (el) el.value = saved[id]; });
+    fitBundlesList();
+    box.scrollTop = prevScroll;
 }
+
+const BUNDLES_VISIBLE = 5;
+function fitBundlesList() {
+    const box = document.getElementById('bundlesList'); if (!box) return;
+    const keep = box.scrollTop;
+    const cards = box.querySelectorAll('.bundle-card');
+    box.style.maxHeight = ''; box.style.overflowY = '';
+    if (cards.length <= BUNDLES_VISIBLE) return;
+    const last = cards[BUNDLES_VISIBLE - 1];
+    const h = last.offsetTop + last.offsetHeight - cards[0].offsetTop;
+    if (h <= 0) return;
+    box.style.maxHeight = h + 'px'; box.style.overflowY = 'auto';
+    box.style.scrollbarWidth = 'thin'; box.style.scrollbarColor = '#333947 #14171d';
+    box.scrollTop = keep;
+}
+window.addEventListener('resize', fitBundlesList);
 
 function openBundlesTab() {
     const logged = !!localStorage.getItem('rbx_username');
@@ -1468,6 +1491,7 @@ function openBundlesTab() {
     document.getElementById('bundlesContent').style.display = logged ? 'block' : 'none';
     if (!logged) return;
     loadBundleOffers().then(() => renderBundleOffers());
+    fitBundlesList();
     fetchBundles(true);
 }
 

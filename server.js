@@ -104,7 +104,7 @@ app.get('/api/admin/stats', isAdmin, async (req, res) => {
         const polandMidnight = getPolandMidnight();
 
         const dailyPointsAggr = await Earning.aggregate([
-            { $match: { createdAt: { $gte: polandMidnight }, source: { $nin: ['Admin', 'Promo', 'BundleDeposit', 'BundleRefund'] } } },
+            { $match: { createdAt: { $gte: polandMidnight }, source: { $nin: ['Admin', 'Promo', 'BundleDeposit', 'BundleRefund', 'BundleRejected', 'BundleDone'] } } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const dailyRobux = dailyPointsAggr.length > 0 ? dailyPointsAggr[0].total : 0;
@@ -491,7 +491,7 @@ app.get('/api/latest-earners', async (req, res) => { try { res.json(await Earnin
 app.get('/api/latest-payouts', async (req, res) => { try { res.json(await Payout.find({ status: 'Completed' }).sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
 app.get('/api/leaderboard', async (req, res) => {
     try {
-        const period = req.query.period || '7days'; const now = new Date(); let matchStage = { source: { $nin: ['Promo', 'Admin', 'BundleDeposit', 'BundleRefund'] } }; 
+        const period = req.query.period || '7days'; const now = new Date(); let matchStage = { source: { $nin: ['Promo', 'Admin', 'BundleDeposit', 'BundleRefund', 'BundleRejected', 'BundleDone'] } };
         if (period !== 'alltime') { let startDate = new Date(); if (period === 'today') startDate = getPolandMidnight(); else if (period === '7days') startDate.setDate(now.getDate() - 7); else if (period === '30days') startDate.setDate(now.getDate() - 30); else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1); matchStage.createdAt = { $gte: startDate }; }
         const leaderboard = await Earning.aggregate([{ $match: matchStage }, { $group: { _id: "$username", earned: { $sum: "$amount" } } }, { $sort: { earned: -1 } }, { $limit: 100 }, { $project: { _id: 0, username: "$_id", earned: 1 } }]); res.json(leaderboard);
     } catch (error) { res.status(500).json({ error: "Błąd podczas ładowania rankingu." }); }
