@@ -32,10 +32,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const activeAdminTokens = new Set();
+const activeAdminTokens = new Map(); // token -> czas wygaśnięcia
+const ADMIN_TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 godzin
+function adminTokenValid(token) {
+    const expires = token ? activeAdminTokens.get(token) : null;
+    if (!expires) return false;
+    if (expires < Date.now()) { activeAdminTokens.delete(token); return false; }
+    return true;
+}
 function isAdmin(req, res, next) {
     const token = req.headers.authorization;
-    if (token && activeAdminTokens.has(token)) return next();
+    if (adminTokenValid(token)) return next();
     return res.status(403).json({ error: 'Brak dostępu!' });
 }
 
@@ -82,7 +89,7 @@ app.get('/api/admin/callback', async (req, res) => {
 
         if (userData.id === ADMIN_DISCORD_ID) {
             const sessionToken = crypto.randomBytes(32).toString('hex');
-            activeAdminTokens.add(sessionToken);
+            activeAdminTokens.set(sessionToken, Date.now() + ADMIN_TOKEN_TTL_MS);
             res.redirect(`/?adminToken=${sessionToken}`); 
         } else {
             res.redirect('/?error=Unauthorized');
@@ -92,7 +99,7 @@ app.get('/api/admin/callback', async (req, res) => {
 
 app.post('/api/admin/verify', (req, res) => {
     const { token } = req.body;
-    if (token && activeAdminTokens.has(token)) res.json({ success: true });
+    if (adminTokenValid(token)) res.json({ success: true });
     else res.json({ success: false });
 });
 
@@ -186,6 +193,29 @@ app.get('/api/admin/pending-payouts', isAdmin, async (req, res) => {
         const payouts = await Payout.find({ status: 'Pending Manual' }).sort({ createdAt: -1 });
         res.json(payouts);
     } catch(e) { res.status(500).json([]); }
+});
+
+app.post('/api/admin/resolve-payout', isAdmin, async (req, res) => {
+    const { payoutId, action } = req.body;
+    if (action !== 'complete' && action !== 'reject') return res.status(400).json({ error: 'Zła akcja' });
+    try {
+        // atomowo: tylko wypłata ze statusem "Pending Manual" może zostać rozpatrzona i tylko raz
+        const payout = await Payout.findOneAndUpdate(
+            { _id: payoutId, status: 'Pending Manual' },
+            { $set: { status: action === 'complete' ? 'Completed' : 'Rejected' } },
+            { new: true }
+        );
+        if (!payout) return res.status(400).json({ error: 'Ta wypłata została już rozpatrzona lub nie istnieje.' });
+
+        if (action === 'reject') {
+            const refunded = await User.findOneAndUpdate({ username: new RegExp(`^${escapeRegex(payout.username)}$`, 'i') }, { $inc: { points: payout.pointsWithdrawn } });
+            if (!refunded) {
+                await Payout.updateOne({ _id: payout._id }, { $set: { status: 'Pending Manual' } });
+                return res.status(500).json({ error: 'Nie znaleziono gracza do zwrotu, wypłata wróciła do oczekujących.' });
+            }
+        }
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: 'Błąd' }); }
 });
 
 app.post('/api/admin/resolve-payout', isAdmin, async (req, res) => {
@@ -466,9 +496,67 @@ app.get('/api/user-stats/:username', async (req, res) => {
 const LEVEL_THRESHOLDS = { 1: { xp: 1000, reward: 3 }, 2: { xp: 5000, reward: 8 }, 3: { xp: 15000, reward: 20 }, 4: { xp: 40000, reward: 50 }, 5: { xp: 100000, reward: 100 } };
 
 app.post('/api/claim-level', async (req, res) => {
+    const username = String(req.body.username || '').trim();
+    const level = Number(req.body.level);
+    try {
+        const user = await findUserCI(username);
+        if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
+        const lvlData = LEVEL_THRESHOLDS[level];
+        if (!Number.isInteger(level) || !lvlData) return res.status(400).json({ error: 'Nie możesz odebrać tego poziomu.' });
+
+        // atomowo: tylko jeśli poziom nie był jeszcze odebrany i gracz ma wystarczająco XP
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id, claimedLevels: { $ne: level }, xp: { $gte: lvlData.xp } },
+            { $push: { claimedLevels: level }, $inc: { points: lvlData.reward } },
+            { new: true }
+        );
+        if (!updated) return res.status(400).json({ error: 'Nie możesz odebrać tego poziomu.' });
+        allocateGoalProgress(updated, lvlData.reward); await updated.save();
+        await new Earning({ username: updated.username, amount: lvlData.reward, source: 'LevelUp', details: `Level ${level}` }).save();
+        res.json({ success: true, reward: lvlData.reward, newBalance: updated.points });
+    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/claim-level', async (req, res) => {
     const { username, level } = req.body;
     try { const safe = escapeRegex(username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.status(404).json({ error: 'Brak użytkownika.' }); const lvlData = LEVEL_THRESHOLDS[level]; if (!lvlData || user.xp < lvlData.xp || user.claimedLevels.includes(level)) return res.status(400).json({ error: 'Nie możesz odebrać tego poziomu.' }); user.claimedLevels.push(level); user.points += lvlData.reward; allocateGoalProgress(user, lvlData.reward); await user.save(); await new Earning({ username: user.username, amount: lvlData.reward, source: 'LevelUp', details: `Level ${level}` }).save(); res.json({ success: true, reward: lvlData.reward, newBalance: user.points }); } 
     catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/spin-wheel', async (req, res) => {
+    const username = String(req.body.username || '').trim();
+    try {
+        const user = await findUserCI(username);
+        if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
+
+        const startOfDay = getPolandMidnight();
+        const dailyEarnedAggr = await Earning.aggregate([{ $match: { username: new RegExp(`^${escapeRegex(user.username)}$`, 'i'), createdAt: { $gte: startOfDay }, source: { $in: ['Survey'] } } }, { $group: { _id: null, total: { $sum: "$amount" } } }]);
+        const actualDailyEarned = dailyEarnedAggr.length > 0 ? dailyEarnedAggr[0].total : 0;
+        if (actualDailyEarned < 4.5) return res.status(400).json({ error: 'Zarób dzisiaj minimum 4.50 R$ (Oferty/Ankiety), aby zakręcić kołem!' });
+
+        const now = new Date();
+        let streak = 1;
+        if (user.lastWheelSpin) {
+            const diffHours = (now - new Date(user.lastWheelSpin)) / (1000 * 60 * 60);
+            if (diffHours < 24) return res.status(400).json({ error: 'Koło jest jeszcze zablokowane (trwa 24h blokady)!' });
+            streak = diffHours <= 48 ? (user.wheelStreak || 0) + 1 : 1;
+        }
+
+        const rand = Math.random() * 100; let reward = 0.1;
+        if (rand <= 1) reward = 2.5; else if (rand <= 5) reward = 1.0; else if (rand <= 20) reward = 0.5; else if (rand <= 55) reward = 0.2;
+
+        // atomowo: tylko jeden obrót, nawet przy wielu równoległych żądaniach
+        const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id, $or: [{ lastWheelSpin: null }, { lastWheelSpin: { $lte: cutoff } }] },
+            { $set: { lastWheelSpin: now, wheelStreak: streak }, $inc: { points: reward } },
+            { new: true }
+        );
+        if (!updated) return res.status(400).json({ error: 'Koło jest jeszcze zablokowane (trwa 24h blokady)!' });
+        allocateGoalProgress(updated, reward); await updated.save();
+        await new Earning({ username: updated.username, amount: reward, source: 'Wheel', details: `Streak: ${streak}` }).save();
+        res.json({ success: true, reward, newBalance: updated.points, streak });
+    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
 app.post('/api/spin-wheel', async (req, res) => {
@@ -548,6 +636,40 @@ app.post('/api/withdraw', async (req, res) => {
 });
 
 app.post('/api/redeem-promo', async (req, res) => {
+    const username = String(req.body.username || '').trim();
+    const promoCode = String(req.body.promoCode || '').trim();
+    if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
+    try {
+        let user = await findUserCI(username);
+        if (!user) user = await new User({ username, points: 0 }).save();
+        const key = user.username.toLowerCase();
+
+        // atomowo: zajmij jedno użycie kodu (tylko jeśli kod ma wolne miejsce i ten gracz go jeszcze nie użył)
+        const promo = await PromoCode.findOneAndUpdate(
+            { code: promoCode.toUpperCase(), usedBy: { $ne: key }, $expr: { $lt: ['$currentUses', '$maxUses'] } },
+            { $inc: { currentUses: 1 }, $push: { usedBy: key } },
+            { new: true }
+        );
+        if (!promo) return res.status(400).json({ error: 'Kod nieprawidłowy, zużyty lub już go odebrałeś!' });
+
+        let updated;
+        try {
+            updated = await User.findOneAndUpdate(
+                { _id: user._id },
+                { $inc: { points: promo.reward }, $push: { redeemedPromoCodes: { code: promo.code, reward: promo.reward, date: new Date() } } },
+                { new: true }
+            );
+        } catch (e) {
+            await PromoCode.updateOne({ _id: promo._id }, { $inc: { currentUses: -1 }, $pull: { usedBy: key } }).catch(() => {});
+            throw e;
+        }
+        allocateGoalProgress(updated, promo.reward); await updated.save();
+        await new Earning({ username: updated.username, amount: promo.reward, source: 'Promo', details: promo.code }).save();
+        res.json({ success: true, newBalance: updated.points, message: `Odebrano ${promo.reward} R$!` });
+    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/redeem-promo', async (req, res) => {
     const { username, promoCode } = req.body; if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
     try {
         const promo = await PromoCode.findOne({ code: promoCode.toUpperCase() }); if (!promo || promo.currentUses >= promo.maxUses || promo.usedBy.includes(username.toLowerCase())) return res.status(400).json({ error: 'Kod nieprawidłowy, zużyty lub już go odebrałeś!' });
@@ -556,6 +678,27 @@ app.post('/api/redeem-promo', async (req, res) => {
 });
 
 app.get('/api/promo-history/:username', async (req, res) => { try { const safe = escapeRegex(req.params.username); const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.json([]); const history = user.redeemedPromoCodes || []; history.sort((a, b) => new Date(b.date) - new Date(a.date)); res.json(history); } catch (error) { res.status(500).json({ error: "Error" }); } });
+
+app.post('/api/redeem-code', async (req, res) => {
+    const username = String(req.body.username || '').trim();
+    const code = String(req.body.code || '').trim();
+    if (!username || !code) return res.status(400).json({ error: 'Missing data.' });
+    if (username.toLowerCase() === code.toLowerCase()) return res.status(400).json({ error: "Can't refer yourself!" });
+    try {
+        let user = await findUserCI(username);
+        if (!user) user = await new User({ username, points: 0 }).save();
+        if (user.referredBy) return res.status(400).json({ error: 'Already used referral code!' });
+        const referrer = await findUserCI(code);
+        if (!referrer) return res.status(404).json({ error: 'Referral not found.' });
+        if (String(referrer._id) === String(user._id)) return res.status(400).json({ error: "Can't refer yourself!" });
+
+        // atomowo: kod polecenia można ustawić tylko raz
+        const set = await User.findOneAndUpdate({ _id: user._id, referredBy: null }, { $set: { referredBy: referrer.username } }, { new: true });
+        if (!set) return res.status(400).json({ error: 'Already used referral code!' });
+        await User.updateOne({ _id: referrer._id }, { $addToSet: { referredUsers: user.username } });
+        res.json({ success: true, message: 'Code activated!' });
+    } catch (error) { res.status(500).json({ error: 'Server error.' }); }
+});
 
 app.post('/api/redeem-code', async (req, res) => {
     const { username, code } = req.body; if (!username || !code) return res.status(400).json({ error: 'Missing data.' }); if (username.toLowerCase() === code.toLowerCase()) return res.status(400).json({ error: "Can't refer yourself!" });

@@ -162,7 +162,7 @@ module.exports = {
                 const payoutId = parts[2];
 
                 try {
-                    const payout = await dbModels.Payout.findById(payoutId);
+                    const payout = await dbModels.Payout.findOneAndUpdate({ _id: payoutId, status: 'Pending Manual' }, { $set: { status: action === 'approve' ? 'Completed' : 'Rejected' } }, { new: true });
                     if (!payout || payout.status !== 'Pending Manual') {
                         return interaction.reply({ content: "⚠️ Ta wypłata została już przetworzona!", ephemeral: true });
                     }
