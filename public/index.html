@@ -1202,7 +1202,7 @@ function logoutUser() {
         if (!points || points <= 0) return alert("Nieprawidłowa kwota R$.");
         
         try {
-            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: 'PayPal', payoutAddress: address, points }) });
+            const response = await fetch('/api/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, payoutMethod: 'PayPal', payoutAddress: address, useLinked: document.getElementById("paypalEmail").readOnly, points }) });
             if (!response.ok) { const data = await response.json().catch(() => null); if (data && data.error) return alert("❌ " + data.error); alert("❌ Server Error!"); return; }
             const data = await response.json();
             if (data.error) alert("Error: " + data.error);
@@ -1321,7 +1321,7 @@ if(tabId === 'admin') {
         socket.on('chatMessage', (data) => {
             const chatBody = document.getElementById('chatMessages'); const msgDiv = document.createElement('div'); msgDiv.className = 'chat-msg';
             const safeText = document.createTextNode(data.text);
-            msgDiv.innerHTML = `<span class="user">${data.username}:</span> `; msgDiv.appendChild(safeText);
+            msgDiv.innerHTML = `<span class="user">${escHtml(data.username)}:</span> `; msgDiv.appendChild(safeText);
             chatBody.appendChild(msgDiv); chatBody.scrollTop = chatBody.scrollHeight; 
         });
     }
@@ -1701,7 +1701,7 @@ let currentGoalMode = 'robux';
             html += `
             <div class="goal-card">${imgHtml}
                 <div class="goal-details">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;"><h4 style="margin:0;">${goal.title}</h4><span class="goal-status ${statusClass}">${statusText}</span></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;"><h4 style="margin:0;">${escHtml(goal.title)}</h4><span class="goal-status ${statusClass}">${statusText}</span></div>
                     <div class="goal-meta">${goal.current.toFixed(2)} / ${goal.target} R$  |  ≈ $${(goal.target * 0.025).toFixed(2)} USD</div>
                     <div class="progress-bar-bg" style="margin-bottom: 10px;"><div class="progress-bar-fill" style="width: ${pct}%"></div></div>
                     ${cancelBtn}
@@ -1872,7 +1872,7 @@ let currentGoalMode = 'robux';
             const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
             if (!stats || stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">${translations[tLang].historyEmpty || "No actions yet!"}</td></tr>`;
             else {
-                let rows = ''; stats.forEach(user => { const e = parseFloat(user.earned) || 0; rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">+${e.toFixed(2)} R$</td></tr>`; });
+                let rows = ''; stats.forEach(user => { const e = parseFloat(user.earned) || 0; rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(user.username)}</td><td style="color: #00e676; font-weight: bold;">+${e.toFixed(2)} R$</td></tr>`; });
                 tableBody.innerHTML = rows;
             }
         } catch (error) { tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: red;">Error</td></tr>`; }
@@ -1902,11 +1902,11 @@ let currentGoalMode = 'robux';
             const data = await response.json();
             if (!data || data.length === 0) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">No data for this period!</td></tr>`; return; }
             const top3 = data.slice(0, 3); const rest = data.slice(3, 100); let podiumHtml = '';
-            if (top3[1]) podiumHtml += `<div class="podium-step podium-2"><div class="podium-avatar">🥈</div><div class="podium-name">${top3[1].username}</div><div class="podium-score">${(parseFloat(top3[1].earned)||0).toFixed(2)} R$</div></div>`;
-            if (top3[0]) podiumHtml += `<div class="podium-step podium-1"><div class="podium-avatar">👑</div><div class="podium-name">${top3[0].username}</div><div class="podium-score">${(parseFloat(top3[0].earned)||0).toFixed(2)} R$</div></div>`;
-            if (top3[2]) podiumHtml += `<div class="podium-step podium-3"><div class="podium-avatar">🥉</div><div class="podium-name">${top3[2].username}</div><div class="podium-score">${(parseFloat(top3[2].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[1]) podiumHtml += `<div class="podium-step podium-2"><div class="podium-avatar">🥈</div><div class="podium-name">${escHtml(top3[1].username)}</div><div class="podium-score">${(parseFloat(top3[1].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[0]) podiumHtml += `<div class="podium-step podium-1"><div class="podium-avatar">👑</div><div class="podium-name">${escHtml(top3[0].username)}</div><div class="podium-score">${(parseFloat(top3[0].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[2]) podiumHtml += `<div class="podium-step podium-3"><div class="podium-avatar">🥉</div><div class="podium-name">${escHtml(top3[2].username)}</div><div class="podium-score">${(parseFloat(top3[2].earned)||0).toFixed(2)} R$</div></div>`;
             podiumArea.innerHTML = podiumHtml;
-            let rows = ''; rest.forEach((user, index) => { rows += `<tr><td class="rank-number">#${index + 4}</td><td style="font-weight: bold; color: #fff;">👤 ${user.username}</td><td style="color: #00e676; font-weight: bold;">${(parseFloat(user.earned)||0).toFixed(2)} R$</td></tr>`; });
+            let rows = ''; rest.forEach((user, index) => { rows += `<tr><td class="rank-number">#${index + 4}</td><td style="font-weight: bold; color: #fff;">👤 ${escHtml(user.username)}</td><td style="color: #00e676; font-weight: bold;">${(parseFloat(user.earned)||0).toFixed(2)} R$</td></tr>`; });
             if(rows === '') rows = `<tr><td colspan="3" style="text-align: center; color: #555;">No more players to show.</td></tr>`; tableBody.innerHTML = rows;
         } catch (error) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error loading leaderboard.</td></tr>`; }
     }
@@ -1923,6 +1923,7 @@ let currentGoalMode = 'robux';
             let rows = '';
             history.forEach(item => {
                 const date = new Date(item.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                item.details = escHtml(item.details || '');
                 let actionText = ""; let amountHtml = "";
                 if (item.recordType === 'payout') {
                     actionText = translations[tLang].historyPayout || "Reward Claim"; const pts = parseFloat(item.pointsWithdrawn) || 0; amountHtml = `<td style="color: #ff3333; font-weight: bold; padding: 10px 5px;">-${pts.toFixed(2)} R$</td>`;
@@ -1966,8 +1967,8 @@ else if (item.source === 'Admin') {
         const response = await fetch('/api/latest-earners'); const earners = await response.json(); const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
         if (!earners || earners.length === 0) { const emptyMsg = translations[tLang].emptyEarners || "Be the first!"; document.getElementById('liveTicker').innerHTML = `<div class="ticker-item" style="color:#ffb703;">${emptyMsg}</div>`; return; }
         let tickerHTML = '';
-        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
-        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${t.username} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
+        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${escHtml(t.username)} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
+        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${escHtml(t.username)} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
         document.getElementById('liveTicker').innerHTML = tickerHTML;
       } catch (error) {}
     }
@@ -1981,7 +1982,7 @@ else if (item.source === 'Admin') {
             payouts.forEach(p => {
                 const date = new Date(p.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const rawPts = p.pointsWithdrawn !== undefined ? p.pointsWithdrawn : p.points; const pts = parseFloat(rawPts) || 0;
-                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${p.username}</td><td style="color: #ffb703; font-weight: bold;">-${pts.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
+                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td><td style="color: #ffb703; font-weight: bold;">-${pts.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
             });
             tbody.innerHTML = html;
         } catch (error) {}
@@ -2030,7 +2031,7 @@ const revenueUsd = dailyR / 15;
             const res = await fetch('/api/admin/online', { headers: { 'Authorization': token } });
             const users = await res.json();
             if (users.length === 0) content.innerHTML = "Nikt nie jest teraz zalogowany.";
-            else content.innerHTML = users.map(u => `<div>🟢 ${u}</div>`).join('');
+            else content.innerHTML = users.map(u => `<div>🟢 ${escHtml(u)}</div>`).join('');
         } catch (e) { content.innerHTML = "Błąd pobierania listy."; }
     }
 
@@ -2054,8 +2055,8 @@ const revenueUsd = dailyR / 15;
                 const amount = (parseFloat(p.pointsWithdrawn) || 0).toFixed(2);
                 html += `
                 <tr style="border-bottom: 1px solid #2a2e39;">
-                    <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
-                    <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${p.payoutAddress || p.paypalEmail}</td>
+                    <td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td>
+                    <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${escHtml(p.payoutAddress || p.paypalEmail)}</td>
                     <td style="color: #ffb703; font-weight: bold;">${amount} R$</td>
                     <td>
                         <button style="background: #00e676; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 5px;" onclick="resolvePayout('${p._id}', 'complete', this)">Wysłane</button>
@@ -2088,8 +2089,8 @@ const revenueUsd = dailyR / 15;
                 
                 html += `
                 <tr style="border-bottom: 1px solid #2a2e39;">
-                    <td style="font-weight: bold; color: #fff;">👤 ${p.username}</td>
-                    <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${p.payoutAddress || p.paypalEmail}</td>
+                    <td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td>
+                    <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${escHtml(p.payoutAddress || p.paypalEmail)}</td>
                     <td style="color: #ffb703; font-weight: bold;">${amount} R$</td>
                     <td style="color: #888; font-size: 0.85rem;">${timeString}</td>
                     <td>
@@ -2188,7 +2189,7 @@ const revenueUsd = dailyR / 15;
                         const dStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         return `
                         <tr style="border-bottom: 1px solid #2a2e39;">
-                            <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${p.payoutAddress || p.paypalEmail}</td>
+                            <td style="color: #a0a0b0;">${p.payoutMethod || 'PayPal'}: ${escHtml(p.payoutAddress || p.paypalEmail)}</td>
                             <td style="color: #ffb703; font-weight: bold;">${(parseFloat(p.pointsWithdrawn) || 0).toFixed(2)} R$</td>
                             <td style="color: #888; font-size: 0.85rem;">${dStr}</td>
                             <td>

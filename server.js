@@ -476,8 +476,16 @@ app.post('/api/goals/clear', async (req, res) => {
     try { const safe = escapeRegex(username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.status(404).json({ error: 'Brak usera' }); user.goals = user.goals.filter(g => g.status === 'active'); await user.save(); res.json({ success: true, goals: user.goals }); } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
 });
 
+function maskEmail(e) {
+    const s = String(e || '');
+    if (!s) return '';
+    const at = s.indexOf('@');
+    if (at < 1) return '***';
+    return s.slice(0, Math.min(2, at)) + '***' + s.slice(at);
+}
+
 app.get('/api/points/:username', async (req, res) => {
-    try { const safe = escapeRegex(req.params.username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) { user = new User({ username: req.params.username.trim(), points: 0 }); await user.save(); } res.json({ points: user.points, referredBy: user.referredBy, linkedPayPal: user.linkedPayPal, verified: !!user.verified });; } catch (error) { res.json({ points: 0 }); }
+    try { const safe = escapeRegex(req.params.username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) { user = new User({ username: req.params.username.trim(), points: 0 }); await user.save(); } res.json({ points: user.points, referredBy: user.referredBy, linkedPayPal: maskEmail(user.linkedPayPal), verified: !!user.verified });; } catch (error) { res.json({ points: 0 }); }
 });
 
 app.get('/api/user-stats/:username', async (req, res) => {
@@ -576,7 +584,7 @@ app.post('/api/spin-wheel', async (req, res) => {
 });
 
 app.get('/api/latest-earners', async (req, res) => { try { res.json(await Earning.find({ source: { $in: ['Survey', 'Promo', 'LevelUp', 'Spinner', 'Wheel'] } }).sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
-app.get('/api/latest-payouts', async (req, res) => { try { res.json(await Payout.find({ status: 'Completed' }).sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
+app.get('/api/latest-payouts', async (req, res) => { try { res.json(await Payout.find({ status: 'Completed' }).select('username pointsWithdrawn createdAt').sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
 app.get('/api/leaderboard', async (req, res) => {
     try {
         const period = req.query.period || '7days'; const now = new Date(); let matchStage = { source: { $nin: ['Promo', 'Admin', 'BundleDeposit', 'BundleRefund', 'BundleRejected', 'BundleDone'] } };
@@ -586,7 +594,7 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 app.get('/api/earning-history/:username', async (req, res) => {
-    try { const safe = escapeRegex(req.params.username); const regex = new RegExp(`^${safe}$`, 'i'); const earnings = await Earning.find({ username: regex }).lean(); const payouts = await Payout.find({ username: regex }).lean(); const combined = [...earnings.map(e => ({ ...e, recordType: 'earning' })), ...payouts.map(p => ({ ...p, recordType: 'payout' }))]; combined.sort((a, b) => b.createdAt - a.createdAt); res.json(combined.slice(0, 100)); } catch (error) { res.status(500).json({ error: "Error" }); }
+    try { const safe = escapeRegex(req.params.username); const regex = new RegExp(`^${safe}$`, 'i'); const earnings = await Earning.find({ username: regex }).lean(); const payouts = await Payout.find({ username: regex }).select('pointsWithdrawn usdAmount status createdAt').lean(); const combined = [...earnings.map(e => ({ ...e, recordType: 'earning' })), ...payouts.map(p => ({ ...p, recordType: 'payout' }))]; combined.sort((a, b) => b.createdAt - a.createdAt); res.json(combined.slice(0, 100)); } catch (error) { res.status(500).json({ error: "Error" }); }
 });
 
 app.get('/api/inbox/:username', async (req, res) => {
@@ -598,6 +606,48 @@ app.post('/api/support-ticket', async (req, res) => {
 });
 
 const MIN_PAYOUT = 1;
+
+app.post('/api/withdraw', async (req, res) => {
+    const useLinked = req.body.useLinked === true;
+    const paypalEmail = String(req.body.paypalEmail || req.body.payoutAddress || '').trim().toLowerCase();
+    const username = String(req.body.username || '').trim();
+    const pts = Math.round(Number(req.body.points) * 100) / 100;
+
+    if (!username) return res.status(400).json({ error: 'Brak nazwy użytkownika.' });
+    if (!Number.isFinite(pts) || pts < MIN_PAYOUT) return res.status(400).json({ error: `Minimalna wypłata to ${MIN_PAYOUT} R$.` });
+    if (!useLinked && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)) return res.status(400).json({ error: 'Nieprawidłowy adres PayPal.' });
+
+    try {
+        const safe = escapeRegex(username);
+        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
+        if (!user) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+
+        let payAddress = paypalEmail;
+        if (useLinked) {
+            if (!user.linkedPayPal) return res.status(400).json({ error: 'Brak przypisanego adresu PayPal.' });
+            payAddress = user.linkedPayPal.toLowerCase();
+        } else if (user.linkedPayPal && user.linkedPayPal.toLowerCase() !== paypalEmail) {
+            // nie ujawniamy zapisanego adresu
+            return res.status(400).json({ error: 'To konto ma już przypisany inny adres PayPal. Zmiana tylko przez Support.' });
+        }
+
+        // odejmij tylko wtedy, gdy saldo wystarcza (jedna operacja, bez wyścigu)
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id, points: { $gte: pts } },
+            { $inc: { points: -pts }, $set: { linkedPayPal: user.linkedPayPal || payAddress } },
+            { new: true }
+        );
+        if (!updated) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+
+        const usdAmount = parseFloat((pts * 0.025).toFixed(2));
+        const newPayout = await new Payout({
+            username: updated.username, payoutMethod: 'PayPal', payoutAddress: payAddress,
+            paypalEmail: payAddress, pointsWithdrawn: pts, usdAmount, status: 'Pending Manual'
+        }).save();
+        discordBot.sendPayoutAlert(newPayout);
+        res.json({ success: true, newBalance: updated.points, usd: usdAmount });
+    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
+});
 
 app.post('/api/withdraw', async (req, res) => {
     const paypalEmail = String(req.body.paypalEmail || req.body.payoutAddress || '').trim().toLowerCase();
