@@ -769,6 +769,84 @@ app.get('/api/referral-stats/:username', async (req, res) => {
     } catch (error) { res.json([]); }
 });
 
+// =================== TIMEWALL ===================
+const TIMEWALL_SECRET = process.env.TIMEWALL_SECRET || '';
+const TIMEWALL_MAX_REWARD = 3000;   // maks. nagroda za jedną transakcję (R$)
+const TIMEWALL_RS_PER_USD = 15;     // przelicznik z panelu TimeWall ($1.00 = 15 R$)
+
+function timewallHashOk(userid, revenue, given) {
+    if (!TIMEWALL_SECRET) return false;
+    const expected = crypto.createHash('sha256').update(String(userid) + String(revenue) + TIMEWALL_SECRET).digest('hex');
+    const a = Buffer.from(expected);
+    const b = Buffer.from(String(given || '').toLowerCase());
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+async function reverseOfferwall(userId, originalTxId, fallbackAmount, reversalTxId, label) {
+    const user = await findUserCI(userId);
+    if (!user) return 'no_user';
+    const original = originalTxId ? await Earning.findOne({ source: 'Survey', txId: originalTxId }) : null;
+    const amount = original ? original.amount : fallbackAmount;
+    if (!Number.isFinite(amount) || amount <= 0 || amount > TIMEWALL_MAX_REWARD) return 'bad_amount';
+
+    try { await new Earning({ username: user.username, amount: -amount, source: 'Reversal', details: label, txId: reversalTxId }).save(); }
+    catch (e) { if (e && e.code === 11000) return 'duplicate'; throw e; }
+
+    await User.updateOne({ _id: user._id }, { $inc: { points: -amount } });
+
+    if (user.referredBy) {
+        const bonus = parseFloat((amount * 0.15).toFixed(2));
+        if (bonus > 0) {
+            const referrer = await User.findOneAndUpdate({ username: user.referredBy }, { $inc: { points: -bonus } });
+            if (referrer) await new Earning({ username: referrer.username, amount: -bonus, source: 'ReferralReversal', details: user.username }).save();
+        }
+    }
+    return 'ok';
+}
+
+app.get('/api/postback/timewall', async (req, res) => {
+    if (!TIMEWALL_SECRET) { console.error('[timewall] brak zmiennej TIMEWALL_SECRET'); return res.status(500).send('ERR'); }
+
+    const useridRaw = String(req.query.userid || '');
+    const revenueRaw = String(req.query.revenue || '');
+    const userid = useridRaw.trim();
+    const txid = String(req.query.txid || '').trim();
+    const type = String(req.query.type || '').trim().toLowerCase();
+    const originalTxid = String(req.query.original_txid || '').trim();
+    const revenue = parseFloat(revenueRaw);
+    const currency = parseFloat(req.query.currency);
+
+    if (!userid || !txid || revenueRaw === '') return res.status(400).send('ERR');
+    if (!timewallHashOk(useridRaw, revenueRaw, req.query.hash)) { console.warn('[timewall] zły podpis (hash)'); return res.status(403).send('ERR'); }
+    console.log('[timewall]', { type: type || '(brak)', txid, revenue: revenueRaw, currency: req.query.currency, od: req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.ip });
+
+    // etapy "hold" tylko informują, niczego nie księgujemy
+    if (type === 'hold' || type === 'hold_cancelled') return res.status(200).send('OK');
+    if (!Number.isFinite(revenue) || !Number.isFinite(currency)) return res.status(400).send('ERR');
+
+    const isChargeback = type === 'chargeback' || (type === '' && currency < 0);
+    const isCredit = type === 'credit' || (type === '' && currency > 0);
+    if (!isChargeback && !isCredit) { console.warn('[timewall] nieznany typ:', type); return res.status(200).send('OK'); }
+
+    // kwota z "currency" musi pasować do podpisanego "revenue" × przelicznik (zabezpieczenie przed podmianą kwoty)
+    const expected = Math.abs(revenue) * TIMEWALL_RS_PER_USD;
+    const amount = Math.round(Math.abs(currency) * 100) / 100;
+    if (Math.abs(Math.abs(currency) - expected) > Math.max(0.02, expected * 0.02)) {
+        console.warn('[timewall] kwota nie pasuje do revenue:', { revenue: revenueRaw, currency: req.query.currency });
+        return res.status(400).send('ERR');
+    }
+    if (!(amount > 0) || amount > TIMEWALL_MAX_REWARD) return res.status(400).send('ERR');
+
+    try {
+        if (isCredit) await creditSurvey(userid, amount, 'tw:' + txid);
+        else await reverseOfferwall(userid, originalTxid ? 'tw:' + originalTxid : '', amount, 'tw-cb:' + txid, 'TimeWall');
+        return res.status(200).send('OK');
+    } catch (e) {
+        console.error('[timewall] błąd księgowania:', e.message);
+        return res.status(500).send('ERR');
+    }
+});
+
 io.on('connection', (socket) => { 
     // =================== PAKIETY (BUNDLES) ===================
 const BUNDLE_CATEGORIES = { robux: 'Robux', wt: 'War Thunder' };
