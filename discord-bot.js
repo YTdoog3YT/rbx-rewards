@@ -83,7 +83,7 @@ module.exports = {
                 }, minutes * 60 * 1000);
             }
             
-// --- KOMENDY KODÓW PROMOCYJNYCH ---
+            // --- KOMENDY KODÓW PROMOCYJNYCH ---
             if (cmd === '!kod') {
                 if (args.length !== 4) return message.reply('⚠️ Użycie: `!kod <NAZWA> <PUNKTY> <MAX_OSÓB>`');
                 const codeName = args[1].toUpperCase(); const reward = parseFloat(args[2]); const maxUses = parseInt(args[3]);
@@ -133,8 +133,7 @@ module.exports = {
             }
         });
 
-        // --- OBSŁUGA GUZIKÓW I MODALI ---
-// ===================== KANAŁ POMYSŁÓW =====================
+        // ===================== KANAŁ POMYSŁÓW =====================
         const KANAL_POMYSLY_ID = "1566904973210685501";
         const IDEA_COOLDOWN_MS = 10 * 60 * 1000; // jeden pomysł na osobę co 10 minut
         const IDEA_MIN = 10, IDEA_MAX = 1500;
@@ -268,6 +267,24 @@ module.exports = {
         });
 
         // --- OBSŁUGA GUZIKÓW I MODALI ---
+        client.on('interactionCreate', async interaction => {
+
+            // 1. Kliknięcie w przycisk Giveaway
+            if (interaction.isButton() && interaction.customId.startsWith('join_gw_')) {
+                const giveawayId = interaction.customId.replace('join_gw_', '');
+                if (!activeGiveaways.has(giveawayId)) {
+                    return interaction.reply({ content: "❌ Ten giveaway już się zakończył.", ephemeral: true });
+                }
+
+                const modal = new ModalBuilder().setCustomId(`modal_gw_${giveawayId}`).setTitle('Dołącz do Giveaway');
+                const input = new TextInputBuilder()
+                    .setCustomId('gw_nick')
+                    .setLabel("Twój nick ze strony RBX Rewards")
+                    .setStyle(TextInputStyle.Short)
+                    .setRequired(true);
+                modal.addComponents(new ActionRowBuilder().addComponents(input));
+                return interaction.showModal(modal);
+            }
 
             // 2. Kliknięcie w zatwierdzenie/odrzucenie wypłaty
             if (interaction.isButton() && interaction.customId.startsWith('payout_')) {
@@ -332,7 +349,7 @@ module.exports = {
                 } catch (err) { interaction.reply({ content: "Błąd bazy danych.", ephemeral: true }); }
             }
 
-// 2b. Pakiety: Done / Reject
+            // 2b. Pakiety: Done / Reject
             if (interaction.isButton() && interaction.customId.startsWith('bundle_')) {
                 if (!interaction.member.permissions.has('Administrator') && interaction.user.id !== ADMIN_DISCORD_ID) {
                     return interaction.reply({ content: "❌ Brak uprawnień!", ephemeral: true });
@@ -410,7 +427,7 @@ module.exports = {
                 await interaction.showModal(modal);
             }
 
-            // --- ODBIÓR DANYCH Z MODALI (WYSKAKUJĄCYCH OKIENEK) ---
+            // --- ODBIÓR DANYCH Z MODALI (WYSKAKUJĄCYĄ OKIENEK) ---
             if (interaction.type === InteractionType.ModalSubmit) {
                 // Odpowiedź na Giveaway
                 if (interaction.customId.startsWith('modal_gw_')) {
@@ -477,7 +494,7 @@ module.exports = {
         });
     },
 
-// Funkcja wywoływana z server.js gdy pakiet zostanie w pełni opłacony
+    // Funkcja wywoływana z server.js gdy pakiet zostanie w pełni opłacony
     sendBundleAlert: async (bundle, user) => {
         const isWt = bundle.category === 'wt';
         const channelId = isWt ? KANAL_PAKIETY_WT_ID : KANAL_PAKIETY_ROBUX_ID;
