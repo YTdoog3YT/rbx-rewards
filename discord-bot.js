@@ -296,57 +296,54 @@ module.exports = {
                 const parts = interaction.customId.split('_');
                 const action = parts[1]; // 'approve' lub 'reject'
                 const payoutId = parts[2];
+                if (action !== 'approve' && action !== 'reject') return;
 
+                // atomowo: tylko jedno kliknięcie może przetworzyć wypłatę oczekującą
+                let payout = null;
                 try {
-                    const payout = await dbModels.Payout.findOneAndUpdate({ _id: payoutId, status: 'Pending Manual' }, { $set: { status: action === 'approve' ? 'Completed' : 'Rejected' } }, { new: true });
-                    if (!payout) {
-                        return interaction.reply({ content: "⚠️ Ta wypłata została już przetworzona!", ephemeral: true });
+                    payout = await dbModels.Payout.findOneAndUpdate(
+                        { _id: payoutId, status: 'Pending Manual' },
+                        { $set: { status: action === 'approve' ? 'Completed' : 'Rejected' } },
+                        { new: true }
+                    );
+                } catch (err) {
+                    console.error('[wypłaty] discord (status):', err.message);
+                    return interaction.reply({ content: "Błąd bazy danych.", ephemeral: true }).catch(() => {});
+                }
+                if (!payout) return interaction.reply({ content: "⚠️ Ta wypłata została już przetworzona!", ephemeral: true });
+
+                const embed = interaction.message.embeds[0];
+
+                if (action === 'reject') {
+                    // zwrot punktów graczowi; gdy się nie uda, wypłata wraca do oczekujących
+                    try {
+                        const refunded = await dbModels.User.findOneAndUpdate({ username: payout.username }, { $inc: { points: payout.pointsWithdrawn } });
+                        if (!refunded) throw new Error('nie znaleziono gracza ' + payout.username);
+                    } catch (err) {
+                        console.error('[wypłaty] discord (zwrot):', err.message);
+                        await dbModels.Payout.updateOne({ _id: payoutId }, { $set: { status: 'Pending Manual' } }).catch(() => {});
+                        return interaction.reply({ content: "❌ Nie udało się zwrócić R$, więc wypłata wróciła do oczekujących. Spróbuj ponownie.", ephemeral: true }).catch(() => {});
                     }
+                    try { await interaction.update({ embeds: [{ ...embed.data, title: "❌ ODRZUCONE ZLECENIE", color: 0xff3333 }], components: [] }); } catch (e) {}
+                    return;
+                }
 
-                    if (action === 'approve') {
-                        payout.status = 'Completed';
-                        await payout.save();
-
-                        // Wysłanie publicznego powiadomienia
-                        const publicChannel = client.channels.cache.get(KANAL_PUBLICZNY_ID);
-                        if (publicChannel) {
-                            publicChannel.send({
-                                embeds: [{
-                                    title: "💸 WYPŁATA ZREALIZOWANA!",
-                                    description: `👤 Gracz: **${payout.username}** właśnie otrzymał przelew za **${payout.pointsWithdrawn} R$**!`,
-                                    color: 0x00FFAA,
-                                    thumbnail: { url: "https://rbx-rewards.onrender.com/logo.png" }
-                                }]
-                            });
-                        }
-
-                        // Edycja wiadomości admina na zieloną
-                        const embed = interaction.message.embeds[0];
-                        await interaction.update({
-                            embeds: [{ ...embed.data, title: "✅ OPŁACONE ZLECENIE", color: 0x00FFAA }],
-                            components: [] // Usunięcie guzików
+                // approve: publiczne powiadomienie + zielona wiadomość admina
+                try {
+                    const publicChannel = client.channels.cache.get(KANAL_PUBLICZNY_ID);
+                    if (publicChannel) {
+                        publicChannel.send({
+                            embeds: [{
+                                title: "💸 WYPŁATA ZREALIZOWANA!",
+                                description: `👤 Gracz: **${payout.username}** właśnie otrzymał przelew za **${payout.pointsWithdrawn} R$**!`,
+                                color: 0x00FFAA,
+                                thumbnail: { url: "https://rbx-rewards.pl/logo.png" }
+                            }]
                         });
                     }
-
-                    if (action === 'reject') {
-                        payout.status = 'Rejected';
-                        await payout.save();
-
-                        // Zwrócenie punktów graczowi
-                        const user = await dbModels.User.findOne({ username: payout.username });
-                        if (user) {
-                            user.points += payout.pointsWithdrawn;
-                            await user.save();
-                        }
-
-                        // Edycja wiadomości admina na czerwoną
-                        const embed = interaction.message.embeds[0];
-                        await interaction.update({
-                            embeds: [{ ...embed.data, title: "❌ ODRZUCONE ZLECENIE", color: 0xff3333 }],
-                            components: []
-                        });
-                    }
-                } catch (err) { interaction.reply({ content: "Błąd bazy danych.", ephemeral: true }); }
+                } catch (e) {}
+                try { await interaction.update({ embeds: [{ ...embed.data, title: "✅ OPŁACONE ZLECENIE", color: 0x00FFAA }], components: [] }); } catch (e) {}
+                return;
             }
 
             // 2b. Pakiety: Done / Reject
@@ -487,7 +484,7 @@ module.exports = {
         await zleceniaChannel.send({
             embeds: [{
                 title: "⚠️ NOWE ZLECENIE DO OPŁACENIA",
-                description: `**Gracz:** ${payoutData.username}\n**Email PayPal:** \`${payoutData.paypalEmail}\`\n\n💰 **Zlecone Robuxy:** ${payoutData.pointsWithdrawn} R$\n💵 **Do przelewu (USD):** **$${payoutData.usdAmount.toFixed(2)}**\n\n*Po ręcznym wysłaniu kasy na PayPal, kliknij zatwierdź.*`,
+                description: `**Gracz:** ${payoutData.username}\n**Revtag Revolut:** \`${payoutData.payoutAddress || payoutData.paypalEmail}\`\n\n💰 **Zlecone Robuxy:** ${payoutData.pointsWithdrawn} R$\n💵 **Do przelewu (USD):** **$${payoutData.usdAmount.toFixed(2)}**\n\n*Po ręcznym wysłaniu kasy przez Revolut (na ten Revtag), kliknij zatwierdź.*`,
                 color: 0xFF9900
             }],
             components: [row]

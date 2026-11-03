@@ -304,7 +304,7 @@ EarningSchema.index({ source: 1, txId: 1 }, { unique: true, partialFilterExpress
 const Earning = mongoose.model('Earning', EarningSchema);
 
 const PayoutSchema = new mongoose.Schema({ 
-    username: String, payoutMethod: { type: String, default: 'PayPal' }, payoutAddress: String, paypalEmail: String, 
+    username: String, payoutMethod: { type: String, default: 'Revolut' }, payoutAddress: String, paypalEmail: String, 
     pointsWithdrawn: Number, usdAmount: Number, status: { type: String, default: 'Pending Manual' }, createdAt: { type: Date, default: Date.now } 
 });
 const Payout = mongoose.model('Payout', PayoutSchema);
@@ -480,12 +480,12 @@ function maskEmail(e) {
     const s = String(e || '');
     if (!s) return '';
     const at = s.indexOf('@');
-    if (at < 1) return '***';
+    if (at < 1) return s.slice(0, 3) + '***';
     return s.slice(0, Math.min(2, at)) + '***' + s.slice(at);
 }
 
 app.get('/api/points/:username', async (req, res) => {
-    try { const safe = escapeRegex(req.params.username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) { user = new User({ username: req.params.username.trim(), points: 0 }); await user.save(); } res.json({ points: user.points, referredBy: user.referredBy, linkedPayPal: maskEmail(user.linkedPayPal), verified: !!user.verified });; } catch (error) { res.json({ points: 0 }); }
+    try { const safe = escapeRegex(req.params.username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) { user = new User({ username: req.params.username.trim(), points: 0 }); await user.save(); } res.json({ points: user.points, referredBy: user.referredBy, linkedPayPal: maskEmail(user.linkedPayPal && String(user.linkedPayPal).startsWith('@') ? user.linkedPayPal : ''), verified: !!user.verified });; } catch (error) { res.json({ points: 0 }); }
 });
 
 app.get('/api/user-stats/:username', async (req, res) => {
@@ -606,6 +606,57 @@ app.post('/api/support-ticket', async (req, res) => {
 });
 
 const MIN_PAYOUT = 1;
+
+// Revtag Revolut: 3-16 znaków, małe litery a-z i cyfry (gracz może wpisać też z "@" i wielkimi literami)
+function normalizeRevtag(v) {
+    const s = String(v || '').trim().replace(/^@+/, '').toLowerCase();
+    return /^[a-z0-9]{3,16}$/.test(s) ? '@' + s : null;
+}
+
+app.post('/api/withdraw', async (req, res) => {
+    const useLinked = req.body.useLinked === true;
+    const revtag = normalizeRevtag(req.body.payoutAddress);
+    const username = String(req.body.username || '').trim();
+    const pts = Math.round(Number(req.body.points) * 100) / 100;
+
+    if (!username) return res.status(400).json({ error: 'Brak nazwy użytkownika.' });
+    if (!Number.isFinite(pts) || pts < MIN_PAYOUT) return res.status(400).json({ error: `Minimalna wypłata to ${MIN_PAYOUT} R$.` });
+    if (!useLinked && !revtag) return res.status(400).json({ error: 'Nieprawidłowy Revtag. Ma 3–16 znaków: małe litery i cyfry (np. @twojrevtag).' });
+
+    try {
+        const safe = escapeRegex(username);
+        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
+        if (!user) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+
+        // stare adresy PayPal (e-maile) ignorujemy: obowiązuje tylko zapisany Revtag (zaczyna się od "@")
+        const linked = user.linkedPayPal && String(user.linkedPayPal).startsWith('@') ? String(user.linkedPayPal).toLowerCase() : null;
+
+        let payAddress = revtag;
+        if (useLinked) {
+            if (!linked) return res.status(400).json({ error: 'Brak przypisanego Revtag. Wpisz go w oknie wypłaty.' });
+            payAddress = linked;
+        } else if (linked && linked !== revtag) {
+            // nie ujawniamy zapisanego Revtag
+            return res.status(400).json({ error: 'To konto ma już przypisany inny Revtag. Zmiana tylko przez Support.' });
+        }
+
+        // odejmij tylko wtedy, gdy saldo wystarcza (jedna operacja, bez wyścigu)
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id, points: { $gte: pts } },
+            { $inc: { points: -pts }, $set: { linkedPayPal: linked || payAddress } },
+            { new: true }
+        );
+        if (!updated) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+
+        const usdAmount = parseFloat((pts * 0.025).toFixed(2));
+        const newPayout = await new Payout({
+            username: updated.username, payoutMethod: 'Revolut', payoutAddress: payAddress,
+            paypalEmail: payAddress, pointsWithdrawn: pts, usdAmount, status: 'Pending Manual'
+        }).save();
+        discordBot.sendPayoutAlert(newPayout);
+        res.json({ success: true, newBalance: updated.points, usd: usdAmount });
+    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
+});
 
 app.post('/api/withdraw', async (req, res) => {
     const useLinked = req.body.useLinked === true;
