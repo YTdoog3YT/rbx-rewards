@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType, ChannelType } = require('discord.js');
 
 // Twoje kanały
 const KANAL_PUBLICZNY_ID = "1566002632848449616";
@@ -134,21 +134,140 @@ module.exports = {
         });
 
         // --- OBSŁUGA GUZIKÓW I MODALI ---
-        client.on('interactionCreate', async interaction => {
-            
-            // 1. Kliknięcie w guzik "Dołącz do Giveawaya"
-            if (interaction.isButton() && interaction.customId.startsWith('join_gw_')) {
-                const giveawayId = interaction.customId.replace('join_gw_', '');
-                
-                const modal = new ModalBuilder().setCustomId(`modal_gw_${giveawayId}`).setTitle('Dołącz do Giveawaya');
-                const input = new TextInputBuilder()
-                    .setCustomId('gw_nick')
-                    .setLabel("Podaj swój DOKŁADNY nick ze strony")
-                    .setStyle(TextInputStyle.Short)
-                    .setRequired(true);
-                modal.addComponents(new ActionRowBuilder().addComponents(input));
-                await interaction.showModal(modal);
+// ===================== KANAŁ POMYSŁÓW =====================
+        const KANAL_POMYSLY_ID = "1566904973210685501";
+        const IDEA_COOLDOWN_MS = 10 * 60 * 1000; // jeden pomysł na osobę co 10 minut
+        const IDEA_MIN = 10, IDEA_MAX = 1500;
+        const ideaThreads = new Map();      // userId -> id otwartego wątku
+        const ideaLastPublish = new Map();  // userId -> czas ostatniego pomysłu
+        const ideaPublishing = new Set();   // wątki w trakcie publikacji
+
+        // wysyła panel z przyciskiem na sam dół kanału (stary panel jest usuwany)
+        async function refreshIdeaPanel() {
+            const channel = client.channels.cache.get(KANAL_POMYSLY_ID) || await client.channels.fetch(KANAL_POMYSLY_ID).catch(() => null);
+            if (!channel) return null;
+            const recent = await channel.messages.fetch({ limit: 30 }).catch(() => null);
+            if (recent) {
+                for (const msg of recent.values()) {
+                    const isPanel = msg.author.id === client.user.id && msg.components.some(row => row.components.some(c => c.customId === 'idea_new'));
+                    if (isPanel) await msg.delete().catch(() => {});
+                }
             }
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('idea_new').setLabel('💡 Podziel się pomysłem').setStyle(ButtonStyle.Success)
+            );
+            return channel.send({
+                embeds: [{
+                    title: "💡 Masz pomysł na RBX Rewards?",
+                    description: "Kliknij przycisk poniżej, a otworzę dla Ciebie **prywatny wątek** (widzisz go tylko Ty i administracja). Napisz tam swój pomysł, a pojawi się na tym kanale do głosowania ✅ / ❌.\n\nNa tym kanale nie można pisać, a pomysły dodajesz tylko przyciskiem.",
+                    color: 0x00e676
+                }],
+                components: [row]
+            });
+        }
+
+        client.on('messageCreate', async message => {
+            if (message.author.bot) return;
+
+            // komenda admina: wysyła (lub odświeża) panel z przyciskiem
+            if (message.content.trim().toLowerCase() === '!pomysly') {
+                if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ Brak uprawnień, Szefie!');
+                const sent = await refreshIdeaPanel();
+                return message.reply(sent ? '✅ Panel pomysłów wysłany na kanał pomysłów.' : '❌ Nie mam dostępu do kanału pomysłów (sprawdź uprawnienia bota).');
+            }
+
+            // wiadomość właściciela w jego prywatnym wątku = jego pomysł
+            const ch = message.channel;
+            if (!ch.isThread || !ch.isThread() || ch.parentId !== KANAL_POMYSLY_ID) return;
+            const m = ch.name.match(/(\d{17,20})$/);
+            if (!m || m[1] !== message.author.id) return; // wiadomości adminów w wątku to zwykła rozmowa
+            if (ideaPublishing.has(ch.id)) return;
+
+            const text = message.content.trim();
+            if (text.length < IDEA_MIN) return ch.send(`✏️ Pomysł jest za krótki (min. ${IDEA_MIN} znaków). Opisz go dokładniej i wyślij jeszcze raz.`);
+            if (text.length > IDEA_MAX) return ch.send(`✂️ Pomysł jest za długi (${text.length}/${IDEA_MAX} znaków). Skróć go i wyślij jeszcze raz.`);
+
+            ideaPublishing.add(ch.id);
+            try {
+                const ideasChannel = client.channels.cache.get(KANAL_POMYSLY_ID) || await client.channels.fetch(KANAL_POMYSLY_ID);
+                const files = [...message.attachments.values()]
+                    .filter(a => (a.contentType || '').startsWith('image/') && a.size <= 8 * 1024 * 1024)
+                    .slice(0, 3).map(a => ({ attachment: a.url, name: a.name }));
+                const sent = await ideasChannel.send({
+                    embeds: [{
+                        title: "💡 NOWY POMYSŁ",
+                        description: `<@${message.author.id}>\n\n${text}`,
+                        color: 0xffb703,
+                        timestamp: new Date().toISOString(),
+                        footer: { text: "Zagłosuj reakcją: ✅ chcę to na stronie, ❌ nie chcę" }
+                    }],
+                    files,
+                    allowedMentions: { parse: [] }
+                });
+                await sent.react('✅');
+                await sent.react('❌');
+
+                ideaLastPublish.set(message.author.id, Date.now());
+                ideaThreads.delete(message.author.id);
+                await ch.send('🎉 Dziękujemy! Twój pomysł jest już na kanale do głosowania. Ten wątek za chwilę zniknie.');
+                setTimeout(() => { ch.delete().catch(() => ch.setArchived(true).catch(() => {})); }, 6000);
+                await refreshIdeaPanel();
+            } catch (err) {
+                console.error('[pomysły] publikacja:', err.message);
+                ideaPublishing.delete(ch.id);
+                ch.send('❌ Nie udało się opublikować pomysłu. Spróbuj jeszcze raz, a jeśli nadal nie działa, napisz do administracji.').catch(() => {});
+            }
+        });
+
+        client.on('interactionCreate', async interaction => {
+            if (!interaction.isButton() || interaction.customId !== 'idea_new') return;
+            const userId = interaction.user.id;
+
+            const wait = IDEA_COOLDOWN_MS - (Date.now() - (ideaLastPublish.get(userId) || 0));
+            if (wait > 0) return interaction.reply({ content: `⏳ Kolejny pomysł możesz dodać za ${Math.ceil(wait / 60000)} min.`, ephemeral: true });
+
+            const existingId = ideaThreads.get(userId);
+            if (existingId) {
+                const t = await client.channels.fetch(existingId).catch(() => null);
+                if (t) {
+                    if (t.archived) await t.setArchived(false).catch(() => {});
+                    return interaction.reply({ content: `📝 Masz już otwarty wątek na pomysł: <#${t.id}>`, ephemeral: true });
+                }
+                ideaThreads.delete(userId);
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+            try {
+                const parent = interaction.channel;
+                if (!parent || parent.id !== KANAL_POMYSLY_ID) return interaction.editReply('❌ Ten przycisk działa tylko na kanale pomysłów.');
+                const rawName = (interaction.member && interaction.member.displayName) || interaction.user.username;
+                const safeName = rawName.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 40) || 'gracz';
+                const thread = await parent.threads.create({
+                    name: `💡 ${safeName} ${userId}`,
+                    type: ChannelType.PrivateThread,
+                    autoArchiveDuration: 60,
+                    invitable: false,
+                    reason: 'Nowy pomysł od gracza'
+                });
+                await thread.members.add(userId);
+                await thread.members.add(ADMIN_DISCORD_ID).catch(() => {});
+                ideaThreads.set(userId, thread.id);
+                await thread.send({
+                    content: `<@${userId}>`,
+                    embeds: [{
+                        title: "💡 Napisz swój pomysł",
+                        description: `Opisz go w **jednej wiadomości** (od ${IDEA_MIN} do ${IDEA_MAX} znaków). Możesz dołączyć do 3 zrzutów ekranu.\n\nPo wysłaniu pomysł pojawi się na kanale do głosowania, a ten wątek zniknie. Ten wątek widzisz tylko Ty i administracja.\n\n*Pomysły niezgodne z regulaminem (spam, wulgaryzmy) będą usuwane.*`,
+                        color: 0xffb703
+                    }]
+                });
+                return interaction.editReply(`✅ Otworzyłem prywatny wątek tylko dla Ciebie i administracji: <#${thread.id}>`);
+            } catch (err) {
+                console.error('[pomysły] tworzenie wątku:', err.message);
+                return interaction.editReply('❌ Nie udało się otworzyć wątku. Napisz do administracji.').catch(() => {});
+            }
+        });
+
+        // --- OBSŁUGA GUZIKÓW I MODALI ---
 
             // 2. Kliknięcie w zatwierdzenie/odrzucenie wypłaty
             if (interaction.isButton() && interaction.customId.startsWith('payout_')) {
@@ -163,7 +282,7 @@ module.exports = {
 
                 try {
                     const payout = await dbModels.Payout.findOneAndUpdate({ _id: payoutId, status: 'Pending Manual' }, { $set: { status: action === 'approve' ? 'Completed' : 'Rejected' } }, { new: true });
-                    if (!payout || payout.status !== 'Pending Manual') {
+                    if (!payout) {
                         return interaction.reply({ content: "⚠️ Ta wypłata została już przetworzona!", ephemeral: true });
                     }
 
