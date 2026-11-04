@@ -855,7 +855,7 @@ async function reverseOfferwall(userId, originalTxId, fallbackAmount, reversalTx
     return 'ok';
 }
 
-app.get('/api/postback/timewall', async (req, res) => {
+app.get('/postback/timewall', async (req, res) => {
     if (!TIMEWALL_SECRET) { console.error('[timewall] brak zmiennej TIMEWALL_SECRET'); return res.status(500).send('ERR'); }
 
     const useridRaw = String(req.query.userid || '');
