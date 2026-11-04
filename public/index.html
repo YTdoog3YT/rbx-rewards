@@ -961,9 +961,10 @@
     function injectProtectedContent() {
         const offerwallSection = document.getElementById("offerwallSection");
         if (offerwallSection && offerwallSection.innerHTML.trim() === "") {
-            offerwallSection.innerHTML = `
+offerwallSection.innerHTML = `
               <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose a Quest Wall</h3>
-              <p style="color: #a0a0b0; font-size: 0.9rem; margin-top: 5px;" data-lang="rateInfo">1 R$ Point = $0.025 USD • Minimum claim: 1 R$</p>
+              <p style="color: #a0a0b0; font-size: 0.9rem; margin-bottom: 15px;" data-lang="offerDesc">Select a partner wall below to start collecting R$ points.</p>
+              <div class="offerwalls-grid">
                   <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
                       <div class="badge badge-hot">HOT 🔥</div>
                       <img src="cpx-logo.png" alt="Partner Wall" class="offer-logo">
@@ -973,6 +974,11 @@
                       <div class="badge badge-hot" style="background: #9d4edd;">EASY 🚀</div>
                       <div class="card-icon">📋</div>
                       <h3>TheoremReach</h3><p data-lang="trDesc">Fast & easy interactive tasks</p>
+                  </div>
+                  <div id="twCard" class="offer-card offer-card-featured" onclick="openOfferwall('TIMEWALL', 'TimeWall')">
+                      <div class="badge badge-best">BEST 🏆</div>
+                      <div class="card-icon">⏱️</div>
+                      <h3>TimeWall</h3><p data-lang="twDesc">Our top pick: tasks, surveys & games</p>
                   </div>
               </div>
             `;
