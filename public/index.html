@@ -1161,7 +1161,7 @@ function logoutUser() {
     function openOfferwall(networkId, networkName) {
       const savedUser = localStorage.getItem("rbx_username"); if (!savedUser) return openLoginModal();
       document.getElementById('offerModalTitle').innerText = networkName; let finalUrl = "";
-      if (networkId === 'CPX') finalUrl = currentUserCpxUrl; else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl; else if (networkId === 'TIMEWALL') finalUrl = 'https://timewall.io/users/login?oid=11650462cba7e4cc&uid=' + encodeURIComponent(savedUser);
+      if (networkId === 'CPX') finalUrl = currentUserCpxUrl; else if (networkId === 'THEOREMREACH') finalUrl = currentUserTheoremReachUrl; else if (networkId === 'TIMEWALL') finalUrl = 'https://timewall.io/users/login?oid=fb3d28c2df0a0cd3&uid=' + encodeURIComponent(savedUser) + (window.innerWidth <= 900 ? '&tab=surveys' : '');
       if (finalUrl) { 
           document.getElementById('iframeContainer').innerHTML = `<iframe src="${finalUrl}"></iframe>`; 
           document.getElementById('offerModal').style.display = 'flex'; 
