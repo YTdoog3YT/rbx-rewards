@@ -6,7 +6,8 @@ const KANAL_ADMIN_ID = "1548618275083264060";
 const KANAL_ZLECENIA_ID = "1548683873012162601";
 const KANAL_PAKIETY_ROBUX_ID = "1565989968050913310";
 const KANAL_PAKIETY_WT_ID = "1566002493966516354";
-const BUNDLE_CAT_LABELS = { robux: 'Robux', wt: 'War Thunder' };
+const KANAL_PAKIETY_SS_ID = KANAL_PAKIETY_ROBUX_ID; // Star Stable: na razie ten sam kanał co Robux; gdy utworzysz osobny, wpisz tu jego ID w cudzysłowie
+const BUNDLE_CAT_LABELS = { robux: 'Robux', wt: 'War Thunder', ss: 'Star Stable' };
 const ADMIN_DISCORD_ID = "398911896893521921";
 
 let client;
@@ -494,13 +495,13 @@ module.exports = {
     // Funkcja wywoływana z server.js gdy pakiet zostanie w pełni opłacony
     sendBundleAlert: async (bundle, user) => {
         const isWt = bundle.category === 'wt';
-        const channelId = isWt ? KANAL_PAKIETY_WT_ID : KANAL_PAKIETY_ROBUX_ID;
+        const channelId = bundle.category === 'ss' ? KANAL_PAKIETY_SS_ID : (isWt ? KANAL_PAKIETY_WT_ID : KANAL_PAKIETY_ROBUX_ID);
         const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
         if (!channel) { console.error('[bundles] brak dostępu do kanału pakietów:', channelId); return; }
 
         const lines = [
             `**Gracz (strona):** \`${bundle.username}\``,
-            isWt ? `**ID Gaijin:** \`${bundle.gameId}\`` : `**Nick Roblox:** \`${bundle.gameId}\``,
+            bundle.category === 'ss' ? '🐴 **Star Stable:** wystarczy nazwa Discord, kod karty wyślij graczowi w wiadomości prywatnej' : (isWt ? `**ID Gaijin:** \`${bundle.gameId}\`` : `**Nick Roblox:** \`${bundle.gameId}\``),
             `**Discord:** \`${bundle.discord}\``,
             `**Weryfikacja:** ${user && user.verified ? '✅ zweryfikowany' : '⚠️ NIEZWERYFIKOWANY (sprawdź opis profilu Roblox)'}`,
             '',
@@ -516,7 +517,7 @@ module.exports = {
         );
 
         await channel.send({
-            embeds: [{ title: `⚠️ NOWY PAKIET: ${isWt ? 'WAR THUNDER' : 'ROBUX'}`, description: lines.join('\n'), color: 0xFF9900 }],
+            embeds: [{ title: `⚠️ NOWY PAKIET: ${bundle.category === 'ss' ? 'STAR STABLE' : (isWt ? 'WAR THUNDER' : 'ROBUX')}`, description: lines.join('\n'), color: 0xFF9900 }],
             components: [row]
         });
     },

@@ -900,13 +900,20 @@ app.get('/postback/timewall', async (req, res) => {
 
 io.on('connection', (socket) => { 
     // =================== PAKIETY (BUNDLES) ===================
-const BUNDLE_CATEGORIES = { robux: 'Robux', wt: 'War Thunder' };
+const BUNDLE_CATEGORIES = { robux: 'Robux', wt: 'War Thunder', ss: 'Star Stable' };
 const BUNDLE_OFFERS = {
     robux: [
         { id: 'rb50',  title: '50 Robux',  price: 80 },
         { id: 'rb100', title: '100 Robux', price: 150 },
         { id: 'rb175', title: '175 Robux', price: 195 },
         { id: 'rb200', title: '200 Robux', price: 225 }
+    ],
+    ss: [
+        { id: 'ss500',   title: '500 Star Coins',   price: 665 },
+        { id: 'ss1000',  title: '1000 Star Coins',  price: 1200 },
+        { id: 'ss2000',  title: '2000 Star Coins',  price: 1625 },
+        { id: 'ss5000',  title: '5000 Star Coins',  price: 2570 },
+        { id: 'ss10000', title: '10000 Star Coins', price: 3850 }
     ],
     wt: [
         { id: 'wt150',   title: '150 GE',   price: 50 },
@@ -977,27 +984,27 @@ app.post('/api/bundles/create', async (req, res) => {
 
         const gameId = cleanName(req.body.gameId);
         const discord = cleanName(req.body.discord);
-        if (!BUNDLE_NAME_RE.test(gameId)) return res.status(400).json({ error: category === 'wt' ? 'Nieprawidłowe ID Gaijin.' : 'Nieprawidłowy nick Roblox.' });
+        if (category !== 'ss' && !BUNDLE_NAME_RE.test(gameId)) return res.status(400).json({ error: category === 'wt' ? 'Nieprawidłowe ID Gaijin.' : 'Nieprawidłowy nick Roblox.' });
         if (!BUNDLE_NAME_RE.test(discord)) return res.status(400).json({ error: 'Nieprawidłowa nazwa Discord.' });
 
         const user = await findUserCI(cleanName(req.body.username));
         if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
 
-        const gameField = category === 'wt' ? 'gaijinId' : 'robloxName';
-        if (user[gameField] && !sameText(user[gameField], gameId)) return res.status(400).json({ error: `To konto ma na stałe przypisane: ${user[gameField]}. Zmiana tylko przez Support.` });
+        const gameField = category === 'wt' ? 'gaijinId' : (category === 'ss' ? null : 'robloxName');
+        if (gameField && user[gameField] && !sameText(user[gameField], gameId)) return res.status(400).json({ error: `To konto ma na stałe przypisane: ${user[gameField]}. Zmiana tylko przez Support.` });
         if (user.discordName && !sameText(user.discordName, discord)) return res.status(400).json({ error: `To konto ma na stałe przypisany Discord: ${user.discordName}. Zmiana tylko przez Support.` });
 
         const open = await Bundle.countDocuments({ username: user.username, category, status: { $in: ['filling', 'paid'] } });
         if (open >= BUNDLE_MAX_OPEN) return res.status(400).json({ error: `Możesz mieć maksymalnie ${BUNDLE_MAX_OPEN} aktywne pakiety w tej kategorii.` });
 
         const set = {};
-        if (!user[gameField]) set[gameField] = gameId;
+        if (gameField && !user[gameField]) set[gameField] = gameId;
         if (!user.discordName) set.discordName = discord;
         if (Object.keys(set).length) await User.updateOne({ _id: user._id }, { $set: set });
 
         const bundle = await new Bundle({
             username: user.username, category, offerId: offer.id, title: offer.title, priceC: toC(offer.price),
-            customUsd: offer.customUsd, approxRobux: offer.approxRobux, gameId: user[gameField] || gameId, discord: user.discordName || discord
+            customUsd: offer.customUsd, approxRobux: offer.approxRobux, gameId: gameField ? (user[gameField] || gameId) : '', discord: user.discordName || discord
         }).save();
         res.json({ success: true, bundle: bundleView(bundle) });
     } catch (e) { console.error('[bundles] create:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
