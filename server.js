@@ -1174,6 +1174,18 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => { onlineUsersMap.delete(socket.id); });
 });
 
+app.get('/api/user-balance/:username', async (req, res) => {
+    try {
+        const safe = escapeRegex(req.params.username);
+        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
+        const currentBalance = user ? user.points : 0;
+        res.json({ balance: currentBalance });
+    } catch (error) {
+        console.error('Błąd pobierania salda dla:', req.params.username, error);
+        res.status(500).json({ error: 'Błąd serwera' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
