@@ -898,7 +898,83 @@ app.get('/postback/timewall', async (req, res) => {
     }
 });
 
-io.on('connection', (socket) => { 
+// =================== ADMOB REWARDED VIDEO (SSV) ===================
+
+// Konfiguracja matematyczna zarobków (podział 60% dla gracza, 40% dla Ciebie)
+const ADMOB_AVG_REVENUE_USD = 0.005; // Średni zysk za 1 obejrzaną reklamę w AdMob (0.5 centa)
+const ADMOB_PLAYER_SHARE = 0.60;     // Gracz dostaje 60% z tej kwoty
+const ROBUX_COST_USD = 0.025;        // Koszt 1 R$ (z Twoich wyliczeń przy wypłatach)
+
+// Serwer sam oblicza, ile R$ dać graczowi: (0.005 * 0.60) / 0.025 = 0.12 R$
+const CALCULATED_REWARD_RS = (ADMOB_AVG_REVENUE_USD * ADMOB_PLAYER_SHARE) / ROBUX_COST_USD;
+
+// 1. Endpoint dla APLIKACJI MOBILNEJ
+// Apka przy starcie pyta ten adres, żeby na przycisku napisać "Obejrzyj za X R$"
+app.get('/api/admob-settings', (req, res) => {
+    res.json({
+        rewardAmount: parseFloat(CALCULATED_REWARD_RS.toFixed(2)),
+        buttonText: `Obejrzyj wideo za ${CALCULATED_REWARD_RS.toFixed(2)} R$`
+    });
+});
+
+// 2. Endpoint SSV DLA GOOGLE (Odbiera sygnał po obejrzeniu)
+app.get('/api/admob-reward', async (req, res) => {
+    const { user_id, transaction_id } = req.query;
+
+    if (!user_id || !transaction_id) {
+        return res.status(400).send('Brak wymaganych parametrow');
+    }
+
+    try {
+        const existingTx = await Earning.findOne({ txId: 'admob:' + transaction_id });
+        if (existingTx) {
+            console.log('[AdMob] Transakcja już zrealizowana:', transaction_id);
+            return res.status(200).send('Already processed');
+        }
+
+        const safeUser = escapeRegex(user_id);
+        let user = await User.findOne({ username: new RegExp(`^${safeUser}$`, 'i') });
+        
+        if (!user) {
+            console.log('[AdMob] Nie znaleziono gracza:', user_id);
+            return res.status(200).send('User not found'); 
+        }
+
+        // Pobieramy automatycznie wyliczoną stawkę (teraz to 0.12 R$)
+        const reward = parseFloat(CALCULATED_REWARD_RS.toFixed(2));
+
+        user.points += reward;
+        await addXPAndDailyEarned(user, reward);
+        allocateGoalProgress(user, reward);
+        await user.save();
+
+        await new Earning({
+            username: user.username,
+            amount: reward,
+            source: 'AdMob Video',
+            details: 'Reklama wideo w aplikacji',
+            txId: 'admob:' + transaction_id
+        }).save();
+
+        await processReferralBonus(user.username, reward);
+
+        console.log(`[AdMob SSV] Sukces: ${user.username} otrzymał ${reward} R$ (60/40 podział).`);
+        return res.status(200).send('OK');
+
+    } catch (error) {
+        console.error('[AdMob SSV] Błąd serwera:', error);
+        return res.status(500).send('Server Error');
+    }
+});
+
+io.on('connection', (socket) => {
+            txId: 'admob:' + transaction_id
+        }).save();
+
+        // 6. Przydział 15% zysku dla osoby polecającej
+        await processReferralBonus(user.username, reward);
+
+        c
     // =================== PAKIETY (BUNDLES) ===================
 const BUNDLE_CATEGORIES = { robux: 'Robux', wt: 'War Thunder', ss: 'Star Stable' };
 const BUNDLE_OFFERS = {
@@ -1105,6 +1181,10 @@ app.get('/api/admin/bundle-users', isAdmin, async (req, res) => {
         res.json(users);
     } catch (e) { res.status(500).json([]); }
 });
+
+// =================== WEBSOCKETS (Zdarzenia) ===================
+// Tutaj poprawnie otwieramy i zamykamy sockety, całkowicie oddzielone od Express.js
+io.on('connection', (socket) => { 
     socket.on('user_joined', (username) => { if(username) onlineUsersMap.set(socket.id, username); });
     socket.on('chatMessage', (data) => { io.emit('chatMessage', data); }); 
     socket.on('disconnect', () => { onlineUsersMap.delete(socket.id); });
@@ -1114,7 +1194,10 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
 if (discordClient) {
-    discordClient.once('ready', () => { console.log(`🤖 Bot Discord połączony!`); discordBot.init(discordClient, dbModels); });
+    discordClient.once('ready', () => { 
+        console.log(`🤖 Bot Discord połączony!`); 
+        discordBot.init(discordClient, dbModels); 
+    });
     discordClient.login(DISCORD_BOT_TOKEN).catch(console.error);
 }
 botAdmin.init();
