@@ -959,14 +959,6 @@ app.get('/api/admob-reward', async (req, res) => {
     }
 });
 
-io.on('connection', (socket) => {
-            txId: 'admob:' + transaction_id
-        }).save();
-
-        // 6. Przydział 15% zysku dla osoby polecającej
-        await processReferralBonus(user.username, reward);
-
-        c
     // =================== PAKIETY (BUNDLES) ===================
 const BUNDLE_CATEGORIES = { robux: 'Robux', wt: 'War Thunder', ss: 'Star Stable' };
 const BUNDLE_OFFERS = {
