@@ -950,8 +950,6 @@ app.get('/api/admob-reward', async (req, res) => {
             txId: 'admob:' + transaction_id
         }).save();
 
-        await processReferralBonus(user.username, reward);
-
         console.log(`[AdMob SSV] Sukces: ${user.username} otrzymał ${reward} R$ (60/40 podział).`);
         return res.status(200).send('OK');
 
