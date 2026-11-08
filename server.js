@@ -901,15 +901,11 @@ app.get('/postback/timewall', async (req, res) => {
 // =================== ADMOB REWARDED VIDEO (SSV) ===================
 
 // Konfiguracja matematyczna zarobków (podział 60% dla gracza, 40% dla Ciebie)
-const ADMOB_AVG_REVENUE_USD = 0.005; // Średni zysk za 1 obejrzaną reklamę w AdMob (0.5 centa)
-const ADMOB_PLAYER_SHARE = 0.60;     // Gracz dostaje 60% z tej kwoty
-const ROBUX_COST_USD = 0.025;        // Koszt 1 R$ (z Twoich wyliczeń przy wypłatach)
-
-// Serwer sam oblicza, ile R$ dać graczowi: (0.005 * 0.60) / 0.025 = 0.12 R$
+const ADMOB_AVG_REVENUE_USD = 0.005;
+const ADMOB_PLAYER_SHARE = 0.60;
+const ROBUX_COST_USD = 0.025;
 const CALCULATED_REWARD_RS = (ADMOB_AVG_REVENUE_USD * ADMOB_PLAYER_SHARE) / ROBUX_COST_USD;
 
-// 1. Endpoint dla APLIKACJI MOBILNEJ
-// Apka przy starcie pyta ten adres, żeby na przycisku napisać "Obejrzyj za X R$"
 app.get('/api/admob-settings', (req, res) => {
     res.json({
         rewardAmount: parseFloat(CALCULATED_REWARD_RS.toFixed(2)),
@@ -917,7 +913,6 @@ app.get('/api/admob-settings', (req, res) => {
     });
 });
 
-// 2. Endpoint SSV DLA GOOGLE (Odbiera sygnał po obejrzeniu)
 app.get('/api/admob-reward', async (req, res) => {
     const { user_id, transaction_id } = req.query;
 
@@ -940,7 +935,6 @@ app.get('/api/admob-reward', async (req, res) => {
             return res.status(200).send('User not found'); 
         }
 
-        // Pobieramy automatycznie wyliczoną stawkę (teraz to 0.12 R$)
         const reward = parseFloat(CALCULATED_REWARD_RS.toFixed(2));
 
         user.points += reward;
