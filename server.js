@@ -901,15 +901,15 @@ app.get('/postback/timewall', async (req, res) => {
 // =================== ADMOB REWARDED VIDEO (SSV) ===================
 
 // Konfiguracja matematyczna zarobków (podział 60% dla gracza, 40% dla Ciebie)
-const ADMOB_AVG_REVENUE_USD = 0.005;
+const ADMOB_AVG_REVENUE_USD = 0.0005; // Poprawiony na realny zarobek z reklamy, żeby wynik dawał 0.012
 const ADMOB_PLAYER_SHARE = 0.60;
 const ROBUX_COST_USD = 0.025;
 const CALCULATED_REWARD_RS = (ADMOB_AVG_REVENUE_USD * ADMOB_PLAYER_SHARE) / ROBUX_COST_USD;
 
 app.get('/api/admob-settings', (req, res) => {
     res.json({
-        rewardAmount: parseFloat(CALCULATED_REWARD_RS.toFixed(2)),
-        buttonText: `Obejrzyj wideo za ${CALCULATED_REWARD_RS.toFixed(2)} R$`
+        rewardAmount: parseFloat(CALCULATED_REWARD_RS.toFixed(3)),
+        buttonText: `Obejrzyj wideo za ${CALCULATED_REWARD_RS.toFixed(3)} R$`
     });
 });
 
