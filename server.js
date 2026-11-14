@@ -103,6 +103,11 @@ app.post('/api/admin/verify', (req, res) => {
     else res.json({ success: false });
 });
 
+// Wystawienie pliku app-ads.txt dla botów Google
+app.get('/app-ads.txt', (req, res) => {
+  res.sendFile(path.join(__dirname, 'app-ads.txt'));
+});
+
 // --- ADMIN API ---
 const onlineUsersMap = new Map();
 
