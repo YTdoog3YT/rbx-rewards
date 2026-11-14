@@ -911,6 +911,16 @@ const ADMOB_PLAYER_SHARE = 0.60;
 const ROBUX_COST_USD = 0.025;
 const CALCULATED_REWARD_RS = (ADMOB_AVG_REVENUE_USD * ADMOB_PLAYER_SHARE) / ROBUX_COST_USD;
 
+// Konfiguracja aplikacji mobilnej (wymuszanie aktualizacji)
+app.get('/api/mobile-config', (req, res) => {
+    res.json({
+        // Wymagany versionCode. Zmień to na wyższą cyfrę, gdy wypuścisz dużą aktualizację
+        minVersionCode: 5, 
+        // Bezpośredni link do Twojej apki w sklepie na telefonie
+        playStoreUrl: 'market://details?id=com.rbxrewards.mobile'
+    });
+});
+
 app.get('/api/admob-settings', (req, res) => {
     res.json({
         rewardAmount: parseFloat(CALCULATED_REWARD_RS.toFixed(3)),
