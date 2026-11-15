@@ -1,5 +1,7 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType, ChannelType } = require('discord.js');
 
+const { hashPin, generatePin, isValidPin } = require('./pin-utils');
+
 // Twoje kanały
 const KANAL_PUBLICZNY_ID = "1566002632848449616";
 const KANAL_ADMIN_ID = "1548618275083264060";
@@ -264,6 +266,37 @@ module.exports = {
             } catch (err) {
                 console.error('[pomysły] tworzenie wątku:', err.message);
                 return interaction.editReply('❌ Nie udało się otworzyć wątku. Napisz do administracji.').catch(() => {});
+            }
+        });
+
+        // ===================== KOMENDA ADMINA: PIN GRACZA =====================
+        client.on('messageCreate', async message => {
+            if (message.author.bot) return;
+            const args = message.content.trim().split(/\s+/);
+            if (args[0].toLowerCase() !== '!ustawpin') return;
+            if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ Brak uprawnień, Szefie!');
+
+            const nick = args[1];
+            let pin = args[2];
+            if (!nick) return message.reply('⚠️ Użycie: `!ustawpin <nick> <6 cyfr>` (bez PIN-u wylosuję nowy).');
+            // wiadomość z PIN-em znika od razu (bot potrzebuje uprawnienia "Zarządzanie wiadomościami" na tym kanale)
+            await message.delete().catch(() => {});
+
+            if (pin && !isValidPin(pin)) return message.channel.send('❌ PIN musi mieć dokładnie 6 cyfr i nie może być zbyt prosty (np. 123456).');
+            if (!pin) pin = generatePin();
+            try {
+                const safe = nick.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const user = await dbModels.User.findOneAndUpdate(
+                    { username: new RegExp(`^${safe}$`, 'i') },
+                    { $set: { pinHash: await hashPin(pin), pinAttempts: 0, pinLockedUntil: null } },
+                    { new: true }
+                );
+                if (!user) return message.channel.send(`❌ Nie znaleziono gracza \`${nick}\`.`);
+                const reply = await message.channel.send(`✅ Ustawiono PIN dla **${user.username}**: ||${pin}|| (ta wiadomość zniknie za 60 s)`);
+                setTimeout(() => reply.delete().catch(() => {}), 60000);
+            } catch (err) {
+                console.error('[pin] ustawianie:', err.message);
+                message.channel.send('❌ Nie udało się ustawić PIN-u (błąd bazy).').catch(() => {});
             }
         });
 

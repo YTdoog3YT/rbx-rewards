@@ -300,7 +300,8 @@ const UserSchema = new mongoose.Schema({
     linkedPayPal: { type: String, default: null }, xp: { type: Number, default: 0 }, claimedLevels: { type: [Number], default: [] },
     dailyEarned: { type: Number, default: 0 }, lastEarnedDate: { type: String, default: "" }, lastWheelSpin: { type: Date, default: null },
     wheelStreak: { type: Number, default: 0 }, goals: [GoalSchema],
-    verified: { type: Boolean, default: false }, robloxName: { type: String, default: '' }, gaijinId: { type: String, default: '' }, discordName: { type: String, default: '' }
+    verified: { type: Boolean, default: false }, robloxName: { type: String, default: '' }, gaijinId: { type: String, default: '' }, discordName: { type: String, default: '' },
+    pinHash: { type: String, default: null }, pinAttempts: { type: Number, default: 0 }, pinLockedUntil: { type: Date, default: null }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -356,6 +357,130 @@ async function addXPAndDailyEarned(user, amount) {
     if (user.lastEarnedDate !== today) { user.dailyEarned = 0; user.lastEarnedDate = today; }
     user.dailyEarned += amount; user.xp += amount * 100;
 }
+
+// =================== LOGOWANIE PIN-em I SESJE ===================
+const { hashPin, verifyPin, isValidPin, generatePin } = require('./pin-utils');
+const SESSIONS = new Map();                       // token -> { username, expires }
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;       // sesja ważna maksymalnie 12 godzin
+const PIN_MAX_ATTEMPTS = 5;                       // tyle błędnych PIN-ów...
+const PIN_LOCK_MS = 15 * 60 * 1000;               // ...i konto blokuje się na 15 minut
+const NICK_RE = /^[A-Za-z0-9_]{3,20}$/;           // format nicku przy rejestracji (jak w Robloxie)
+const sleepMs = ms => new Promise(r => setTimeout(r, ms));
+
+function createSession(username) {
+    const token = crypto.randomBytes(32).toString('hex');
+    SESSIONS.set(token, { username, expires: Date.now() + SESSION_TTL_MS });
+    return token;
+}
+function getSession(req) {
+    const h = String(req.headers.authorization || '');
+    if (!h.startsWith('Bearer ')) return null;
+    const token = h.slice(7).trim();
+    const s = SESSIONS.get(token);
+    if (!s) return null;
+    if (s.expires < Date.now()) { SESSIONS.delete(token); return null; }
+    return { token, username: s.username };
+}
+setInterval(() => { const now = Date.now(); for (const [t, s] of SESSIONS) if (s.expires < now) SESSIONS.delete(t); }, 30 * 60 * 1000).unref();
+
+// Tożsamość gracza pochodzi z sesji, a nie z nicku wpisanego w żądaniu:
+// dla chronionych tras serwer podmienia nick na ten z sesji, więc nikt nie wejdzie na cudze konto.
+const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|bundles)\/([^/?]+)/;
+const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
+    '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw']);
+
+app.use((req, res, next) => {
+    const p = req.path;
+    if (!p.startsWith('/api/')) return next();
+    const m = req.method === 'GET' ? p.match(PROTECTED_GET_RE) : null;
+    const isProtected = (m && !(m[1] === 'bundles' && m[2] === 'offers')) || (req.method === 'POST' && PROTECTED_POST.has(p));
+    if (!isProtected) return next();
+    const s = getSession(req);
+    if (!s) return res.status(401).json({ error: 'Sesja wygasła. Zaloguj się ponownie.', code: 'SESSION' });
+    if (m) req.url = req.url.replace(PROTECTED_GET_RE, (all, name) => `/api/${name}/${encodeURIComponent(s.username)}`);
+    else { req.body = req.body || {}; req.body.username = s.username; }
+    next();
+});
+
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const username = String(req.body.username || '').trim();
+        const pin = String(req.body.pin || '').trim();
+        if (!NICK_RE.test(username)) return res.status(400).json({ error: 'Nick: 3–20 znaków, tylko litery, cyfry i _ (jak w Robloxie).' });
+        if (!isValidPin(pin)) return res.status(400).json({ error: 'PIN musi mieć dokładnie 6 cyfr i nie może być zbyt prosty (np. 123456).' });
+        const pinHash = await hashPin(pin);
+        const taken = { error: 'Ten nick jest już zajęty. Jeśli to Twoje konto, zaloguj się. Jeśli nie znasz PIN-u, napisz do administracji na Discordzie.' };
+
+        const existing = await findUserCI(username);
+        if (existing) {
+            const hasStuff = (existing.points || 0) !== 0 || (existing.xp || 0) > 0;
+            if (existing.pinHash || hasStuff) return res.status(409).json(taken);
+            // pusta "skorupa" bez PIN-u (np. założona przez postback) - można ją przejąć
+            const claimed = await User.findOneAndUpdate({ _id: existing._id, pinHash: null }, { $set: { pinHash } }, { new: true });
+            if (!claimed) return res.status(409).json(taken);
+            return res.json({ success: true, token: createSession(claimed.username), username: claimed.username });
+        }
+        const user = await new User({ username, points: 0, pinHash }).save();
+        // zabezpieczenie przed dwiema jednoczesnymi rejestracjami tego samego nicku
+        const all = await User.find({ username: new RegExp(`^${escapeRegex(username)}$`, 'i') }).select('_id').sort({ _id: 1 }).lean();
+        if (all.length > 1 && String(all[0]._id) !== String(user._id)) { await User.deleteOne({ _id: user._id }); return res.status(409).json(taken); }
+        return res.json({ success: true, token: createSession(user.username), username: user.username });
+    } catch (e) { console.error('[auth] rejestracja:', e.message); return res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const FAIL = { error: 'Nieprawidłowy nick lub PIN.' };
+    try {
+        const username = String(req.body.username || '').trim().slice(0, 64);
+        const pin = String(req.body.pin || '').trim();
+        if (!username || !/^\d{6}$/.test(pin)) { await sleepMs(300); return res.status(401).json(FAIL); }
+        const user = await findUserCI(username);
+        if (!user || !user.pinHash) { await sleepMs(300); return res.status(401).json(FAIL); }
+
+        const now = new Date();
+        if (user.pinLockedUntil && user.pinLockedUntil > now) {
+            const min = Math.ceil((user.pinLockedUntil - now) / 60000);
+            return res.status(429).json({ error: `Zbyt wiele błędnych prób. Konto jest zablokowane jeszcze ok. ${min} min.` });
+        }
+        if (user.pinLockedUntil) await User.updateOne({ _id: user._id }, { $set: { pinAttempts: 0, pinLockedUntil: null } });
+
+        // atomowo zajmij jedną z dozwolonych prób (równoległe zgadywanie nic nie da)
+        const claimed = await User.findOneAndUpdate(
+            { _id: user._id, $or: [{ pinAttempts: { $lt: PIN_MAX_ATTEMPTS } }, { pinAttempts: { $exists: false } }] },
+            { $inc: { pinAttempts: 1 } }, { new: true }
+        );
+        if (!claimed) {
+            await User.updateOne({ _id: user._id }, { $set: { pinLockedUntil: new Date(Date.now() + PIN_LOCK_MS) } });
+            return res.status(429).json({ error: 'Zbyt wiele błędnych prób. Konto zablokowane na 15 minut.' });
+        }
+
+        const ok = await verifyPin(pin, claimed.pinHash);
+        if (!ok) {
+            if (claimed.pinAttempts >= PIN_MAX_ATTEMPTS) await User.updateOne({ _id: user._id }, { $set: { pinLockedUntil: new Date(Date.now() + PIN_LOCK_MS) } });
+            await sleepMs(300);
+            return res.status(401).json({ error: `Nieprawidłowy nick lub PIN. Pozostało prób: ${Math.max(0, PIN_MAX_ATTEMPTS - claimed.pinAttempts)}.` });
+        }
+        await User.updateOne({ _id: user._id }, { $set: { pinAttempts: 0, pinLockedUntil: null } });
+        return res.json({ success: true, token: createSession(user.username), username: user.username });
+    } catch (e) { console.error('[auth] logowanie:', e.message); return res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+    const s = getSession(req);
+    if (s) SESSIONS.delete(s.token);
+    res.json({ success: true });
+});
+
+// istniejące konta (z saldem lub XP) dostają losowy PIN, którego nikt nie zna; admin ustawia właściwy komendą !ustawpin na Discordzie
+async function assignRandomPinsToOldAccounts() {
+    try {
+        const users = await User.find({ pinHash: null, $or: [{ points: { $ne: 0 } }, { xp: { $gt: 0 } }] }).select('_id').lean();
+        for (const u of users) await User.updateOne({ _id: u._id, pinHash: null }, { $set: { pinHash: await hashPin(generatePin()) } });
+        if (users.length) console.log(`[auth] ${users.length} istniejących kont dostało losowy PIN (admin ustawia właściwy komendą !ustawpin)`);
+    } catch (e) { console.error('[auth] migracja PIN-ów:', e.message); }
+}
+if (mongoose.connection.readyState === 1) assignRandomPinsToOldAccounts();
+else mongoose.connection.once('open', assignRandomPinsToOldAccounts);
 
 const POSTBACK_KEY = process.env.POSTBACK_KEY || '';
 const POSTBACK_ENFORCE = process.env.POSTBACK_ENFORCE === 'true';
