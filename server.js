@@ -1028,6 +1028,40 @@ app.get('/postback/timewall', async (req, res) => {
     }
 });
 
+// =================== WERYFIKACJA PODPISU ADMOB (SSV) ===================
+let admobKeysCache = { keys: {}, fetchedAt: 0 };
+
+async function loadAdmobKeys() {
+    const res = await fetch('https://www.gstatic.com/admob/reward/verifier-keys.json');
+    if (!res.ok) throw new Error('Nie udalo sie pobrac kluczy AdMob: ' + res.status);
+    const data = await res.json();
+    const keys = {};
+    for (const k of (data.keys || [])) keys[String(k.keyId)] = k.pem;
+    admobKeysCache = { keys, fetchedAt: Date.now() };
+}
+
+async function verifyAdmobSignature(originalUrl, fetchKeys = loadAdmobKeys) {
+    const queryString = String(originalUrl).split('?')[1] || '';
+    const sigIndex = queryString.indexOf('&signature=');
+    if (sigIndex === -1) return false;
+
+    const dataToVerify = queryString.substring(0, sigIndex);
+    const params = new URLSearchParams(queryString.substring(sigIndex + 1));
+    const signature = params.get('signature');
+    const keyId = params.get('key_id');
+    if (!signature || !keyId) return false;
+
+    const cacheOld = Date.now() - admobKeysCache.fetchedAt > 24 * 60 * 60 * 1000;
+    if (cacheOld || !admobKeysCache.keys[keyId]) await fetchKeys();
+    const pem = admobKeysCache.keys[keyId];
+    if (!pem) return false;
+
+    const sigBase64 = signature.replace(/-/g, '+').replace(/_/g, '/');
+    const verifier = crypto.createVerify('SHA256');
+    verifier.update(dataToVerify);
+    return verifier.verify(pem, Buffer.from(sigBase64, 'base64'));
+}
+
 // =================== ADMOB REWARDED VIDEO (SSV) ===================
 
 // Konfiguracja matematyczna zarobków (podział 60% dla gracza, 40% dla Ciebie)
@@ -1054,6 +1088,15 @@ app.get('/api/admob-settings', (req, res) => {
 });
 
 app.get('/api/admob-reward', async (req, res) => {
+    try {
+        if (!(await verifyAdmobSignature(req.originalUrl))) {
+            console.warn('[AdMob SSV] Odrzucono: zly podpis');
+            return res.status(403).send('Invalid signature');
+        }
+    } catch (e) {
+        console.error('[AdMob SSV] Blad weryfikacji:', e.message);
+        return res.status(500).send('Verification error');
+    }
     const { user_id, transaction_id } = req.query;
 
     if (!user_id || !transaction_id) {
