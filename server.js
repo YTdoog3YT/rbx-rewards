@@ -713,7 +713,7 @@ app.post('/api/spin-wheel', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-app.get('/api/latest-earners', async (req, res) => { try { res.json(await Earning.find({ source: { $in: ['Survey', 'Promo', 'LevelUp', 'Spinner', 'Wheel'] } }).sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
+app.get('/api/latest-earners', async (req, res) => { try { res.json(await Earning.find({ source: { $in: ['Survey', 'Promo', 'LevelUp', 'Spinner', 'Wheel', 'AdMob Video'] } }).sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
 app.get('/api/latest-payouts', async (req, res) => { try { res.json(await Payout.find({ status: 'Completed' }).select('username pointsWithdrawn createdAt').sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
 app.get('/api/leaderboard', async (req, res) => {
     try {
