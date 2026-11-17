@@ -35,9 +35,9 @@ module.exports = {
 
             let response = "";
             if (command === 'strona' || command === 'rbx') {
-                response = "💎 Odbieraj darmowe Robuxy za granie w gry i ankiety! Wbijaj na: https://rbx-rewards.onrender.com";
+                response = "💎 Odbieraj darmowe Robuxy za granie w gry i ankiety! Wbijaj na: https://rbx-rewards.pl/";
             } else if (command === 'discord' || command === 'dc') {
-                response = "👾 Dołącz do naszej armii na Discordzie! Kliknij tutaj: https://discord.gg/49EwqEsFTJ";
+                response = "👾 Dołącz do naszej armii na Discordzie! Kliknij tutaj: https://discord.gg/ca8a9e33ke";
             } else if (command === 'pomoc' || command === 'komendy') {
                 response = "🛠️ Dostępne komendy: !strona, !discord, !yt";
             } else if (command === 'yt' || command === 'youtube') {
