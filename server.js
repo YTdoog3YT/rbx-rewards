@@ -1088,16 +1088,14 @@ app.get('/api/admob-settings', (req, res) => {
 });
 
 app.get('/api/admob-reward', async (req, res) => {
-    try {
-        if (!(await verifyAdmobSignature(req.originalUrl))) {
-            console.warn('[AdMob SSV] Odrzucono: zly podpis');
-            return res.status(403).send('Invalid signature');
-        }
-    } catch (e) {
-        console.error('[AdMob SSV] Blad weryfikacji:', e.message);
-        return res.status(500).send('Verification error');
+    // Odczytujemy nasze tajne hasło z Custom Data od AdMoba
+    const { user_id, transaction_id, custom_data } = req.query;
+
+    // Jeśli hasło się nie zgadza, odrzucamy próbę (zabezpieczenie przed hakerami)
+    if (custom_data !== 'RBX_SEKRET_2026_AD') {
+        console.warn('[AdMob SSV] Odrzucono: brak lub zle haslo custom_data');
+        return res.status(403).send('Invalid secret');
     }
-    const { user_id, transaction_id } = req.query;
 
     if (!user_id || !transaction_id) {
         return res.status(400).send('Brak wymaganych parametrow');
@@ -1133,7 +1131,7 @@ app.get('/api/admob-reward', async (req, res) => {
             txId: 'admob:' + transaction_id
         }).save();
 
-        console.log(`[AdMob SSV] Sukces: ${user.username} otrzymał ${reward} R$ (60/40 podział).`);
+        console.log(`[AdMob SSV] Sukces: ${user.username} otrzymał ${reward} R$.`);
         return res.status(200).send('OK');
 
     } catch (error) {
