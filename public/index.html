@@ -42,7 +42,7 @@
     .btn-login, .btn-withdraw, .btn-logout { width: auto; padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; height: 38px; }
     .btn-login { color: #000; background: #00e676; } .btn-login:hover { background: #00c853; }
     .btn-withdraw { color: #000; background: #ffb703; } .btn-withdraw:hover { background: #ff9e00; }
-    .btn-logout { color: #fff; background: #ff3333; display: none; } .btn-logout:hover { background: #cc0000; }
+    .btn-logout { color: #a0a0b0; background: #2a2e39; border: 1px solid #333947; display: none; } .btn-logout:hover { background: #333947; color: #fff; }
     body.on-home-tab .points-badge { display: none !important; }
     
     .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e0e0e0; border-left: 4px solid #00e676; padding-left: 10px; text-align: left; }
@@ -455,8 +455,14 @@
           </div>
       </main>
 
-      <!-- ZAKŁADKA EARN -->
+<!-- ZAKŁADKA EARN -->
       <main id="tab-earn" style="display: none;">
+        
+        <!-- WIDGET DISCORDA -->
+        <div style="margin-bottom: 20px; text-align: center;">
+            <iframe src="https://discord.com/api/guilds/1543214998812102718/widget.json" width="100%" height="50" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+        </div>
+
         <div class="ticker-wrap" style="width: 100%; clear: both;">
           <div class="ticker-title" data-lang="liveEarners">🔥 Live Activity</div>
           <div class="ticker-container"><div class="ticker-move" id="liveTicker"><div class="ticker-item" data-lang="loadingStats">Loading live stats...</div></div></div>
@@ -1010,19 +1016,19 @@ const theoremReachApiKey = "23948d93f92a592c17bcff445d16";
 offerwallSection.innerHTML = `
               <h3 style="color: #00e676; margin-bottom: 5px;" data-lang="chooseOfferwall">🚀 Choose a Quest Wall</h3>
               <p style="color: #a0a0b0; font-size: 0.9rem; margin-bottom: 15px;" data-lang="offerDesc">Select a partner wall below to start collecting R$ points.</p>
-              <div class="offerwalls-grid">
+<div class="offerwalls-grid">
                   <div class="offer-card" onclick="openOfferwall('CPX', 'CPX Research')">
-                      <div class="badge badge-hot">HOT 🔥</div>
+                      <div class="badge badge-hot" style="background: #00e676; color: #000;">HOT</div>
                       <img src="cpx-logo.png" alt="Partner Wall" class="offer-logo">
                       <h3>CPX Research</h3><p data-lang="cpxDesc">High-reward partner quizzes</p>
                   </div>
                   <div class="offer-card" onclick="openOfferwall('THEOREMREACH', 'TheoremReach')">
-                      <div class="badge badge-hot" style="background: #9d4edd;">EASY 🚀</div>
+                      <div class="badge badge-hot" style="background: #5865F2;">EASY</div>
                       <div class="card-icon">📋</div>
                       <h3>TheoremReach</h3><p data-lang="trDesc">Fast & easy interactive tasks</p>
                   </div>
-                  <div id="twCard" class="offer-card offer-card-featured" onclick="openOfferwall('TIMEWALL', 'TimeWall')">
-                      <div class="badge badge-best">BEST 🏆</div>
+                  <div id="twCard" class="offer-card offer-card-featured" style="border-color: #00e676; box-shadow: none;" onclick="openOfferwall('TIMEWALL', 'TimeWall')">
+                      <div class="badge badge-best" style="background: #00e676; color: #000;">BEST</div>
                       <div class="card-icon">⏱️</div>
                       <h3>TimeWall</h3><p data-lang="twDesc">Our top pick: tasks, surveys & games</p>
                   </div>
@@ -2162,7 +2168,7 @@ else if (item.source === 'Admin') {
             payouts.forEach(p => {
                 const date = new Date(p.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const rawPts = p.pointsWithdrawn !== undefined ? p.pointsWithdrawn : p.points; const pts = parseFloat(rawPts) || 0;
-                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td><td style="color: #ffb703; font-weight: bold;">-${pts.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
+                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td><td style="color: #00e676; font-weight: bold;">+${pts.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
             });
             tbody.innerHTML = html;
         } catch (error) {}
