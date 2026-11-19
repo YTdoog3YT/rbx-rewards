@@ -687,19 +687,61 @@
         </div>
       </main>
 
-      <!-- ZAKŁADKA PROMOCODES -->
-      <main id="tab-promocodes" style="display: none;">
-        <h2 class="section-title" data-lang="promoTitle">Redeem Promo Codes</h2>
+<!-- ZAKŁADKA REFERRALS -->
+      <main id="tab-referrals" style="display: none;">
+        <h2 class="section-title" data-lang="refTitle">Invite Friends & Get +15% Bonus</h2>
         <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="gotCode">Got a Code?</h3>
-          <input type="text" id="promoCodeInput" data-lang-placeholder="phPromoCode" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
-          <br><button class="btn-action" onclick="submitPromoCode()" data-lang="btnRedeem">Redeem Code</button>
+          <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="refInfo">Your Referral Info</h3>
+          <p style="color: #a0a0b0; margin-bottom: 15px;" data-lang="refDesc">Share your custom link with friends! You will receive a 15% lifetime bonus from all quest points they collect!</p>
+          <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
+              <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-word;">Log in first</span>
+              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
+          </div>
+          <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
+              <div style="text-align: left;">
+                  <div style="color: #a0a0b0; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px;" data-lang="refMyCodeLabel">Your referral code</div>
+                  <span id="myRefCodeDisplay" style="font-size: 1.3rem; font-weight: bold; color: #ffb703; word-break: break-word;">Log in first</span>
+                  <div style="color: #a0a0b0; font-size: 0.8rem; margin-top: 6px;" data-lang="refMyCodeHint">Friends can enter this code in the field below instead of using your link.</div>
+              </div>
+              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefCode()" data-lang="btnCopy">📋 Copy</button>
+          </div>
+          <div id="referredByBox" style="display: none; background: #0f1115; padding: 14px 15px; border-radius: 8px; border: 1px solid #2a2e39; margin-bottom: 15px; text-align: left;">
+              <span style="color: #a0a0b0; font-size: 0.85rem;" data-lang="refReferredBy">You were referred by</span>
+              <div id="referredByName" style="font-size: 1.2rem; font-weight: bold; color: #00e676; word-break: break-word;"></div>
+          </div>
+          <div id="redeemCodeSection" style="border-top: 1px solid #2a2e39; padding-top: 20px; margin-top: 10px;">
+              <input type="text" id="friendCodeInput" data-lang-placeholder="phFriendCode" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
+              <br><button class="btn-action" style="margin-top: 5px;" onclick="submitReferralCode()" data-lang="btnRedeem">Redeem</button>
+          </div>
         </div>
+
         <div class="content-box">
+            <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
+                <option value="today">Dzisiaj</option>
+                <option value="yesterday">Wczoraj</option>
+                <option value="7days" selected>Ostatnie 7 Dni</option>
+                <option value="30days">Ostatni Miesiąc</option>
+                <option value="alltime">Zawsze</option>
+            </select>
+
+            <div style="background: #14171d; border: 1px solid #333947; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                <p style="color: #a0a0a0; font-weight: bold; text-transform: uppercase;">Zarobiono w tym okresie</p>
+                <h1 id="totalRefCommission" style="color: #00e676; font-size: 3rem; margin-top: 10px;">0.00 R$</h1>
+            </div>
+
+            <h3 style="color: #ffb703; margin-bottom: 10px; text-align: left;">Zarobki innych graczy dla Ciebie</h3>
+            <div class="ref-table-container" style="margin-bottom: 30px;">
+                <table class="ref-table">
+                    <thead><tr><th>Data</th><th>Polecony (Kto zarobił)</th><th>Twój Zysk (+15%)</th></tr></thead>
+                    <tbody id="refTableBody1"><tr><td colspan="3" style="text-align: center; color: #888;">Ładowanie...</td></tr></tbody>
+                </table>
+            </div>
+
+            <h3 style="color: #ff3333; margin-bottom: 10px; text-align: left;">Twoje zarobki oddane dla innej osoby</h3>
             <div class="ref-table-container">
                 <table class="ref-table">
-                    <thead><tr><th>Date</th><th>Code</th><th data-lang="tableAmount">Reward</th></tr></thead>
-                    <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;">No actions yet!</td></tr></tbody>
+                    <thead><tr><th>Data</th><th>Ty Zarobiłeś</th><th>Oddałeś (+15%)</th></tr></thead>
+                    <tbody id="refTableBody2"><tr><td colspan="3" style="text-align: center; color: #888;">Ładowanie...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -2078,19 +2120,32 @@ let currentGoalMode = 'robux';
         } catch (error) { alert("Error"); }
     }
 
-    async function loadReferralStats() {
+async function loadReferralStats() {
         const username = localStorage.getItem("rbx_username"); if (!username) return;
-        const filterEl = document.getElementById("refFilterSelect"); const tableBody = document.getElementById("refTableBody"); if (!filterEl || !tableBody) return;
-        const period = filterEl.value; tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        const filterEl = document.getElementById("refFilterSelect"); 
+        const tableBody1 = document.getElementById("refTableBody1"); 
+        const tableBody2 = document.getElementById("refTableBody2"); 
+        if (!filterEl || !tableBody1 || !tableBody2) return;
+        const period = filterEl.value; 
+        tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
         try {
             const response = await fetch(`/api/referral-stats/${username}?period=${period}`); const stats = await response.json();
-            const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
-            if (!stats || stats.length === 0) tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #ffb703;">${translations[tLang].historyEmpty || "No actions yet!"}</td></tr>`;
+            
+            document.getElementById('totalRefCommission').innerText = `+${stats.totalMyCommission.toFixed(2)} R$`;
+
+            if (!stats.myReferralsEarnedForMe || stats.myReferralsEarnedForMe.length === 0) tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Brak akcji w tym okresie.</td></tr>`;
             else {
-                let rows = ''; stats.forEach(user => { const e = parseFloat(user.earned) || 0; rows += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(user.username)}</td><td style="color: #00e676; font-weight: bold;">+${e.toFixed(2)} R$</td></tr>`; });
-                tableBody.innerHTML = rows;
+                let rows = ''; stats.myReferralsEarnedForMe.forEach(item => { rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">👤 ${escHtml(item.username)}</td><td style="color: #00e676; font-weight: bold;">+${item.commission.toFixed(2)} R$</td></tr>`; });
+                tableBody1.innerHTML = rows;
             }
-        } catch (error) { tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: red;">Error</td></tr>`; }
+
+            if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Brak akcji w tym okresie.</td></tr>`;
+            else {
+                let rows = ''; stats.iEarnedForReferrer.forEach(item => { rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">+${item.myEarning.toFixed(2)} R$</td><td style="color: #ff3333; font-weight: bold;">-${item.commissionSent.toFixed(2)} R$</td></tr>`; });
+                tableBody2.innerHTML = rows;
+            }
+        } catch (error) { tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; }
     }
 
     async function loadPromoHistory() {

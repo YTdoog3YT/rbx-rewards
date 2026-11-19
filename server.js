@@ -940,14 +940,75 @@ app.post('/api/redeem-code', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
+// --- HISTORIA DLA MOBILE ---
+app.get('/api/history/:username', async (req, res) => {
+    try { 
+        const safe = escapeRegex(req.params.username); 
+        const regex = new RegExp(`^${safe}$`, 'i'); 
+        const earnings = await Earning.find({ username: regex }).lean(); 
+        const payouts = await Payout.find({ username: regex }).select('pointsWithdrawn usdAmount status createdAt').lean(); 
+        const combined = [...earnings.map(e => ({ ...e, recordType: 'earning' })), ...payouts.map(p => ({ ...p, recordType: 'payout' }))]; 
+        combined.sort((a, b) => b.createdAt - a.createdAt); 
+        
+        const historyMap = combined.slice(0, 100).map(item => {
+            const dateStr = new Date(item.createdAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            let amt = item.recordType === 'payout' ? -(item.pointsWithdrawn || 0) : (item.amount || 0);
+            return { date: dateStr, amount: amt.toFixed(2), source: item.source };
+        });
+        res.json({ history: historyMap }); 
+    } catch (error) { res.status(500).json({ error: "Error" }); }
+});
+
+// --- NOWE ZAROBKI POLECONYCH (Z FILTRAMI) ---
 app.get('/api/referral-stats/:username', async (req, res) => {
     try {
-        const safe = escapeRegex(req.params.username); const period = req.query.period || '7days'; let startDate = new Date(0); let endDate = new Date(); const now = new Date();
-        if (period === 'today') { startDate = getPolandMidnight(); } else if (period === '7days') { startDate = new Date(now.setDate(now.getDate() - 7)); } else if (period === '30days') { startDate = new Date(now.setDate(now.getDate() - 30)); }
-        const referredDocs = await User.find({ referredBy: new RegExp(`^${safe}$`, 'i') }); const referredUsernames = referredDocs.map(u => u.username); if (referredUsernames.length === 0) return res.json([]);
-        const earnings = await Earning.aggregate([{ $match: { username: { $in: referredUsernames }, createdAt: { $gte: startDate, $lte: endDate }, source: 'Survey' } }, { $group: { _id: "$username", totalEarned: { $sum: "$amount" } } }]);
-        const finalStats = referredUsernames.map(ru => { const found = earnings.find(e => e._id === ru); return { username: ru, earned: found ? found.totalEarned * 0.15 : 0 }; }); finalStats.sort((a, b) => b.earned - a.earned); res.json(finalStats); 
-    } catch (error) { res.json([]); }
+        const safe = escapeRegex(req.params.username); const period = req.query.period || '7days'; 
+        let startDate = new Date(0); const now = new Date();
+        
+        if (period === 'today') { startDate = getPolandMidnight(); } 
+        else if (period === 'yesterday') { startDate = getPolandMidnight(); startDate.setDate(startDate.getDate() - 1); }
+        else if (period === '7days') { startDate = new Date(now.setDate(now.getDate() - 7)); } 
+        else if (period === '30days') { startDate = new Date(now.setDate(now.getDate() - 30)); }
+        
+        let endDate = new Date();
+        if (period === 'yesterday') { endDate = getPolandMidnight(); }
+
+        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
+        if (!user) return res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0 });
+
+        // 1. ZAROBILI DLA CIEBIE
+        const myReferralsEarnedForMe = await Earning.find({ username: user.username, source: 'Referral', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
+        
+        let totalCommission = 0;
+        const myRefList = myReferralsEarnedForMe.map(e => {
+            totalCommission += e.amount;
+            return {
+                date: new Date(e.createdAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                username: e.details,
+                commission: e.amount
+            }
+        });
+
+        // 2. TWÓJ UROBEK DLA POLECAJĄCEGO
+        const iEarnedForReferrer = [];
+        if (user.referredBy) {
+            const myRawSurveys = await Earning.find({ username: user.username, source: 'Survey', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
+            myRawSurveys.forEach(e => {
+                iEarnedForReferrer.push({
+                    date: new Date(e.createdAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                    myEarning: e.amount,
+                    commissionSent: parseFloat((e.amount * 0.15).toFixed(2))
+                });
+            });
+        }
+
+        res.json({
+            totalMyCommission: parseFloat(totalCommission.toFixed(2)),
+            myReferralsEarnedForMe: myRefList.slice(0, 10), // TOP 10 z historii
+            iEarnedForReferrer: iEarnedForReferrer.slice(0, 10) // TOP 10 z historii
+        });
+
+    } catch (error) { res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0 }); }
 });
 
 // =================== TIMEWALL ===================
