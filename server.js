@@ -239,17 +239,14 @@ app.post('/api/admin/create-code', isAdmin, async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd dodawania kodu. Kod już istnieje?' }); }
 });
 
-// Pobieranie aktywnych kodów dla panelu admina
 app.get('/api/admin/promo-codes', isAdmin, async (req, res) => {
     try {
         const codes = await PromoCode.find({}).sort({ _id: -1 });
-        // Automatycznie odrzucamy te, które w pełni wygasły (currentUses >= maxUses)
         const activeCodes = codes.filter(c => c.currentUses < c.maxUses);
         res.json(activeCodes);
     } catch (e) { res.status(500).json([]); }
 });
 
-// Usuwanie kodu przez admina
 app.post('/api/admin/delete-code', isAdmin, async (req, res) => {
     try {
         const { codeId } = req.body;
@@ -337,11 +334,11 @@ async function addXPAndDailyEarned(user, amount) {
 
 // =================== LOGOWANIE PIN-em I SESJE ===================
 const { hashPin, verifyPin, isValidPin, generatePin } = require('./pin-utils');
-const SESSIONS = new Map();                       // token -> { username, expires }
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000;       // sesja ważna maksymalnie 12 godzin
-const PIN_MAX_ATTEMPTS = 5;                       // tyle błędnych PIN-ów...
-const PIN_LOCK_MS = 15 * 60 * 1000;               // ...i konto blokuje się na 15 minut
-const NICK_RE = /^[A-Za-z0-9_]{3,20}$/;           // format nicku przy rejestracji (jak w Robloxie)
+const SESSIONS = new Map();
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const PIN_MAX_ATTEMPTS = 5;
+const PIN_LOCK_MS = 15 * 60 * 1000;
+const NICK_RE = /^[A-Za-z0-9_]{3,20}$/;
 const sleepMs = ms => new Promise(r => setTimeout(r, ms));
 
 function createSession(username) {
@@ -360,8 +357,6 @@ function getSession(req) {
 }
 setInterval(() => { const now = Date.now(); for (const [t, s] of SESSIONS) if (s.expires < now) SESSIONS.delete(t); }, 30 * 60 * 1000).unref();
 
-// Tożsamość gracza pochodzi z sesji, a nie z nicku wpisanego w żądaniu:
-// dla chronionych tras serwer podmienia nick na ten z sesji, więc nikt nie wejdzie na cudze konto.
 const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|bundles)\/([^/?]+)/;
 const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
     '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw']);
@@ -392,13 +387,11 @@ app.post('/api/auth/register', async (req, res) => {
         if (existing) {
             const hasStuff = (existing.points || 0) !== 0 || (existing.xp || 0) > 0;
             if (existing.pinHash || hasStuff) return res.status(409).json(taken);
-            // pusta "skorupa" bez PIN-u (np. założona przez postback) - można ją przejąć
             const claimed = await User.findOneAndUpdate({ _id: existing._id, pinHash: null }, { $set: { pinHash } }, { new: true });
             if (!claimed) return res.status(409).json(taken);
             return res.json({ success: true, token: createSession(claimed.username), username: claimed.username });
         }
         const user = await new User({ username, points: 0, pinHash }).save();
-        // zabezpieczenie przed dwiema jednoczesnymi rejestracjami tego samego nicku
         const all = await User.find({ username: new RegExp(`^${escapeRegex(username)}$`, 'i') }).select('_id').sort({ _id: 1 }).lean();
         if (all.length > 1 && String(all[0]._id) !== String(user._id)) { await User.deleteOne({ _id: user._id }); return res.status(409).json(taken); }
         return res.json({ success: true, token: createSession(user.username), username: user.username });
@@ -421,14 +414,13 @@ app.post('/api/auth/login', async (req, res) => {
         }
         if (user.pinLockedUntil) await User.updateOne({ _id: user._id }, { $set: { pinAttempts: 0, pinLockedUntil: null } });
 
-        // atomowo zajmij jedną z dozwolonych prób (równoległe zgadywanie nic nie da)
         const claimed = await User.findOneAndUpdate(
             { _id: user._id, $or: [{ pinAttempts: { $lt: PIN_MAX_ATTEMPTS } }, { pinAttempts: { $exists: false } }] },
             { $inc: { pinAttempts: 1 } }, { new: true }
         );
         if (!claimed) {
             await User.updateOne({ _id: user._id }, { $set: { pinLockedUntil: new Date(Date.now() + PIN_LOCK_MS) } });
-            return res.status(429).json({ error: 'Zbyt wiele błędnych prób. Konto zablokowane na 15 minut.' });
+            return res.status(429).json({ error: 'Zbyt wiele błędnych prób. Konto zablokowane на 15 minut.' });
         }
 
         const ok = await verifyPin(pin, claimed.pinHash);
@@ -448,12 +440,11 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ success: true });
 });
 
-// istniejące konta (z saldem lub XP) dostają losowy PIN, którego nikt nie zna; admin ustawia właściwy komendą !ustawpin na Discordzie
 async function assignRandomPinsToOldAccounts() {
     try {
         const users = await User.find({ pinHash: null, $or: [{ points: { $ne: 0 } }, { xp: { $gt: 0 } }] }).select('_id').lean();
         for (const u of users) await User.updateOne({ _id: u._id, pinHash: null }, { $set: { pinHash: await hashPin(generatePin()) } });
-        if (users.length) console.log(`[auth] ${users.length} istniejących kont dostało losowy PIN (admin ustawia właściwy komendą !ustawpin)`);
+        if (users.length) console.log(`[auth] ${users.length} istniejących kont dostało losowy PIN`);
     } catch (e) { console.error('[auth] migracja PIN-ów:', e.message); }
 }
 if (mongoose.connection.readyState === 1) assignRandomPinsToOldAccounts();
@@ -543,7 +534,6 @@ app.all('/api/theoremreach-postback/:key?', async (req, res) => {
     const reward = parseFloat(q.reward);
     const txId = String(q.tx_id || '').trim();
     const isReversal = String(q.reversal) === 'true';
-    console.log('[TR postback]', { uid, reward, tx_id: txId, reversal: q.reversal, debug: q.debug });
 
     if (!postbackAllowed(req.params.key, 'TheoremReach')) return res.status(403).send('0');
     if (String(q.debug) === 'true') return res.status(200).send('1');
@@ -619,7 +609,6 @@ app.post('/api/claim-level', async (req, res) => {
         const lvlData = LEVEL_THRESHOLDS[level];
         if (!Number.isInteger(level) || !lvlData) return res.status(400).json({ error: 'Nie możesz odebrać tego poziomu.' });
 
-        // atomowo: tylko jeśli poziom nie był jeszcze odebrany i gracz ma wystarczająco XP
         const updated = await User.findOneAndUpdate(
             { _id: user._id, claimedLevels: { $ne: level }, xp: { $gte: lvlData.xp } },
             { $push: { claimedLevels: level }, $inc: { points: lvlData.reward } },
@@ -654,7 +643,6 @@ app.post('/api/spin-wheel', async (req, res) => {
         const rand = Math.random() * 100; let reward = 0.1;
         if (rand <= 1) reward = 2.5; else if (rand <= 5) reward = 1.0; else if (rand <= 20) reward = 0.5; else if (rand <= 55) reward = 0.2;
 
-        // atomowo: tylko jeden obrót, nawet przy wielu równoległych żądaniach
         const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
         const updated = await User.findOneAndUpdate(
             { _id: user._id, $or: [{ lastWheelSpin: null }, { lastWheelSpin: { $lte: cutoff } }] },
@@ -676,10 +664,6 @@ app.get('/api/leaderboard', async (req, res) => {
         if (period !== 'alltime') { let startDate = new Date(); if (period === 'today') startDate = getPolandMidnight(); else if (period === '7days') startDate.setDate(now.getDate() - 7); else if (period === '30days') startDate.setDate(now.getDate() - 30); else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1); matchStage.createdAt = { $gte: startDate }; }
         const leaderboard = await Earning.aggregate([{ $match: matchStage }, { $group: { _id: "$username", earned: { $sum: "$amount" } } }, { $sort: { earned: -1 } }, { $limit: 100 }, { $project: { _id: 0, username: "$_id", earned: 1 } }]); res.json(leaderboard);
     } catch (error) { res.status(500).json({ error: "Błąd podczas ładowania rankingu." }); }
-});
-
-app.get('/api/earning-history/:username', async (req, res) => {
-    try { const safe = escapeRegex(req.params.username); const regex = new RegExp(`^${safe}$`, 'i'); const earnings = await Earning.find({ username: regex }).lean(); const payouts = await Payout.find({ username: regex }).select('pointsWithdrawn usdAmount status createdAt').lean(); const combined = [...earnings.map(e => ({ ...e, recordType: 'earning' })), ...payouts.map(p => ({ ...p, recordType: 'payout' }))]; combined.sort((a, b) => b.createdAt - a.createdAt); res.json(combined.slice(0, 100)); } catch (error) { res.status(500).json({ error: "Error" }); }
 });
 
 app.get('/api/inbox/:username', async (req, res) => {
@@ -739,6 +723,8 @@ app.post('/api/withdraw', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
+// --- KODY PROMOCYJNE I POLECENIA ---
+
 app.post('/api/redeem-promo', async (req, res) => {
     const username = String(req.body.username || '').trim();
     const promoCode = String(req.body.promoCode || '').trim();
@@ -748,7 +734,6 @@ app.post('/api/redeem-promo', async (req, res) => {
         if (!user) user = await new User({ username, points: 0 }).save();
         const key = user.username.toLowerCase();
 
-        // atomowo: zajmij jedno użycie kodu
         const promo = await PromoCode.findOneAndUpdate(
             { code: promoCode.toUpperCase(), usedBy: { $ne: key }, $expr: { $lt: ['$currentUses', '$maxUses'] } },
             { $inc: { currentUses: 1 }, $push: { usedBy: key } },
@@ -797,7 +782,6 @@ app.post('/api/redeem-code', async (req, res) => {
         if (!referrer) return res.status(404).json({ error: 'Referral not found.' });
         if (String(referrer._id) === String(user._id)) return res.status(400).json({ error: "Can't refer yourself!" });
 
-        // atomowo: kod polecenia można ustawić tylko raz
         const set = await User.findOneAndUpdate({ _id: user._id, referredBy: null }, { $set: { referredBy: referrer.username } }, { new: true });
         if (!set) return res.status(400).json({ error: 'Already used referral code!' });
         await User.updateOne({ _id: referrer._id }, { $addToSet: { referredUsers: user.username } });
@@ -841,7 +825,6 @@ app.get('/api/referral-stats/:username', async (req, res) => {
         const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
         if (!user) return res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0, totalCommissionSent: 0 });
 
-        // 1. ZAROBILI DLA CIEBIE
         const myReferralsEarnedForMe = await Earning.find({ username: user.username, source: 'Referral', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
         
         let totalCommission = 0;
@@ -854,7 +837,6 @@ app.get('/api/referral-stats/:username', async (req, res) => {
             }
         });
 
-        // 2. TWÓJ UROBEK DLA POLECAJĄCEGO
         const iEarnedForReferrer = [];
         let totalSent = 0;
         
@@ -880,6 +862,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
 
     } catch (error) { res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0, totalCommissionSent: 0 }); }
 });
+
 // =================== TIMEWALL ===================
 const TIMEWALL_SECRET = process.env.TIMEWALL_SECRET || '';
 const TIMEWALL_MAX_REWARD = 3000;   // maks. nagroda za jedną transakcję (R$)
@@ -929,21 +912,17 @@ app.get('/postback/timewall', async (req, res) => {
 
     if (!userid || !txid || revenueRaw === '') return res.status(400).send('ERR');
     if (!timewallHashOk(useridRaw, revenueRaw, req.query.hash)) { console.warn('[timewall] zły podpis (hash)'); return res.status(403).send('ERR'); }
-    console.log('[timewall]', { type: type || '(brak)', txid, revenue: revenueRaw, currency: req.query.currency, od: req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.ip });
 
-    // etapy "hold" tylko informują, niczego nie księgujemy
     if (type === 'hold' || type === 'hold_cancelled') return res.status(200).send('OK');
     if (!Number.isFinite(revenue) || !Number.isFinite(currency)) return res.status(400).send('ERR');
 
     const isChargeback = type === 'chargeback' || (type === '' && currency < 0);
     const isCredit = type === 'credit' || (type === '' && currency > 0);
-    if (!isChargeback && !isCredit) { console.warn('[timewall] неznany typ:', type); return res.status(200).send('OK'); }
+    if (!isChargeback && !isCredit) { return res.status(200).send('OK'); }
 
-    // kwota z "currency" musi pasować do podpisanego "revenue" × przelicznik (zabezpieczenie przed podmianą kwoty)
     const expected = Math.abs(revenue) * TIMEWALL_RS_PER_USD;
     const amount = Math.round(Math.abs(currency) * 100) / 100;
     if (Math.abs(Math.abs(currency) - expected) > Math.max(0.02, expected * 0.02)) {
-        console.warn('[timewall] kwota nie pasuje do revenue:', { revenue: revenueRaw, currency: req.query.currency });
         return res.status(400).send('ERR');
     }
     if (!(amount > 0) || amount > TIMEWALL_MAX_REWARD) return res.status(400).send('ERR');
@@ -952,10 +931,7 @@ app.get('/postback/timewall', async (req, res) => {
         if (isCredit) await creditSurvey(userid, amount, 'tw:' + txid);
         else await reverseOfferwall(userid, originalTxid ? 'tw:' + originalTxid : '', amount, 'tw-cb:' + txid, 'TimeWall');
         return res.status(200).send('OK');
-    } catch (e) {
-        console.error('[timewall] błąd księgowania:', e.message);
-        return res.status(500).send('ERR');
-    }
+    } catch (e) { return res.status(500).send('ERR'); }
 });
 
 // =================== WERYFIKACJA PODPISU ADMOB (SSV) ===================
@@ -994,7 +970,6 @@ async function verifyAdmobSignature(originalUrl, fetchKeys = loadAdmobKeys) {
 
 // =================== ADMOB REWARDED VIDEO (SSV) ===================
 
-// Konfiguracja matematyczna zarobków (podział 60% dla gracza, 40% dla Ciebie)
 const ADMOB_AVG_REVENUE_USD = 0.0005; 
 const ADMOB_PLAYER_SHARE = 0.60;
 const ROBUX_COST_USD = 0.025;
