@@ -704,6 +704,24 @@
         </div>
       </main>
 
+<!-- ZAKŁADKA PROMOCODES -->
+      <main id="tab-promocodes" style="display: none;">
+        <h2 class="section-title" data-lang="promoTitle">Redeem Promo Codes</h2>
+        <div class="content-box">
+          <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="gotCode">Got a Code?</h3>
+          <input type="text" id="promoCodeInput" data-lang-placeholder="phPromoCode" placeholder="Enter promo code" style="width: 100%; max-width: 300px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px;">
+          <br><button class="btn-action" onclick="submitPromoCode()" data-lang="btnRedeem">Redeem</button>
+        </div>
+        <div class="content-box">
+            <div class="ref-table-container">
+                <table class="ref-table">
+                    <thead><tr><th>Date</th><th>Code</th><th data-lang="tableAmount">Reward</th></tr></thead>
+                    <tbody id="promoHistoryTableBody"><tr><td colspan="3" style="text-align: center; color: #888;">No actions yet!</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+      </main>
+
       <!-- ZAKŁADKA SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
