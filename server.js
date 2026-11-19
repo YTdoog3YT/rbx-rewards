@@ -732,26 +732,22 @@ app.post('/api/redeem-promo', async (req, res) => {
     try {
         let user = await findUserCI(username);
         if (!user) user = await new User({ username, points: 0 }).save();
-        const key = user.username.toLowerCase();
+        
+        const promo = await PromoCode.findOne({ code: promoCode.toUpperCase() });
+        if (!promo || promo.currentUses >= promo.maxUses || promo.usedBy.includes(user.username.toLowerCase())) {
+            return res.status(400).json({ error: 'Kod nieprawidłowy, zużyty lub już go odebrałeś!' });
+        }
 
-        const promo = await PromoCode.findOneAndUpdate(
-            { code: promoCode.toUpperCase(), usedBy: { $ne: key }, $expr: { $lt: ['$currentUses', '$maxUses'] } },
-            { $inc: { currentUses: 1 }, $push: { usedBy: key } },
+        promo.currentUses += 1;
+        promo.usedBy.push(user.username.toLowerCase());
+        await promo.save();
+
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id },
+            { $inc: { points: promo.reward }, $push: { redeemedPromoCodes: { code: promo.code, reward: promo.reward, date: new Date() } } },
             { new: true }
         );
-        if (!promo) return res.status(400).json({ error: 'Kod nieprawidłowy, zużyty lub już go odebrałeś!' });
-
-        let updated;
-        try {
-            updated = await User.findOneAndUpdate(
-                { _id: user._id },
-                { $inc: { points: promo.reward }, $push: { redeemedPromoCodes: { code: promo.code, reward: promo.reward, date: new Date() } } },
-                { new: true }
-            );
-        } catch (e) {
-            await PromoCode.updateOne({ _id: promo._id }, { $inc: { currentUses: -1 }, $pull: { usedBy: key } }).catch(() => {});
-            throw e;
-        }
+        
         allocateGoalProgress(updated, promo.reward); await updated.save();
         await new Earning({ username: updated.username, amount: promo.reward, source: 'Promo', details: promo.code }).save();
         res.json({ success: true, newBalance: updated.points, message: `Odebrano ${promo.reward} R$!` });

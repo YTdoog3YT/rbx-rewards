@@ -2019,7 +2019,10 @@ async function loadReferralStats() {
         try {
             const response = await fetch(`/api/referral-stats/${username}?period=${period}`); const stats = await response.json();
             
-            document.getElementById('totalRefCommission').innerText = `+${stats.totalMyCommission.toFixed(2)} R$`;
+            document.getElementById('totalRefCommission').innerHTML = 
+                `<span style="color: #00e676;">+${stats.totalMyCommission.toFixed(2)} R$</span> 
+                 <span style="color: #444; font-size: 1.5rem; margin: 0 15px;">|</span> 
+                 <span style="color: #ff3333; font-size: 2.2rem;">-${stats.totalCommissionSent.toFixed(2)} R$</span>`;
 
             if (!stats.myReferralsEarnedForMe || stats.myReferralsEarnedForMe.length === 0) tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Brak akcji w tym okresie.</td></tr>`;
             else {
