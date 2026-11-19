@@ -1074,7 +1074,7 @@ const CALCULATED_REWARD_RS = (ADMOB_AVG_REVENUE_USD * ADMOB_PLAYER_SHARE) / ROBU
 app.get('/api/mobile-config', (req, res) => {
     res.json({
         // Wymagany versionCode. Zmień to na wyższą cyfrę, gdy wypuścisz dużą aktualizację
-        minVersionCode: 6, 
+        minVersionCode: 7, 
         // Bezpośredni link do Twojej apki w sklepie na telefonie
         playStoreUrl: 'market://details?id=com.rbxrewards.mobile'
     });
