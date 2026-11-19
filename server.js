@@ -1091,10 +1091,11 @@ app.get('/api/admob-reward', async (req, res) => {
     // Odczytujemy nasze tajne hasło z Custom Data od AdMoba
     const { user_id, transaction_id, custom_data } = req.query;
 
-    // Jeśli hasło się nie zgadza, odrzucamy próbę (zabezpieczenie przed hakerami)
+// Jeśli hasło się nie zgadza, odrzucamy próbę (zabezpieczenie przed hakerami)
     if (custom_data !== 'RBX_SEKRET_2026_AD') {
-        console.warn('[AdMob SSV] Odrzucono: brak lub zle haslo custom_data');
-        return res.status(403).send('Invalid secret');
+        console.warn(`[AdMob SSV] Odrzucono. Przyszło hasło: "${custom_data}" dla gracza: ${user_id}`);
+        // Zwracamy statusem 200, żeby Google ubiło stare zapytania w kolejce i przestało nas spamować
+        return res.status(200).send('Invalid secret');
     }
 
     if (!user_id || !transaction_id) {
