@@ -849,11 +849,11 @@ app.get('/api/referral-stats/:username', async (req, res) => {
             });
         }
 
-        res.json({
+res.json({
             totalMyCommission: parseFloat(totalCommission.toFixed(2)),
             totalCommissionSent: parseFloat(totalSent.toFixed(2)),
-            myReferralsEarnedForMe: myRefList.slice(0, 10),
-            iEarnedForReferrer: iEarnedForReferrer.slice(0, 10)
+            myReferralsEarnedForMe: myRefList, // Usunięty limit top 10
+            iEarnedForReferrer: iEarnedForReferrer // Usunięty limit top 10
         });
 
     } catch (error) { res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0, totalCommissionSent: 0 }); }
