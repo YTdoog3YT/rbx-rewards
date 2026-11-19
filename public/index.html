@@ -2013,29 +2013,51 @@ async function loadReferralStats() {
         const tableBody1 = document.getElementById("refTableBody1"); 
         const tableBody2 = document.getElementById("refTableBody2"); 
         if (!filterEl || !tableBody1 || !tableBody2) return;
+        
+        // Zabezpieczenie przed uciętym słownikiem - fallback do "en"
+        const lang = localStorage.getItem('rbx_lang') || 'en'; 
+        const tLang = (typeof translations !== 'undefined' && translations[lang]) ? lang : 'en';
+        const getTrans = (key, fallback) => {
+            if (typeof translations !== 'undefined' && translations[tLang] && translations[tLang][key]) return translations[tLang][key];
+            return fallback;
+        };
+
         const period = filterEl.value; 
-        tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
-        tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">${getTrans('loadingStats', 'Loading...')}</td></tr>`;
+        tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">${getTrans('loadingStats', 'Loading...')}</td></tr>`;
+        
         try {
-            const response = await fetch(`/api/referral-stats/${username}?period=${period}`); const stats = await response.json();
+            const response = await fetch(`/api/referral-stats/${username}?period=${period}`); 
+            const stats = await response.json();
             
             document.getElementById('totalRefCommission').innerHTML = 
-                `<span style="color: #00e676;">+${stats.totalMyCommission.toFixed(2)} R$</span> 
+                `<span style="color: #00e676;">+${(stats.totalMyCommission || 0).toFixed(2)} R$</span> 
                  <span style="color: #444; font-size: 1.5rem; margin: 0 15px;">|</span> 
-                 <span style="color: #ff3333; font-size: 2.2rem;">-${stats.totalCommissionSent.toFixed(2)} R$</span>`;
+                 <span style="color: #ff3333; font-size: 2.2rem;">-${(stats.totalCommissionSent || 0).toFixed(2)} R$</span>`;
 
-            if (!stats.myReferralsEarnedForMe || stats.myReferralsEarnedForMe.length === 0) tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Brak akcji w tym okresie.</td></tr>`;
-            else {
-                let rows = ''; stats.myReferralsEarnedForMe.forEach(item => { rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">👤 ${escHtml(item.username)}</td><td style="color: #00e676; font-weight: bold;">+${item.commission.toFixed(2)} R$</td></tr>`; });
+            if (!stats.myReferralsEarnedForMe || stats.myReferralsEarnedForMe.length === 0) {
+                tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${getTrans('historyEmpty', 'No actions yet!')}</td></tr>`;
+            } else {
+                let rows = ''; 
+                stats.myReferralsEarnedForMe.forEach(item => { 
+                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">👤 ${escHtml(item.username)}</td><td style="color: #00e676; font-weight: bold;">+${item.commission.toFixed(2)} R$</td></tr>`; 
+                });
                 tableBody1.innerHTML = rows;
             }
 
-            if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Brak akcji w tym okresie.</td></tr>`;
-            else {
-                let rows = ''; stats.iEarnedForReferrer.forEach(item => { rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">+${item.myEarning.toFixed(2)} R$</td><td style="color: #ff3333; font-weight: bold;">-${item.commissionSent.toFixed(2)} R$</td></tr>`; });
+            if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) {
+                tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${getTrans('historyEmpty', 'No actions yet!')}</td></tr>`;
+            } else {
+                let rows = ''; 
+                stats.iEarnedForReferrer.forEach(item => { 
+                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">+${item.myEarning.toFixed(2)} R$</td><td style="color: #ff3333; font-weight: bold;">-${item.commissionSent.toFixed(2)} R$</td></tr>`; 
+                });
                 tableBody2.innerHTML = rows;
             }
-        } catch (error) { tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; }
+        } catch (error) { 
+            tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; 
+            tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; 
+        }
     }
 
     async function loadPromoHistory() {
