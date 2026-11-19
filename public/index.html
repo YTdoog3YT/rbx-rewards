@@ -687,34 +687,6 @@
         </div>
       </main>
 
-<!-- ZAKŁADKA REFERRALS -->
-      <main id="tab-referrals" style="display: none;">
-        <h2 class="section-title" data-lang="refTitle">Invite Friends & Get +15% Bonus</h2>
-        <div class="content-box">
-          <h3 style="color: #00e676; margin-bottom: 10px;" data-lang="refInfo">Your Referral Info</h3>
-          <p style="color: #a0a0b0; margin-bottom: 15px;" data-lang="refDesc">Share your custom link with friends! You will receive a 15% lifetime bonus from all quest points they collect!</p>
-          <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
-              <span id="myRefLinkDisplay" style="font-size: 1.1rem; font-weight: bold; color: #00e676; word-break: break-word;">Log in first</span>
-              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefLink()" data-lang="btnCopy">📋 Copy</button>
-          </div>
-          <div class="ref-link-box" style="background: #0f1115; padding: 15px; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;">
-              <div style="text-align: left;">
-                  <div style="color: #a0a0b0; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px;" data-lang="refMyCodeLabel">Your referral code</div>
-                  <span id="myRefCodeDisplay" style="font-size: 1.3rem; font-weight: bold; color: #ffb703; word-break: break-word;">Log in first</span>
-                  <div style="color: #a0a0b0; font-size: 0.8rem; margin-top: 6px;" data-lang="refMyCodeHint">Friends can enter this code in the field below instead of using your link.</div>
-              </div>
-              <button class="btn-action" style="margin-top: 0; padding: 10px 15px; font-size: 0.9rem;" onclick="copyRefCode()" data-lang="btnCopy">📋 Copy</button>
-          </div>
-          <div id="referredByBox" style="display: none; background: #0f1115; padding: 14px 15px; border-radius: 8px; border: 1px solid #2a2e39; margin-bottom: 15px; text-align: left;">
-              <span style="color: #a0a0b0; font-size: 0.85rem;" data-lang="refReferredBy">You were referred by</span>
-              <div id="referredByName" style="font-size: 1.2rem; font-weight: bold; color: #00e676; word-break: break-word;"></div>
-          </div>
-          <div id="redeemCodeSection" style="border-top: 1px solid #2a2e39; padding-top: 20px; margin-top: 10px;">
-              <input type="text" id="friendCodeInput" data-lang-placeholder="phFriendCode" placeholder="Enter friend's code" style="width: 100%; max-width: 300px; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
-              <br><button class="btn-action" style="margin-top: 5px;" onclick="submitReferralCode()" data-lang="btnRedeem">Redeem</button>
-          </div>
-        </div>
-
         <div class="content-box">
             <select id="refFilterSelect" class="ref-filter" onchange="loadReferralStats()">
                 <option value="today">Dzisiaj</option>
