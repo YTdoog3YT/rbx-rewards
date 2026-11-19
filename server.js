@@ -836,20 +836,24 @@ app.get('/api/referral-stats/:username', async (req, res) => {
         const iEarnedForReferrer = [];
         let totalSent = 0;
         
-        if (user.referredBy) {
-            const myRawSurveys = await Earning.find({ username: user.username, source: 'Survey', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
-            myRawSurveys.forEach(e => {
-                const commission = parseFloat((e.amount * 0.15).toFixed(2));
-                totalSent += commission;
-                iEarnedForReferrer.push({
-                    date: new Date(e.createdAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                    myEarning: e.amount,
-                    commissionSent: commission
-                });
-            });
-        }
+        // Zamiast symulować 15% z ankiet, sprawdzamy komu FAKTYCZNIE baza nabiła z Ciebie R$
+        const actualCommissionsSent = await Earning.find({ 
+            source: 'Referral', 
+            details: new RegExp(`^${safe}$`, 'i'), 
+            createdAt: { $gte: startDate, $lte: endDate } 
+        }).sort({ createdAt: -1 }).lean();
 
-res.json({
+        actualCommissionsSent.forEach(e => {
+            totalSent += e.amount;
+            iEarnedForReferrer.push({
+                date: new Date(e.createdAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                myEarning: parseFloat((e.amount / 0.15).toFixed(2)), 
+                commissionSent: e.amount,
+                recipient: e.username // Zapisujemy kto dostał od Ciebie prowizję
+            });
+        });
+
+        res.json({
             totalMyCommission: parseFloat(totalCommission.toFixed(2)),
             totalCommissionSent: parseFloat(totalSent.toFixed(2)),
             myReferralsEarnedForMe: myRefList, // Usunięty limit top 10

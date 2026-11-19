@@ -697,8 +697,8 @@
 <h3 style="color: #ff3333; margin-bottom: 10px; text-align: left;" data-lang="refEarnedForOther">Your earnings given to another person</h3>
             <div class="ref-table-container" style="max-height: 350px; overflow-y: auto;">
                 <table class="ref-table">
-                    <thead><tr><th data-lang="refColDate">Date</th><th data-lang="refColYouEarned">You Earned</th><th data-lang="refColGiven">Given (+15%)</th></tr></thead>
-                    <tbody id="refTableBody2"><tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingStats">Loading...</td></tr></tbody>
+                    <thead><tr><th data-lang="refColDate">Date</th><th data-lang="refColYouEarned">You Earned</th><th data-lang="refColGiven">Given (+15%)</th><th data-lang="refColRecipient">Dla kogo</th></tr></thead>
+                    <tbody id="refTableBody2"><tr><td colspan="4" style="text-align: center; color: #888;" data-lang="loadingStats">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -2136,13 +2136,13 @@ async function loadReferralStats() {
                 });
                 tableBody1.innerHTML = rows;
             }
-
-            if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) {
-                tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${getTrans('historyEmpty', 'No actions yet!')}</td></tr>`;
+            
+if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) {
+                tableBody2.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ffb703;">${getTrans('historyEmpty', 'No actions yet!')}</td></tr>`;
             } else {
                 let rows = ''; 
                 stats.iEarnedForReferrer.forEach(item => { 
-                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">+${item.myEarning.toFixed(2)} R$</td><td style="color: #ff3333; font-weight: bold;">-${item.commissionSent.toFixed(2)} R$</td></tr>`; 
+                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">+${item.myEarning.toFixed(2)} R$</td><td style="color: #ff3333; font-weight: bold;">-${item.commissionSent.toFixed(2)} R$</td><td style="color: #a0a0b0;">👤 ${escHtml(item.recipient)}</td></tr>`; 
                 });
                 tableBody2.innerHTML = rows;
             }
