@@ -748,7 +748,7 @@ app.post('/api/redeem-promo', async (req, res) => {
         if (!user) user = await new User({ username, points: 0 }).save();
         const key = user.username.toLowerCase();
 
-        // atomowo: zajmij jedno użycie kodu (tylko jeśli kod ma wolne miejsce i ten gracz go jeszcze nie użył)
+        // atomowo: zajmij jedno użycie kodu
         const promo = await PromoCode.findOneAndUpdate(
             { code: promoCode.toUpperCase(), usedBy: { $ne: key }, $expr: { $lt: ['$currentUses', '$maxUses'] } },
             { $inc: { currentUses: 1 }, $push: { usedBy: key } },
@@ -773,7 +773,16 @@ app.post('/api/redeem-promo', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-app.get('/api/promo-history/:username', async (req, res) => { try { const safe = escapeRegex(req.params.username); const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.json([]); const history = user.redeemedPromoCodes || []; history.sort((a, b) => new Date(b.date) - new Date(a.date)); res.json(history); } catch (error) { res.status(500).json({ error: "Error" }); } });
+app.get('/api/promo-history/:username', async (req, res) => { 
+    try { 
+        const safe = escapeRegex(req.params.username); 
+        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); 
+        if (!user) return res.json([]); 
+        const history = user.redeemedPromoCodes || []; 
+        history.sort((a, b) => new Date(b.date) - new Date(a.date)); 
+        res.json(history); 
+    } catch (error) { res.status(500).json({ error: "Error" }); } 
+});
 
 app.post('/api/redeem-code', async (req, res) => {
     const username = String(req.body.username || '').trim();
@@ -871,7 +880,6 @@ app.get('/api/referral-stats/:username', async (req, res) => {
 
     } catch (error) { res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0, totalCommissionSent: 0 }); }
 });
-
 // =================== TIMEWALL ===================
 const TIMEWALL_SECRET = process.env.TIMEWALL_SECRET || '';
 const TIMEWALL_MAX_REWARD = 3000;   // maks. nagroda za jedną transakcję (R$)
