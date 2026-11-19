@@ -703,7 +703,7 @@
             </div>
         </div>
       </main>
-      
+
       <!-- ZAKŁADKA SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
@@ -961,7 +961,7 @@ const theoremReachApiKey = "23948d93f92a592c17bcff445d16";
     function acceptCookies() { localStorage.setItem('cookie_accepted', 'true'); document.getElementById('cookieBanner').style.display = 'none'; }
     function checkCookieConsent() { if (!localStorage.getItem('cookie_accepted')) document.getElementById('cookieBanner').style.display = 'flex'; }
 
-    const translations = {
+const translations = {
         en: {
             navHome: "🏠 Home", navEarn: "🚀 Quests & Earn", navGoals: "🎯 Goals", navWheel: "🎡 Wheel of Fortune", navLevels: "⭐ Levels", navLeaderboard: "🏆 Leaderboard", navRef: "👥 Referrals", navPromo: "🎫 Promo Codes", navSupport: "🛠️ Support", navAdmin: "⚙️ Admin",
             navHomeMob: "Home", navEarnMob: "Quests", navGoalsMob: "Goals", navWheelMob: "Wheel", navLevelsMob: "Levels", navLeadMob: "Ranks",
@@ -1032,6 +1032,52 @@ const theoremReachApiKey = "23948d93f92a592c17bcff445d16";
             discordWidgetText: "Присоединяйтесь к нашему Discord",
         }
     };
+
+    // [...] reszta funkcji pozostaje bez zmian, przeskakujemy prosto do loadReferralStats
+
+    async function loadReferralStats() {
+        const username = localStorage.getItem("rbx_username"); if (!username) return;
+        const filterEl = document.getElementById("refFilterSelect"); 
+        const tableBody1 = document.getElementById("refTableBody1"); 
+        const tableBody2 = document.getElementById("refTableBody2"); 
+        if (!filterEl || !tableBody1 || !tableBody2) return;
+        const period = filterEl.value; 
+        tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Wait...</td></tr>`;
+        try {
+            const response = await fetch(`/api/referral-stats/${username}?period=${period}`); 
+            const stats = await response.json();
+            
+            // Górny główny licznik: zsumowane to co wygenerowałeś ORAZ to co oddałeś
+            document.getElementById('totalRefCommission').innerHTML = 
+                `<span style="color: #00e676;">+${stats.totalMyCommission.toFixed(2)} R$</span> 
+                 <span style="color: #444; font-size: 1.5rem; margin: 0 15px;">|</span> 
+                 <span style="color: #ff3333; font-size: 2.2rem;">-${stats.totalCommissionSent.toFixed(2)} R$</span>`;
+
+            if (!stats.myReferralsEarnedForMe || stats.myReferralsEarnedForMe.length === 0) {
+                tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Brak akcji w tym okresie.</td></tr>`;
+            } else {
+                let rows = ''; 
+                stats.myReferralsEarnedForMe.forEach(item => { 
+                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">👤 ${escHtml(item.username)}</td><td style="color: #00e676; font-weight: bold;">+${item.commission.toFixed(2)} R$</td></tr>`; 
+                });
+                tableBody1.innerHTML = rows;
+            }
+
+            if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) {
+                tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">Brak akcji w tym okresie.</td></tr>`;
+            } else {
+                let rows = ''; 
+                stats.iEarnedForReferrer.forEach(item => { 
+                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">+${item.myEarning.toFixed(2)} R$</td><td style="color: #ff3333; font-weight: bold;">-${item.commissionSent.toFixed(2)} R$</td></tr>`; 
+                });
+                tableBody2.innerHTML = rows;
+            }
+        } catch (error) { 
+            tableBody1.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; 
+            tableBody2.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error</td></tr>`; 
+        }
+    }
 
     function injectProtectedContent() {
         const offerwallSection = document.getElementById("offerwallSection");

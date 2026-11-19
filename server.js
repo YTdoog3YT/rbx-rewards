@@ -974,10 +974,10 @@ app.get('/api/referral-stats/:username', async (req, res) => {
         if (period === 'yesterday') { endDate = getPolandMidnight(); }
 
         const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
-        if (!user) return res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0 });
+        if (!user) return res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0, totalCommissionSent: 0 });
 
         // 1. ZAROBILI DLA CIEBIE
-        const myReferralsEarnedForMe = await Earning.find({ username: user.username, source: 'Referral', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
+        const myReferralsEarnedForMe = await Earning.find({ username: user.username, source: 'Referral', createdAt: { $gte: startDate,$lte: endDate } }).sort({ createdAt: -1 }).lean();
         
         let totalCommission = 0;
         const myRefList = myReferralsEarnedForMe.map(e => {
@@ -991,24 +991,29 @@ app.get('/api/referral-stats/:username', async (req, res) => {
 
         // 2. TWÓJ UROBEK DLA POLECAJĄCEGO
         const iEarnedForReferrer = [];
+        let totalSent = 0; // NOWE: Zlicza wszystkie straty
+        
         if (user.referredBy) {
-            const myRawSurveys = await Earning.find({ username: user.username, source: 'Survey', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
+            const myRawSurveys = await Earning.find({ username: user.username, source: 'Survey', createdAt: { $gte: startDate,$lte: endDate } }).sort({ createdAt: -1 }).lean();
             myRawSurveys.forEach(e => {
+                const commission = parseFloat((e.amount * 0.15).toFixed(2));
+                totalSent += commission;
                 iEarnedForReferrer.push({
                     date: new Date(e.createdAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
                     myEarning: e.amount,
-                    commissionSent: parseFloat((e.amount * 0.15).toFixed(2))
+                    commissionSent: commission
                 });
             });
         }
 
         res.json({
             totalMyCommission: parseFloat(totalCommission.toFixed(2)),
-            myReferralsEarnedForMe: myRefList.slice(0, 10), // TOP 10 z historii
-            iEarnedForReferrer: iEarnedForReferrer.slice(0, 10) // TOP 10 z historii
+            totalCommissionSent: parseFloat(totalSent.toFixed(2)), // NOWE: Wysyłane na frontend
+            myReferralsEarnedForMe: myRefList.slice(0, 10),
+            iEarnedForReferrer: iEarnedForReferrer.slice(0, 10)
         });
 
-    } catch (error) { res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0 }); }
+    } catch (error) { res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0, totalCommissionSent: 0 }); }
 });
 
 // =================== TIMEWALL ===================
