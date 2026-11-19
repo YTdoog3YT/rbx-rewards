@@ -201,29 +201,6 @@ app.get('/api/admin/pending-payouts', isAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/resolve-payout', isAdmin, async (req, res) => {
-    const { payoutId, action } = req.body;
-    if (action !== 'complete' && action !== 'reject') return res.status(400).json({ error: 'Zła akcja' });
-    try {
-        // atomowo: tylko wypłata ze statusem "Pending Manual" może zostać rozpatrzona i tylko raz
-        const payout = await Payout.findOneAndUpdate(
-            { _id: payoutId, status: 'Pending Manual' },
-            { $set: { status: action === 'complete' ? 'Completed' : 'Rejected' } },
-            { new: true }
-        );
-        if (!payout) return res.status(400).json({ error: 'Ta wypłata została już rozpatrzona lub nie istnieje.' });
-
-        if (action === 'reject') {
-            const refunded = await User.findOneAndUpdate({ username: new RegExp(`^${escapeRegex(payout.username)}$`, 'i') }, { $inc: { points: payout.pointsWithdrawn } });
-            if (!refunded) {
-                await Payout.updateOne({ _id: payout._id }, { $set: { status: 'Pending Manual' } });
-                return res.status(500).json({ error: 'Nie znaleziono gracza do zwrotu, wypłata wróciła do oczekujących.' });
-            }
-        }
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Błąd' }); }
-});
-
-app.post('/api/admin/resolve-payout', isAdmin, async (req, res) => {
     const { payoutId, action } = req.body; 
     try {
         const payout = await Payout.findById(payoutId);
@@ -655,12 +632,6 @@ app.post('/api/claim-level', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-app.post('/api/claim-level', async (req, res) => {
-    const { username, level } = req.body;
-    try { const safe = escapeRegex(username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.status(404).json({ error: 'Brak użytkownika.' }); const lvlData = LEVEL_THRESHOLDS[level]; if (!lvlData || user.xp < lvlData.xp || user.claimedLevels.includes(level)) return res.status(400).json({ error: 'Nie możesz odebrać tego poziomu.' }); user.claimedLevels.push(level); user.points += lvlData.reward; allocateGoalProgress(user, lvlData.reward); await user.save(); await new Earning({ username: user.username, amount: lvlData.reward, source: 'LevelUp', details: `Level ${level}` }).save(); res.json({ success: true, reward: lvlData.reward, newBalance: user.points }); } 
-    catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
-});
-
 app.post('/api/spin-wheel', async (req, res) => {
     const username = String(req.body.username || '').trim();
     try {
@@ -697,22 +668,6 @@ app.post('/api/spin-wheel', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-app.post('/api/spin-wheel', async (req, res) => {
-    const { username } = req.body;
-    try {
-        const safe = escapeRegex(username);
-        let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.status(404).json({ error: 'Brak użytkownika.' });
-        const startOfDay = getPolandMidnight();
-        const dailyEarnedAggr = await Earning.aggregate([{ $match: { username: new RegExp(`^${safe}$`, 'i'), createdAt: { $gte: startOfDay }, source: { $in: ['Survey'] } } }, { $group: { _id: null, total: { $sum: "$amount" } } }]);
-        const actualDailyEarned = dailyEarnedAggr.length > 0 ? dailyEarnedAggr[0].total : 0;
-        if (actualDailyEarned < 4.5) return res.status(400).json({ error: 'Zarób dzisiaj minimum 4.50 R$ (Oferty/Ankiety), aby zakręcić kołem!' });
-        const now = new Date();
-        if (user.lastWheelSpin) { const diffHours = (now - new Date(user.lastWheelSpin)) / (1000 * 60 * 60); if (diffHours < 24) return res.status(400).json({ error: 'Koło jest jeszcze zablokowane (trwa 24h blokady)!' }); if (diffHours <= 48) user.wheelStreak = (user.wheelStreak || 0) + 1; else user.wheelStreak = 1; } else { user.wheelStreak = 1; }
-        const rand = Math.random() * 100; let reward = 0.1; if (rand <= 1) reward = 2.5; else if (rand <= 5) reward = 1.0; else if (rand <= 20) reward = 0.5; else if (rand <= 55) reward = 0.2; else reward = 0.1;
-        user.points += reward; user.lastWheelSpin = now; allocateGoalProgress(user, reward); await user.save(); await new Earning({ username: user.username, amount: reward, source: 'Wheel', details: `Streak: ${user.wheelStreak}` }).save(); res.json({ success: true, reward, newBalance: user.points, streak: user.wheelStreak });
-    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
-});
-
 app.get('/api/latest-earners', async (req, res) => { try { res.json(await Earning.find({ source: { $in: ['Survey', 'Promo', 'LevelUp', 'Spinner', 'Wheel', 'AdMob Video'] } }).sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
 app.get('/api/latest-payouts', async (req, res) => { try { res.json(await Payout.find({ status: 'Completed' }).select('username pointsWithdrawn createdAt').sort({ createdAt: -1 }).limit(5)); } catch (e) { res.json([]); } });
 app.get('/api/leaderboard', async (req, res) => {
@@ -737,7 +692,6 @@ app.post('/api/support-ticket', async (req, res) => {
 
 const MIN_PAYOUT = 1;
 
-// Revtag Revolut: 3-16 znaków, małe litery a-z i cyfry (gracz może wpisać też z "@" i wielkimi literami)
 function normalizeRevtag(v) {
     const s = String(v || '').trim().replace(/^@+/, '').toLowerCase();
     return /^[a-z0-9]{3,16}$/.test(s) ? '@' + s : null;
@@ -758,7 +712,6 @@ app.post('/api/withdraw', async (req, res) => {
         const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
         if (!user) return res.status(400).json({ error: 'Nie masz tylu R$!' });
 
-        // stare adresy PayPal (e-maile) ignorujemy: obowiązuje tylko zapisany Revtag (zaczyna się od "@")
         const linked = user.linkedPayPal && String(user.linkedPayPal).startsWith('@') ? String(user.linkedPayPal).toLowerCase() : null;
 
         let payAddress = revtag;
@@ -766,11 +719,9 @@ app.post('/api/withdraw', async (req, res) => {
             if (!linked) return res.status(400).json({ error: 'Brak przypisanego Revtag. Wpisz go w oknie wypłaty.' });
             payAddress = linked;
         } else if (linked && linked !== revtag) {
-            // nie ujawniamy zapisanego Revtag
             return res.status(400).json({ error: 'To konto ma już przypisany inny Revtag. Zmiana tylko przez Support.' });
         }
 
-        // odejmij tylko wtedy, gdy saldo wystarcza (jedna operacja, bez wyścigu)
         const updated = await User.findOneAndUpdate(
             { _id: user._id, points: { $gte: pts } },
             { $inc: { points: -pts }, $set: { linkedPayPal: linked || payAddress } },
@@ -782,84 +733,6 @@ app.post('/api/withdraw', async (req, res) => {
         const newPayout = await new Payout({
             username: updated.username, payoutMethod: 'Revolut', payoutAddress: payAddress,
             paypalEmail: payAddress, pointsWithdrawn: pts, usdAmount, status: 'Pending Manual'
-        }).save();
-        discordBot.sendPayoutAlert(newPayout);
-        res.json({ success: true, newBalance: updated.points, usd: usdAmount });
-    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
-});
-
-app.post('/api/withdraw', async (req, res) => {
-    const useLinked = req.body.useLinked === true;
-    const paypalEmail = String(req.body.paypalEmail || req.body.payoutAddress || '').trim().toLowerCase();
-    const username = String(req.body.username || '').trim();
-    const pts = Math.round(Number(req.body.points) * 100) / 100;
-
-    if (!username) return res.status(400).json({ error: 'Brak nazwy użytkownika.' });
-    if (!Number.isFinite(pts) || pts < MIN_PAYOUT) return res.status(400).json({ error: `Minimalna wypłata to ${MIN_PAYOUT} R$.` });
-    if (!useLinked && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)) return res.status(400).json({ error: 'Nieprawidłowy adres PayPal.' });
-
-    try {
-        const safe = escapeRegex(username);
-        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
-        if (!user) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-
-        let payAddress = paypalEmail;
-        if (useLinked) {
-            if (!user.linkedPayPal) return res.status(400).json({ error: 'Brak przypisanego adresu PayPal.' });
-            payAddress = user.linkedPayPal.toLowerCase();
-        } else if (user.linkedPayPal && user.linkedPayPal.toLowerCase() !== paypalEmail) {
-            // nie ujawniamy zapisanego adresu
-            return res.status(400).json({ error: 'To konto ma już przypisany inny adres PayPal. Zmiana tylko przez Support.' });
-        }
-
-        // odejmij tylko wtedy, gdy saldo wystarcza (jedna operacja, bez wyścigu)
-        const updated = await User.findOneAndUpdate(
-            { _id: user._id, points: { $gte: pts } },
-            { $inc: { points: -pts }, $set: { linkedPayPal: user.linkedPayPal || payAddress } },
-            { new: true }
-        );
-        if (!updated) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-
-        const usdAmount = parseFloat((pts * 0.025).toFixed(2));
-        const newPayout = await new Payout({
-            username: updated.username, payoutMethod: 'PayPal', payoutAddress: payAddress,
-            paypalEmail: payAddress, pointsWithdrawn: pts, usdAmount, status: 'Pending Manual'
-        }).save();
-        discordBot.sendPayoutAlert(newPayout);
-        res.json({ success: true, newBalance: updated.points, usd: usdAmount });
-    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
-});
-
-app.post('/api/withdraw', async (req, res) => {
-    const paypalEmail = String(req.body.paypalEmail || req.body.payoutAddress || '').trim().toLowerCase();
-    const username = String(req.body.username || '').trim();
-    const pts = Math.round(Number(req.body.points) * 100) / 100;
-
-    if (!username) return res.status(400).json({ error: 'Brak nazwy użytkownika.' });
-    if (!Number.isFinite(pts) || pts < MIN_PAYOUT) return res.status(400).json({ error: `Minimalna wypłata to ${MIN_PAYOUT} R$.` });
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)) return res.status(400).json({ error: 'Nieprawidłowy adres PayPal.' });
-
-    try {
-        const safe = escapeRegex(username);
-        const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
-        if (!user) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-
-        if (user.linkedPayPal && user.linkedPayPal.toLowerCase() !== paypalEmail) {
-            return res.status(400).json({ error: `Konto przypisane do adresu: ${user.linkedPayPal}` });
-        }
-
-        // odejmij tylko wtedy, gdy saldo wystarcza (jedna operacja, bez wyścigu)
-        const updated = await User.findOneAndUpdate(
-            { _id: user._id, points: { $gte: pts } },
-            { $inc: { points: -pts }, $set: { linkedPayPal: user.linkedPayPal || paypalEmail } },
-            { new: true }
-        );
-        if (!updated) return res.status(400).json({ error: 'Nie masz tylu R$!' });
-
-        const usdAmount = parseFloat((pts * 0.025).toFixed(2));
-        const newPayout = await new Payout({
-            username: updated.username, payoutMethod: 'PayPal', payoutAddress: paypalEmail,
-            paypalEmail, pointsWithdrawn: pts, usdAmount, status: 'Pending Manual'
         }).save();
         discordBot.sendPayoutAlert(newPayout);
         res.json({ success: true, newBalance: updated.points, usd: usdAmount });
@@ -900,14 +773,6 @@ app.post('/api/redeem-promo', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-app.post('/api/redeem-promo', async (req, res) => {
-    const { username, promoCode } = req.body; if (!username || !promoCode) return res.status(400).json({ error: 'Brak danych.' });
-    try {
-        const promo = await PromoCode.findOne({ code: promoCode.toUpperCase() }); if (!promo || promo.currentUses >= promo.maxUses || promo.usedBy.includes(username.toLowerCase())) return res.status(400).json({ error: 'Kod nieprawidłowy, zużyty lub już go odebrałeś!' });
-        const safe = escapeRegex(username); let user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) user = new User({ username, points: 0 }); user.points += promo.reward; if (!user.redeemedPromoCodes) user.redeemedPromoCodes = []; user.redeemedPromoCodes.push({ code: promo.code, reward: promo.reward, date: new Date() }); allocateGoalProgress(user, promo.reward); await user.save(); promo.currentUses += 1; promo.usedBy.push(username.toLowerCase()); await promo.save(); await new Earning({ username: user.username, amount: promo.reward, source: 'Promo', details: promo.code }).save(); res.json({ success: true, newBalance: user.points, message: `Odebrano ${promo.reward} R$!` });
-    } catch (error) { res.status(500).json({ error: 'Błąd serwera.' }); }
-});
-
 app.get('/api/promo-history/:username', async (req, res) => { try { const safe = escapeRegex(req.params.username); const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.json([]); const history = user.redeemedPromoCodes || []; history.sort((a, b) => new Date(b.date) - new Date(a.date)); res.json(history); } catch (error) { res.status(500).json({ error: "Error" }); } });
 
 app.post('/api/redeem-code', async (req, res) => {
@@ -931,15 +796,6 @@ app.post('/api/redeem-code', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
-app.post('/api/redeem-code', async (req, res) => {
-    const { username, code } = req.body; if (!username || !code) return res.status(400).json({ error: 'Missing data.' }); if (username.toLowerCase() === code.toLowerCase()) return res.status(400).json({ error: "Can't refer yourself!" });
-    try {
-        const safeUser = escapeRegex(username); const safeCode = escapeRegex(code);
-        let user = await User.findOne({ username: new RegExp(`^${safeUser}$`, 'i') }); if (!user) user = new User({ username: username, points: 0 }); if (user.referredBy) return res.status(400).json({ error: 'Already used referral code!' });
-        let referrer = await User.findOne({ username: new RegExp(`^${safeCode}$`, 'i') }); if (!referrer) return res.status(404).json({ error: 'Referral not found.' }); user.referredBy = referrer.username; await user.save(); if (!referrer.referredUsers.includes(user.username)) { referrer.referredUsers.push(user.username); await referrer.save(); } res.json({ success: true, message: 'Code activated!' });
-    } catch (error) { res.status(500).json({ error: 'Server error.' }); }
-});
-
 // --- HISTORIA DLA MOBILE ---
 app.get('/api/history/:username', async (req, res) => {
     try { 
@@ -959,7 +815,7 @@ app.get('/api/history/:username', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Error" }); }
 });
 
-// --- NOWE ZAROBKI POLECONYCH (Z FILTRAMI) ---
+// --- NOWE ZAROBKI POLECONYCH (Z FILTRAMI I ODJĘCIEM) ---
 app.get('/api/referral-stats/:username', async (req, res) => {
     try {
         const safe = escapeRegex(req.params.username); const period = req.query.period || '7days'; 
@@ -977,7 +833,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
         if (!user) return res.json({ iEarnedForReferrer: [], myReferralsEarnedForMe: [], totalMyCommission: 0, totalCommissionSent: 0 });
 
         // 1. ZAROBILI DLA CIEBIE
-        const myReferralsEarnedForMe = await Earning.find({ username: user.username, source: 'Referral', createdAt: { $gte: startDate,$lte: endDate } }).sort({ createdAt: -1 }).lean();
+        const myReferralsEarnedForMe = await Earning.find({ username: user.username, source: 'Referral', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
         
         let totalCommission = 0;
         const myRefList = myReferralsEarnedForMe.map(e => {
@@ -991,10 +847,10 @@ app.get('/api/referral-stats/:username', async (req, res) => {
 
         // 2. TWÓJ UROBEK DLA POLECAJĄCEGO
         const iEarnedForReferrer = [];
-        let totalSent = 0; // NOWE: Zlicza wszystkie straty
+        let totalSent = 0;
         
         if (user.referredBy) {
-            const myRawSurveys = await Earning.find({ username: user.username, source: 'Survey', createdAt: { $gte: startDate,$lte: endDate } }).sort({ createdAt: -1 }).lean();
+            const myRawSurveys = await Earning.find({ username: user.username, source: 'Survey', createdAt: { $gte: startDate, $lte: endDate } }).sort({ createdAt: -1 }).lean();
             myRawSurveys.forEach(e => {
                 const commission = parseFloat((e.amount * 0.15).toFixed(2));
                 totalSent += commission;
@@ -1008,7 +864,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
 
         res.json({
             totalMyCommission: parseFloat(totalCommission.toFixed(2)),
-            totalCommissionSent: parseFloat(totalSent.toFixed(2)), // NOWE: Wysyłane na frontend
+            totalCommissionSent: parseFloat(totalSent.toFixed(2)),
             myReferralsEarnedForMe: myRefList.slice(0, 10),
             iEarnedForReferrer: iEarnedForReferrer.slice(0, 10)
         });
@@ -1073,7 +929,7 @@ app.get('/postback/timewall', async (req, res) => {
 
     const isChargeback = type === 'chargeback' || (type === '' && currency < 0);
     const isCredit = type === 'credit' || (type === '' && currency > 0);
-    if (!isChargeback && !isCredit) { console.warn('[timewall] nieznany typ:', type); return res.status(200).send('OK'); }
+    if (!isChargeback && !isCredit) { console.warn('[timewall] неznany typ:', type); return res.status(200).send('OK'); }
 
     // kwota z "currency" musi pasować do podpisanego "revenue" × przelicznik (zabezpieczenie przed podmianą kwoty)
     const expected = Math.abs(revenue) * TIMEWALL_RS_PER_USD;
@@ -1131,17 +987,14 @@ async function verifyAdmobSignature(originalUrl, fetchKeys = loadAdmobKeys) {
 // =================== ADMOB REWARDED VIDEO (SSV) ===================
 
 // Konfiguracja matematyczna zarobków (podział 60% dla gracza, 40% dla Ciebie)
-const ADMOB_AVG_REVENUE_USD = 0.0005; // Poprawiony na realny zarobek z reklamy, żeby wynik dawał 0.012
+const ADMOB_AVG_REVENUE_USD = 0.0005; 
 const ADMOB_PLAYER_SHARE = 0.60;
 const ROBUX_COST_USD = 0.025;
 const CALCULATED_REWARD_RS = (ADMOB_AVG_REVENUE_USD * ADMOB_PLAYER_SHARE) / ROBUX_COST_USD;
 
-// Konfiguracja aplikacji mobilnej (wymuszanie aktualizacji)
 app.get('/api/mobile-config', (req, res) => {
     res.json({
-        // Wymagany versionCode. Zmień to na wyższą cyfrę, gdy wypuścisz dużą aktualizację
         minVersionCode: 7, 
-        // Bezpośredni link do Twojej apki w sklepie na telefonie
         playStoreUrl: 'market://details?id=com.rbxrewards.mobile'
     });
 });
@@ -1154,13 +1007,10 @@ app.get('/api/admob-settings', (req, res) => {
 });
 
 app.get('/api/admob-reward', async (req, res) => {
-    // Odczytujemy nasze tajne hasło z Custom Data od AdMoba
     const { user_id, transaction_id, custom_data } = req.query;
 
-// Jeśli hasło się nie zgadza, odrzucamy próbę (zabezpieczenie przed hakerami)
     if (custom_data !== 'RBX_SEKRET_2026_AD') {
         console.warn(`[AdMob SSV] Odrzucono. Przyszło hasło: "${custom_data}" dla gracza: ${user_id}`);
-        // Zwracamy statusem 200, żeby Google ubiło stare zapytania w kolejce i przestało nas spamować
         return res.status(200).send('Invalid secret');
     }
 
@@ -1171,7 +1021,6 @@ app.get('/api/admob-reward', async (req, res) => {
     try {
         const existingTx = await Earning.findOne({ txId: 'admob:' + transaction_id });
         if (existingTx) {
-            console.log('[AdMob] Transakcja już zrealizowana:', transaction_id);
             return res.status(200).send('Already processed');
         }
 
@@ -1179,7 +1028,6 @@ app.get('/api/admob-reward', async (req, res) => {
         let user = await User.findOne({ username: new RegExp(`^${safeUser}$`, 'i') });
         
         if (!user) {
-            console.log('[AdMob] Nie znaleziono gracza:', user_id);
             return res.status(200).send('User not found'); 
         }
 
@@ -1198,7 +1046,6 @@ app.get('/api/admob-reward', async (req, res) => {
             txId: 'admob:' + transaction_id
         }).save();
 
-        console.log(`[AdMob SSV] Sukces: ${user.username} otrzymał ${reward} R$.`);
         return res.status(200).send('OK');
 
     } catch (error) {
@@ -1207,7 +1054,7 @@ app.get('/api/admob-reward', async (req, res) => {
     }
 });
 
-    // =================== PAKIETY (BUNDLES) ===================
+// =================== PAKIETY (BUNDLES) ===================
 const BUNDLE_CATEGORIES = { robux: 'Robux', wt: 'War Thunder', ss: 'Star Stable' };
 const BUNDLE_OFFERS = {
     robux: [
@@ -1415,7 +1262,6 @@ app.get('/api/admin/bundle-users', isAdmin, async (req, res) => {
 });
 
 // =================== WEBSOCKETS (Zdarzenia) ===================
-// Tutaj poprawnie otwieramy i zamykamy sockety, całkowicie oddzielone od Express.js
 io.on('connection', (socket) => { 
     socket.on('user_joined', (username) => { if(username) onlineUsersMap.set(socket.id, username); });
     socket.on('chatMessage', (data) => { io.emit('chatMessage', data); }); 
