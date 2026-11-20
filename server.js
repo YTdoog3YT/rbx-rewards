@@ -785,6 +785,11 @@ app.post('/api/redeem-code', async (req, res) => {
     } catch (error) { res.status(500).json({ error: 'Server error.' }); }
 });
 
+// --- HISTORIA DLA STRONY ---
+app.get('/api/earning-history/:username', async (req, res) => {
+    try { const safe = escapeRegex(req.params.username); const regex = new RegExp(`^${safe}$`, 'i'); const earnings = await Earning.find({ username: regex }).lean(); const payouts = await Payout.find({ username: regex }).select('pointsWithdrawn usdAmount status createdAt').lean(); const combined = [...earnings.map(e => ({ ...e, recordType: 'earning' })), ...payouts.map(p => ({ ...p, recordType: 'payout' }))]; combined.sort((a, b) => b.createdAt - a.createdAt); res.json(combined.slice(0, 100)); } catch (error) { res.status(500).json({ error: "Error" }); }
+});
+
 // --- HISTORIA DLA MOBILE ---
 app.get('/api/history/:username', async (req, res) => {
     try { 
@@ -798,7 +803,7 @@ app.get('/api/history/:username', async (req, res) => {
         const historyMap = combined.slice(0, 100).map(item => {
             const dateStr = new Date(item.createdAt).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             let amt = item.recordType === 'payout' ? -(item.pointsWithdrawn || 0) : (item.amount || 0);
-            return { date: dateStr, amount: amt.toFixed(2), source: item.source };
+            return { date: dateStr, amount: Number(amt.toFixed(3)), source: item.source };
         });
         res.json({ history: historyMap }); 
     } catch (error) { res.status(500).json({ error: "Error" }); }
@@ -989,50 +994,56 @@ app.get('/api/admob-settings', (req, res) => {
     });
 });
 
+const ADMOB_REWARDED_UNIT_ID = '9266337617'; // z ca-app-pub-6665069359963275/9266337617
+
 app.get('/api/admob-reward', async (req, res) => {
-    const { user_id, transaction_id, custom_data } = req.query;
+    const { user_id, transaction_id, ad_unit } = req.query;
 
-    if (custom_data !== 'RBX_SEKRET_2026_AD') {
-        console.warn(`[AdMob SSV] Odrzucono. Przyszło hasło: "${custom_data}" dla gracza: ${user_id}`);
-        return res.status(200).send('Invalid secret');
+    // 1) podpis Google: bez niego każdy mógłby sam wywołać ten adres i dopisać sobie R$
+    try {
+        if (!(await verifyAdmobSignature(req.originalUrl))) {
+            console.warn('[AdMob SSV] Odrzucono: zły lub brak podpisu');
+            return res.status(403).send('Invalid signature');
+        }
+    } catch (e) {
+        console.error('[AdMob SSV] Błąd weryfikacji podpisu:', e.message);
+        return res.status(500).send('Verification error'); // AdMob ponowi wywołanie
     }
 
-    if (!user_id || !transaction_id) {
-        return res.status(400).send('Brak wymaganych parametrow');
+    // 2) to musi być NASZA reklama (podpisane żądanie może wysłać też ktoś z własnym kontem AdMob)
+    const unit = String(ad_unit || '');
+    if (unit !== ADMOB_REWARDED_UNIT_ID && !unit.endsWith('/' + ADMOB_REWARDED_UNIT_ID)) {
+        console.warn('[AdMob SSV] Odrzucono: cudza reklama', unit);
+        return res.status(403).send('Wrong ad unit');
     }
+    if (!user_id || !transaction_id) return res.status(400).send('Brak wymaganych parametrow');
 
     try {
-        const existingTx = await Earning.findOne({ txId: 'admob:' + transaction_id });
-        if (existingTx) {
-            return res.status(200).send('Already processed');
+        const user = await User.findOne({ username: new RegExp(`^${escapeRegex(String(user_id).trim())}$`, 'i') });
+        if (!user) return res.status(200).send('User not found');
+
+        const reward = parseFloat(CALCULATED_REWARD_RS.toFixed(3)); // tyle, ile pokazuje przycisk w aplikacji
+
+        // najpierw zajmujemy transakcję (unikalny indeks), potem dopisujemy punkty: powtórka nie da ich drugi raz
+        let saved;
+        try {
+            saved = await new Earning({ username: user.username, amount: reward, source: 'AdMob Video', details: 'Reklama wideo w aplikacji', txId: 'admob:' + transaction_id }).save();
+        } catch (e) {
+            if (e && e.code === 11000) return res.status(200).send('Already processed');
+            throw e;
         }
-
-        const safeUser = escapeRegex(user_id);
-        let user = await User.findOne({ username: new RegExp(`^${safeUser}$`, 'i') });
-        
-        if (!user) {
-            return res.status(200).send('User not found'); 
+        try {
+            const updated = await User.findOneAndUpdate({ _id: user._id }, { $inc: { points: reward } }, { new: true });
+            await addXPAndDailyEarned(updated, reward);
+            allocateGoalProgress(updated, reward);
+            await updated.save();
+        } catch (e) {
+            await Earning.deleteOne({ _id: saved._id }).catch(() => {});
+            throw e;
         }
-
-        const reward = parseFloat(CALCULATED_REWARD_RS.toFixed(2));
-
-        user.points += reward;
-        await addXPAndDailyEarned(user, reward);
-        allocateGoalProgress(user, reward);
-        await user.save();
-
-        await new Earning({
-            username: user.username,
-            amount: reward,
-            source: 'AdMob Video',
-            details: 'Reklama wideo w aplikacji',
-            txId: 'admob:' + transaction_id
-        }).save();
-
         return res.status(200).send('OK');
-
     } catch (error) {
-        console.error('[AdMob SSV] Błąd serwera:', error);
+        console.error('[AdMob SSV] Błąd serwera:', error.message);
         return res.status(500).send('Server Error');
     }
 });
