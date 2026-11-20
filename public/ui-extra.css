@@ -108,6 +108,7 @@ body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-even
 .dash-ref .dash-stat { border-bottom: 0; }
 .footer-contact { margin-bottom: 6px; }
 .footer-contact a { color: var(--c-blue); text-decoration: none; }
+#tab-support .content-box input, #tab-support .content-box textarea { display: block; margin-left: auto; margin-right: auto; max-width: 600px !important; }
 @media (max-width: 1000px) {
     .dash-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "bal bal" "today status" "act act" "ref ref"; }
 }
