@@ -298,6 +298,7 @@
         .goal-tabs { flex-direction: column; }
     }
   </style>
+  <link rel="stylesheet" href="/ui-extra.css">
 </head>
 <body class="on-home-tab">
 
@@ -386,7 +387,7 @@
               <div class="hero-container">
                   <h1 class="hero-title" data-lang="homeHeroTitle">Earn points for <span>surveys and tasks</span></h1>
                   <p class="hero-subtitle" data-lang="homeHeroSub">Complete surveys and tasks from our partners, collect R$ points and cash them out to Revolut or exchange them for game gift cards. Every payout is checked by our team.</p>
-                  <button class="hero-btn" onclick="openLoginModal()" data-lang="btnHeroStart">Create a free account</button>
+                  <button class="hero-btn" onclick="openLoginModal(); setLoginMode('register');" data-lang="btnHeroStart">Create a free account</button>
                   <div class="hero-facts">
                       <div class="hero-fact"><strong>1 R$ = $0.025</strong><span data-lang="factRate">exchange rate</span></div>
                       <div class="hero-fact"><strong>1 R$</strong><span data-lang="factMin">minimum payout</span></div>
@@ -488,14 +489,30 @@
               <p class="guides-all"><a href="/blog.html" data-lang="guidesAllLink">See all guides →</a></p>
 
               <div class="content-box faq-section">
-                  <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;" data-lang="faqTitle">FAQ</h3>
+                  <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;" data-lang="faqTitle">Frequently asked questions</h3>
                   <div class="faq-item" onclick="toggleFaq(this)">
                       <div class="faq-question"><span data-lang="q1">Do you need my Roblox password?</span> <b style="color:#00e676">▼</b></div>
-                      <div class="faq-answer" data-lang="a1">No! We will never ask for your Roblox password. We only need your public username to track your quest progress and assign your points.</div>
+                      <div class="faq-answer" data-lang="a1">No. You log in with your nickname and your own 6-digit PIN. Never give your Roblox password to anyone, including people claiming to be our team.</div>
                   </div>
                   <div class="faq-item" onclick="toggleFaq(this)">
-                      <div class="faq-question"><span data-lang="q2">How fast are quest points added to my balance?</span> <b style="color:#00e676">▼</b></div>
-                      <div class="faq-answer" data-lang="a2">Once you complete a partner quest or quiz, points are credited to your account balance automatically within a few moments.</div>
+                      <div class="faq-question"><span data-lang="q2">How fast are points added to my balance?</span> <b style="color:#00e676">▼</b></div>
+                      <div class="faq-answer" data-lang="a2">Usually within a few minutes, as soon as the partner confirms the task. Some partners confirm tasks later, so it can take longer.</div>
+                  </div>
+                  <div class="faq-item" onclick="toggleFaq(this)">
+                      <div class="faq-question"><span data-lang="q3">Why were some of my points taken back?</span> <b style="color:#00e676">▼</b></div>
+                      <div class="faq-answer" data-lang="a3">Partners check the quality of surveys, sometimes days later. If they reject a task (for example because of random answers, answering too fast, a VPN or multiple accounts), the points and the related referral bonus are deducted. Every deduction is visible in your account history.</div>
+                  </div>
+                  <div class="faq-item" onclick="toggleFaq(this)">
+                      <div class="faq-question"><span data-lang="q4">How long does a payout take?</span> <b style="color:#00e676">▼</b></div>
+                      <div class="faq-answer" data-lang="a4">Every payout is checked manually by our team before it is sent to Revolut, so it is not instant. You can follow the status in your account history, and every completed payout is confirmed on our Discord.</div>
+                  </div>
+                  <div class="faq-item" onclick="toggleFaq(this)">
+                      <div class="faq-question"><span data-lang="q5">Are R$ points real Robux?</span> <b style="color:#00e676">▼</b></div>
+                      <div class="faq-answer" data-lang="a5">No. R$ points are our own loyalty points. 1 R$ is worth $0.025. You can withdraw them to Revolut from 1 R$ or exchange them for game bundles.</div>
+                  </div>
+                  <div class="faq-item" onclick="toggleFaq(this)">
+                      <div class="faq-question"><span data-lang="q6">I forgot my PIN. What now?</span> <b style="color:#00e676">▼</b></div>
+                      <div class="faq-answer" data-lang="a6">Message us on Discord or at rbxrewards.kontakt@gmail.com and we will help you set a new PIN.</div>
                   </div>
               </div>
           </div>
@@ -1283,7 +1300,7 @@ offerwallSection.innerHTML = `
                 return;
             }
             if (typeof Twitch === 'undefined' || !Twitch.Player) return;
-            const options = { width: "100%", height: "100%", channel: "ttv_ytdoog3yt", parent: ["rbx-rewards.onrender.com", "localhost"], muted: true };
+            const options = { width: "100%", height: "100%", channel: "ttv_ytdoog3yt", parent: ["rbx-rewards.pl", "www.rbx-rewards.pl", "rbx-rewards.onrender.com", "localhost"], muted: true };
             twitchPlayer = new Twitch.Player("twitch-embed-player", options);
             twitchPlayer.addEventListener(Twitch.Player.ONLINE, () => {
                 if (sessionStorage.getItem('twitch_closed') !== 'true') document.getElementById('twitchWidget').style.display = 'flex';
@@ -2705,5 +2722,6 @@ const revenueUsd = dailyR / 15;
         }
     }
   </script>
+  <script src="/ui-extra.js"></script>
 </body>
 </html>
