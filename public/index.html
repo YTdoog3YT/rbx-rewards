@@ -123,7 +123,25 @@
     .guide-link p { color: #b0b5c0; }
     .guide-more { color: #00e676; font-weight: bold; font-size: 0.95rem; }
     .guides-all { text-align: center; margin: -5px 0 25px 0; }
-    .guides-all a { color: #00e676; font-weight: bold; text-decoration: none; }
+        .guides-all a { color: #00e676; font-weight: bold; text-decoration: none; }
+    .hero-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; max-width: 760px; margin-top: 35px; }
+    .hero-fact { background: #14171d; border: 1px solid #2a2e39; border-radius: 10px; padding: 12px 10px; display: flex; flex-direction: column; gap: 3px; }
+    .hero-fact strong { color: #fff; font-size: 1.05rem; }
+    .hero-fact span { color: #8a90a0; font-size: 0.82rem; }
+    .proof-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; margin-bottom: 25px; }
+    .proof-grid .content-box { margin-bottom: 0; min-width: 0; }
+    .proof-box .ref-table-container { overflow-x: auto; }
+    .proof-box { text-align: left; display: flex; flex-direction: column; }
+    .proof-title { color: #fff; font-size: 1.15rem; margin-bottom: 12px; }
+    .proof-note { color: #8a90a0; font-size: 0.85rem; margin-top: 12px; }
+    .proof-big { color: #fff; font-size: 1.05rem; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .proof-dot { width: 9px; height: 9px; background: #00e676; border-radius: 50%; display: inline-block; }
+    .proof-text { color: #b0b5c0; font-size: 0.95rem; line-height: 1.55; margin-bottom: 18px; }
+    .proof-btn { margin-top: auto; display: block; text-align: center; background: #5865F2; color: #fff; font-weight: bold; padding: 12px; border-radius: 8px; text-decoration: none; }
+    .proof-btn:hover { background: #4752c4; }
+    .about-box { text-align: left; }
+    .about-box p { color: #b0b5c0; line-height: 1.6; margin-bottom: 10px; }
+    @media (max-width: 760px) { .hero-facts { grid-template-columns: repeat(2, 1fr); } .proof-grid { grid-template-columns: 1fr; } }
     
     .social-tasks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
     .social-task-card { background: #14171d; border: 1px solid #2a2e39; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; text-align: left; }
@@ -362,28 +380,61 @@
       <main id="tab-home">
           <div id="home-logged-out" style="display: block; width: 100%;">
               <div class="hero-container">
-                  <h1 class="hero-title" data-lang="homeHeroTitle">Complete Quests & Claim <span>R$ Rewards!</span></h1>
-                  <p class="hero-subtitle" data-lang="homeHeroSub">Connect your Roblox username to complete interactive quests, test games, and collect R$ points. Safe & instant — no passwords required!</p>
-                  <button class="hero-btn" onclick="openLoginModal()" data-lang="btnHeroStart">CONNECT ACCOUNT & START QUESTS</button>
+                  <h1 class="hero-title" data-lang="homeHeroTitle">Earn points for <span>surveys and tasks</span></h1>
+                  <p class="hero-subtitle" data-lang="homeHeroSub">Complete surveys and tasks from our partners, collect R$ points and cash them out to Revolut or exchange them for game gift cards. Every payout is checked by our team.</p>
+                  <button class="hero-btn" onclick="openLoginModal()" data-lang="btnHeroStart">Create a free account</button>
+                  <div class="hero-facts">
+                      <div class="hero-fact"><strong>1 R$ = $0.025</strong><span data-lang="factRate">exchange rate</span></div>
+                      <div class="hero-fact"><strong>1 R$</strong><span data-lang="factMin">minimum payout</span></div>
+                      <div class="hero-fact"><strong data-lang="factMethodVal">Revolut</strong><span data-lang="factMethod">or game gift cards</span></div>
+                      <div class="hero-fact"><strong data-lang="factSinceVal">August 2026</strong><span data-lang="factSince">running since</span></div>
+                  </div>
               </div>
 
               <h2 class="section-title" data-lang="howItWorksTitle">⚡ How Does It Work?</h2>
               <div class="steps-grid">
                   <div class="step-card">
                       <span class="step-badge" data-lang="step1Badge">STEP 1</span>
-                      <h3 data-lang="step1Title">🎮 Connect Username</h3>
-                      <p data-lang="step1Desc">Click the login button and enter your Roblox username. We never ask for your password or sensitive data.</p>
+                      <h3 data-lang="step1Title">🎮 Create an account</h3>
+                      <p data-lang="step1Desc">Enter your Roblox nickname and set your own 6-digit PIN. We never ask for your Roblox password.</p>
                   </div>
                   <div class="step-card">
                       <span class="step-badge" data-lang="step2Badge">STEP 2</span>
-                      <h3 data-lang="step2Title">🚀 Complete Quests</h3>
-                      <p data-lang="step2Desc">Browse available community tasks, test new mobile & PC games, or share your opinion in partner quizzes.</p>
+                      <h3 data-lang="step2Title">🚀 Complete tasks</h3>
+                      <p data-lang="step2Desc">Choose surveys and tasks from our partners, such as TimeWall and CPX Research. Points are added after the partner confirms the task.</p>
                   </div>
                   <div class="step-card">
                       <span class="step-badge" data-lang="step3Badge">STEP 3</span>
-                      <h3 data-lang="step3Title">💎 Claim R$ Rewards</h3>
-                      <p data-lang="step3Desc">Points are credited to your profile balance automatically. Exchange your collected R$ points anytime!</p>
+                      <h3 data-lang="step3Title">💎 Cash out</h3>
+                      <p data-lang="step3Desc">Withdraw to Revolut from 1 R$ or put your points into a game bundle. Every payout is reviewed by our team.</p>
                   </div>
+              </div>
+
+              <div class="proof-grid">
+                  <div class="content-box proof-box">
+                      <h3 class="proof-title" data-lang="homePayoutsTitle">Latest payouts</h3>
+                      <div class="ref-table-container">
+                          <table class="ref-table">
+                              <thead><tr><th data-lang="tableUser">User</th><th data-lang="tableAmount">Amount</th><th data-lang="tableTime">Time</th></tr></thead>
+                              <tbody id="homePayoutsBody">
+                                  <tr><td colspan="3" style="text-align: center; color: #888;" data-lang="loadingCashouts">Loading recent claims...</td></tr>
+                              </tbody>
+                          </table>
+                      </div>
+                      <p class="proof-note" data-lang="homePayoutsNote">Every payout and bundle delivery is also confirmed on our Discord server.</p>
+                  </div>
+                  <div class="content-box proof-box">
+                      <h3 class="proof-title" data-lang="homeDiscordTitle">Our community</h3>
+                      <p class="proof-big"><span class="proof-dot"></span><span id="homeDiscordOnline">...</span> <span data-lang="homeDiscordOnline">online on Discord</span></p>
+                      <p class="proof-text" data-lang="homeDiscordDesc">On our Discord server you will find payout confirmations, promo codes, announcements and support.</p>
+                      <a class="proof-btn" href="https://discord.gg/ca8a9e33ke" target="_blank" rel="noopener" data-lang="homeDiscordBtn">Join Discord</a>
+                  </div>
+              </div>
+
+              <div class="content-box about-box">
+                  <h3 class="proof-title" data-lang="homeAboutTitle">Who runs RBX Rewards?</h3>
+                  <p data-lang="homeAboutP1">RBX Rewards is an independent project from Poland that has been running since August 2026. It is run by its founder together with a small admin team: the founder takes care of most of the work, and the admins help with smaller tasks.</p>
+                  <p data-lang="homeAboutP2">We are not affiliated with Roblox Corporation. R$ points are our own loyalty points, not Robux. You can reach us on Discord or at rbxrewards.kontakt@gmail.com.</p>
               </div>
 
               <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
@@ -505,10 +556,12 @@
         .then(res => res.json())
         .then(data => {
             const count = data.presence_count || 0;
-            document.getElementById('custom-discord-count').innerText = count + ' Online';
+                        document.getElementById('custom-discord-count').innerText = count + ' Online';
+            const homeOnline = document.getElementById('homeDiscordOnline'); if (homeOnline) homeOnline.innerText = count;
         })
         .catch(() => {
-            document.getElementById('custom-discord-count').innerText = 'Discord';
+                    document.getElementById('custom-discord-count').innerText = 'Discord';
+            const homeOnline = document.getElementById('homeDiscordOnline'); if (homeOnline) homeOnline.innerText = '–';
         });
 </script>
 <!-- KONIEC WŁASNEGO WIDŻETU -->
@@ -1107,6 +1160,12 @@ const translations = {
     Object.assign(translations.pl, {"guidesMainTitle": "📚 Poradniki i Blog", "guidesAllLink": "Zobacz wszystkie poradniki →", "guideRead": "Czytaj poradnik →", "hg1Meta": "Poradnik o platformie", "hg1Title": "Jak działa RBX Rewards: punkty, wypłaty i pakiety", "hg1Desc": "Jasne i uczciwe wyjaśnienie, jak działa RBX Rewards: skąd biorą się punkty R$, jak działają wypłaty na Revolut i pakiety do gier oraz dlaczego część punktów może zostać cofnięta.", "hg2Meta": "Społeczność", "hg2Title": "Discord dla graczy: jak bezpiecznie korzystać z naszego serwera", "hg2Desc": "Czym jest Discord, co znajdziesz na serwerze RBX Rewards, jak bezpiecznie skonfigurować konto i jak rozpoznać najczęstsze oszustwa na Discordzie.", "hg3Meta": "Roblox", "hg3Title": "Lagi i niskie FPS w Robloxie: praktyczny poradnik", "hg3Desc": "Poznaj różnicę między niskim FPS a lagami sieciowymi w Robloxie, sprawdź, który problem masz, i dowiedz się, które ustawienia i nawyki naprawdę pomagają na PC i telefonie.", "hg4Meta": "War Thunder", "hg4Title": "War Thunder dla początkujących: jak mądrze wydawać Golden Eagles", "hg4Desc": "Poradnik dla nowych graczy o walutach w War Thunder: Srebrne Lwy, Punkty Badań i Golden Eagles, oraz uczciwe porady, co warto kupić, a czego unikać.", "hg5Meta": "Ankiety", "hg5Title": "Ankiety online: jak częściej się kwalifikować i unikać cofnięć", "hg5Desc": "Dlaczego płatne ankiety Cię odrzucają, jak działają kontrole jakości i jakie proste nawyki pomagają ukończyć więcej ankiet i zatrzymać zdobyte nagrody.", "hg6Meta": "Bezpieczeństwo", "hg6Title": "Bezpieczeństwo w sieci dla graczy: chroń konta i pieniądze", "hg6Desc": "Praktyczne bezpieczeństwo w sieci dla graczy: silne hasła, uwierzytelnianie dwuskładnikowe, rozpoznawanie phishingu i oszustw typu „darmowe Robuxy\" oraz co zrobić, gdy ktoś przejmie konto."});
     Object.assign(translations.de, {"guidesMainTitle": "📚 Guides & Blog", "guidesAllLink": "Alle Guides ansehen →", "guideRead": "Guide lesen →", "hg1Meta": "Plattform-Guide", "hg1Title": "So funktioniert RBX Rewards: Punkte, Auszahlungen und Pakete", "hg1Desc": "Eine klare und ehrliche Erklärung, wie RBX Rewards funktioniert: wie du R$-Punkte verdienst, wie Auszahlungen über Revolut und Spielpakete ablaufen und warum Punkte zurückgebucht werden können.", "hg2Meta": "Community", "hg2Title": "Discord für Gamer: So nutzt du unseren Community-Server sicher", "hg2Desc": "Was Discord ist, was dich auf dem RBX-Rewards-Server erwartet, wie du dein Konto sicher einrichtest und wie du die häufigsten Discord-Betrugsmaschen erkennst.", "hg3Meta": "Roblox", "hg3Title": "Roblox-Lag und niedrige FPS: Ein praktischer Guide", "hg3Desc": "Lerne den Unterschied zwischen niedrigen FPS und Netzwerk-Lag in Roblox kennen, prüfe, welches Problem du hast, und erfahre, welche Einstellungen am PC und Handy wirklich helfen.", "hg4Meta": "War Thunder", "hg4Title": "War Thunder für Einsteiger: Golden Eagles sinnvoll ausgeben", "hg4Desc": "Ein einsteigerfreundlicher Guide zu den Währungen in War Thunder: Silberlöwen, Forschungspunkte und Golden Eagles, mit ehrlichen Tipps, was sich lohnt und was nicht.", "hg5Meta": "Umfragen", "hg5Title": "Online-Umfragen: Öfter qualifizieren und Stornierungen vermeiden", "hg5Desc": "Warum bezahlte Umfragen dich aussortieren, wie Qualitätsprüfungen funktionieren und welche einfachen Gewohnheiten dir helfen, mehr Umfragen abzuschließen und deine Belohnungen zu behalten.", "hg6Meta": "Sicherheit", "hg6Title": "Online-Sicherheit für Gamer: Schütze deine Konten und dein Geld", "hg6Desc": "Praktische Online-Sicherheit für Gamer: starke Passwörter, Zwei-Faktor-Authentifizierung, Phishing und „Gratis-Robux\"-Betrug erkennen und was zu tun ist, wenn ein Konto gestohlen wird."});
     Object.assign(translations.ru, {"guidesMainTitle": "📚 Гайды и блог", "guidesAllLink": "Все гайды →", "guideRead": "Читать гайд →", "hg1Meta": "Гайд по платформе", "hg1Title": "Как работает RBX Rewards: баллы, выплаты и пакеты", "hg1Desc": "Понятное и честное объяснение работы RBX Rewards: откуда берутся баллы R$, как работают выплаты на Revolut и игровые пакеты и почему баллы могут быть списаны.", "hg2Meta": "Сообщество", "hg2Title": "Discord для геймеров: как безопасно пользоваться нашим сервером", "hg2Desc": "Что такое Discord, что есть на сервере RBX Rewards, как безопасно настроить аккаунт и как распознать самые частые мошеннические схемы в Discord.", "hg3Meta": "Roblox", "hg3Title": "Лаги и низкий FPS в Roblox: практический гайд", "hg3Desc": "Разберитесь в разнице между низким FPS и сетевыми лагами в Roblox, проверьте, какая у вас проблема, и узнайте, какие настройки действительно помогают на ПК и телефоне.", "hg4Meta": "War Thunder", "hg4Title": "War Thunder для новичков: как с умом тратить Золотые орлы", "hg4Desc": "Гайд для новичков по валютам War Thunder: серебряные львы, очки исследования и Золотые орлы, а также честные советы, что стоит покупать и чего избегать.", "hg5Meta": "Опросы", "hg5Title": "Онлайн-опросы: как чаще проходить отбор и избегать отмен", "hg5Desc": "Почему платные опросы вас отсеивают, как работают проверки качества и какие простые привычки помогают проходить больше опросов и сохранять заработанные награды.", "hg6Meta": "Безопасность", "hg6Title": "Безопасность в интернете для геймеров: защитите аккаунты и деньги", "hg6Desc": "Практическая безопасность для геймеров: надёжные пароли, двухфакторная аутентификация, распознавание фишинга и схем «бесплатных Robux», а также что делать, если аккаунт украли."});
+
+    // --- TLUMACZENIA NOWEJ STRONY GLOWNEJ (HERO, WYPLATY, O NAS) ---
+    Object.assign(translations.en, {"homeHeroTitle": "Earn points for <span>surveys and tasks</span>", "homeHeroSub": "Complete surveys and tasks from our partners, collect R$ points and cash them out to Revolut or exchange them for game gift cards. Every payout is checked by our team.", "btnHeroStart": "Create a free account", "factRate": "exchange rate", "factMin": "minimum payout", "factMethodVal": "Revolut", "factMethod": "or game gift cards", "factSinceVal": "August 2026", "factSince": "running since", "step1Title": "🎮 Create an account", "step1Desc": "Enter your Roblox nickname and set your own 6-digit PIN. We never ask for your Roblox password.", "step2Title": "🚀 Complete tasks", "step2Desc": "Choose surveys and tasks from our partners, such as TimeWall and CPX Research. Points are added after the partner confirms the task.", "step3Title": "💎 Cash out", "step3Desc": "Withdraw to Revolut from 1 R$ or put your points into a game bundle. Every payout is reviewed by our team.", "homePayoutsTitle": "Latest payouts", "homePayoutsNote": "Every payout and bundle delivery is also confirmed on our Discord server.", "homeDiscordTitle": "Our community", "homeDiscordOnline": "online on Discord", "homeDiscordDesc": "On our Discord server you will find payout confirmations, promo codes, announcements and support.", "homeDiscordBtn": "Join Discord", "homeAboutTitle": "Who runs RBX Rewards?", "homeAboutP1": "RBX Rewards is an independent project from Poland that has been running since August 2026. It is run by its founder together with a small admin team: the founder takes care of most of the work, and the admins help with smaller tasks.", "homeAboutP2": "We are not affiliated with Roblox Corporation. R$ points are our own loyalty points, not Robux. You can reach us on Discord or at rbxrewards.kontakt@gmail.com."});
+    Object.assign(translations.pl, {"homeHeroTitle": "Zdobywaj punkty za <span>ankiety i zadania</span>", "homeHeroSub": "Wykonuj ankiety i zadania od naszych partnerów, zbieraj punkty R$ i wypłacaj je na Revolut albo wymieniaj na karty podarunkowe do gier. Każdą wypłatę sprawdza nasz zespół.", "btnHeroStart": "Załóż darmowe konto", "factRate": "przelicznik", "factMin": "minimalna wypłata", "factMethodVal": "Revolut", "factMethod": "lub karty do gier", "factSinceVal": "Sierpień 2026", "factSince": "działamy od", "step1Title": "🎮 Załóż konto", "step1Desc": "Podaj swój nick z Robloxa i ustaw własny 6-cyfrowy PIN. Nigdy nie prosimy o hasło do Robloxa.", "step2Title": "🚀 Wykonuj zadania", "step2Desc": "Wybieraj ankiety i zadania od naszych partnerów, takich jak TimeWall i CPX Research. Punkty dodają się po potwierdzeniu zadania przez partnera.", "step3Title": "💎 Wypłać", "step3Desc": "Wypłacaj na Revolut od 1 R$ albo wpłacaj punkty do pakietu do gry. Każdą wypłatę sprawdza nasz zespół.", "homePayoutsTitle": "Ostatnie wypłaty", "homePayoutsNote": "Każda wypłata i realizacja pakietu jest też potwierdzana na naszym serwerze Discord.", "homeDiscordTitle": "Nasza społeczność", "homeDiscordOnline": "online na Discordzie", "homeDiscordDesc": "Na naszym serwerze Discord znajdziesz potwierdzenia wypłat, kody promocyjne, ogłoszenia i pomoc.", "homeDiscordBtn": "Dołącz do Discorda", "homeAboutTitle": "Kto prowadzi RBX Rewards?", "homeAboutP1": "RBX Rewards to niezależny projekt z Polski, który działa od sierpnia 2026. Prowadzi go założyciel razem z małą administracją: założyciel zajmuje się większością pracy, a administracja pomaga przy mniejszych zadaniach.", "homeAboutP2": "Nie jesteśmy powiązani z Roblox Corporation. Punkty R$ to nasze własne punkty lojalnościowe, a nie Robuxy. Skontaktujesz się z nami na Discordzie lub pod adresem rbxrewards.kontakt@gmail.com."});
+    Object.assign(translations.de, {"homeHeroTitle": "Verdiene Punkte mit <span>Umfragen und Aufgaben</span>", "homeHeroSub": "Erledige Umfragen und Aufgaben unserer Partner, sammle R$-Punkte und lass sie dir auf Revolut auszahlen oder tausche sie gegen Spiel-Geschenkkarten. Jede Auszahlung wird von unserem Team geprüft.", "btnHeroStart": "Kostenloses Konto erstellen", "factRate": "Umrechnungskurs", "factMin": "Mindestauszahlung", "factMethodVal": "Revolut", "factMethod": "oder Spiel-Geschenkkarten", "factSinceVal": "August 2026", "factSince": "online seit", "step1Title": "🎮 Konto erstellen", "step1Desc": "Gib deinen Roblox-Nickname ein und lege deine eigene 6-stellige PIN fest. Wir fragen nie nach deinem Roblox-Passwort.", "step2Title": "🚀 Aufgaben erledigen", "step2Desc": "Wähle Umfragen und Aufgaben unserer Partner wie TimeWall und CPX Research. Punkte werden gutgeschrieben, sobald der Partner die Aufgabe bestätigt.", "step3Title": "💎 Auszahlen", "step3Desc": "Lass dir ab 1 R$ auf Revolut auszahlen oder zahle Punkte in ein Spielpaket ein. Jede Auszahlung wird von unserem Team geprüft.", "homePayoutsTitle": "Letzte Auszahlungen", "homePayoutsNote": "Jede Auszahlung und Paketlieferung wird zusätzlich auf unserem Discord-Server bestätigt.", "homeDiscordTitle": "Unsere Community", "homeDiscordOnline": "online auf Discord", "homeDiscordDesc": "Auf unserem Discord-Server findest du Auszahlungsbestätigungen, Promo-Codes, Ankündigungen und Support.", "homeDiscordBtn": "Discord beitreten", "homeAboutTitle": "Wer betreibt RBX Rewards?", "homeAboutP1": "RBX Rewards ist ein unabhängiges Projekt aus Polen, das seit August 2026 läuft. Es wird vom Gründer zusammen mit einem kleinen Admin-Team betrieben: Der Gründer übernimmt den Großteil der Arbeit, die Admins helfen bei kleineren Aufgaben.", "homeAboutP2": "Wir sind nicht mit der Roblox Corporation verbunden. R$-Punkte sind unsere eigenen Treuepunkte, keine Robux. Du erreichst uns auf Discord oder unter rbxrewards.kontakt@gmail.com."});
+    Object.assign(translations.ru, {"homeHeroTitle": "Зарабатывай баллы за <span>опросы и задания</span>", "homeHeroSub": "Выполняй опросы и задания наших партнёров, собирай баллы R$ и выводи их на Revolut или обменивай на подарочные карты для игр. Каждую выплату проверяет наша команда.", "btnHeroStart": "Создать бесплатный аккаунт", "factRate": "курс обмена", "factMin": "минимальная выплата", "factMethodVal": "Revolut", "factMethod": "или карты для игр", "factSinceVal": "Август 2026", "factSince": "работаем с", "step1Title": "🎮 Создай аккаунт", "step1Desc": "Введи свой ник в Roblox и задай собственный 6-значный PIN-код. Мы никогда не просим пароль от Roblox.", "step2Title": "🚀 Выполняй задания", "step2Desc": "Выбирай опросы и задания наших партнёров, например TimeWall и CPX Research. Баллы начисляются после подтверждения задания партнёром.", "step3Title": "💎 Выводи", "step3Desc": "Выводи на Revolut от 1 R$ или вноси баллы в игровой пакет. Каждую выплату проверяет наша команда.", "homePayoutsTitle": "Последние выплаты", "homePayoutsNote": "Каждая выплата и выдача пакета также подтверждается на нашем сервере Discord.", "homeDiscordTitle": "Наше сообщество", "homeDiscordOnline": "онлайн в Discord", "homeDiscordDesc": "На нашем сервере Discord есть подтверждения выплат, промокоды, объявления и поддержка.", "homeDiscordBtn": "Войти в Discord", "homeAboutTitle": "Кто управляет RBX Rewards?", "homeAboutP1": "RBX Rewards — независимый проект из Польши, работающий с августа 2026 года. Его ведёт основатель вместе с небольшой командой администраторов: основатель выполняет большую часть работы, а администраторы помогают с небольшими задачами.", "homeAboutP2": "Мы не связаны с Roblox Corporation. Баллы R$ — наши собственные баллы лояльности, а не Robux. Связаться с нами можно в Discord или по адресу rbxrewards.kontakt@gmail.com."});
 
     function injectProtectedContent() {
         const offerwallSection = document.getElementById("offerwallSection");
@@ -2302,16 +2361,19 @@ else if (item.source === 'Admin') {
 
     async function fetchLatestPayouts() {
         try {
-            const response = await fetch('/api/latest-payouts'); if (!response.ok) return; const payouts = await response.json(); const tbody = document.getElementById('recentPayoutsBody'); if (!tbody) return;
+            const response = await fetch('/api/latest-payouts'); if (!response.ok) return; const payouts = await response.json();
+            const bodies = ['recentPayoutsBody', 'homePayoutsBody'].map(id => document.getElementById(id)).filter(Boolean);
+            if (bodies.length === 0) return;
             const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en'; const emptyMsg = translations[tLang].emptyCashouts || "No claims yet!";
-            if (!payouts || payouts.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`; return; }
+            if (!payouts || payouts.length === 0) { bodies.forEach(tb => { tb.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${emptyMsg}</td></tr>`; }); return; }
             let html = '';
             payouts.forEach(p => {
                 const date = new Date(p.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const rawPts = p.pointsWithdrawn !== undefined ? p.pointsWithdrawn : p.points; const pts = parseFloat(rawPts) || 0;
-                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td><td style="color: #00e676; font-weight: bold;">+${pts.toFixed(2)} R$</td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
+                const usd = (pts * 0.025).toFixed(2);
+                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td><td style="color: #00e676; font-weight: bold;">+${pts.toFixed(2)} R$ <span style="color: #8a90a0; font-weight: normal; font-size: 0.85rem;">($${usd})</span></td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
             });
-            tbody.innerHTML = html;
+            bodies.forEach(tb => { tb.innerHTML = html; });
         } catch (error) {}
     }
 
