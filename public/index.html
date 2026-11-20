@@ -117,6 +117,13 @@
     .guide-article h4 { color: #fff; font-size: 1.05rem; margin: 15px 0 8px 0; }
     .guide-article p { margin-bottom: 12px; font-size: 0.96rem; }
     .guide-meta { font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+    .guides-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    .guide-link { display: block; text-decoration: none; transition: 0.2s; }
+    .guide-link:hover { border-color: #00e676; transform: translateY(-2px); }
+    .guide-link p { color: #b0b5c0; }
+    .guide-more { color: #00e676; font-weight: bold; font-size: 0.95rem; }
+    .guides-all { text-align: center; margin: -5px 0 25px 0; }
+    .guides-all a { color: #00e676; font-weight: bold; text-decoration: none; }
     
     .social-tasks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
     .social-task-card { background: #14171d; border: 1px solid #2a2e39; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; text-align: left; }
@@ -381,23 +388,46 @@
 
               <div class="adsense-banner"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
 
-              <h2 class="section-title" data-lang="guidesMainTitle">📚 Roblox Community Guides</h2>
-              <div class="guides-container">
-                  <article class="guide-article">
-                      <span class="guide-meta" data-lang="g1Meta">Performance Guide • Updated 2026</span>
-                      <h3 data-lang="g1Title">How to Optimize Roblox for Maximum FPS and Low Ping in 2026</h3>
-                      <p data-lang="g1P1">Experiencing frame drops or network lag during intense Roblox sessions can ruin your gameplay. Optimizing your client and system configuration can drastically boost your frames per second (FPS) and stabilize your connection.</p>
-                      <h4 data-lang="g1Sub1">1. In-Game Graphics & Rendering Adjustments</h4>
-                      <p data-lang="g1P2">Start by opening the Roblox in-game menu (press ESC) and switching your Graphics Mode from Automatic to Manual. Lowering the graphics quality slider disables heavy shaders.</p>
-                  </article>
-                  <article class="guide-article">
-                      <span class="guide-meta" data-lang="g2Meta">Security & Safety • Essential Reading</span>
-                      <h3 data-lang="g2Title">Complete Guide to Roblox Account Security</h3>
-                      <p data-lang="g2P1">As your Roblox profile grows, keeping your account secure becomes critical. Legitimate platforms never need your password.</p>
-                      <h4 data-lang="g2Sub2">2. Enabling Two-Step Verification (2FA)</h4>
-                      <p data-lang="g2P3">Always activate Two-Step Verification in your official Roblox Account Settings using a dedicated Authenticator App rather than SMS or email alone.</p>
-                  </article>
+              <h2 class="section-title" data-lang="guidesMainTitle">📚 Guides &amp; Blog</h2>
+              <div class="guides-container guides-grid">
+                  <a class="guide-article guide-link" href="/blog/how-rbx-rewards-works.html">
+                      <span class="guide-meta" data-lang="hg1Meta">Platform Guide</span>
+                      <h3 data-lang="hg1Title">How RBX Rewards Works: Points, Payouts and Bundles Explained</h3>
+                      <p data-lang="hg1Desc">A clear, honest explanation of how RBX Rewards works: how you earn R$ points, how payouts to Revolut and game bundles work, and why some points can be reversed.</p>
+                      <span class="guide-more" data-lang="guideRead">Read the guide →</span>
+                  </a>
+                  <a class="guide-article guide-link" href="/blog/discord-community-guide.html">
+                      <span class="guide-meta" data-lang="hg2Meta">Community</span>
+                      <h3 data-lang="hg2Title">Discord for Gamers: How to Use Our Community Server Safely</h3>
+                      <p data-lang="hg2Desc">What Discord is, what you will find on the RBX Rewards server, how to set up your account securely and how to recognise the most common Discord scams.</p>
+                      <span class="guide-more" data-lang="guideRead">Read the guide →</span>
+                  </a>
+                  <a class="guide-article guide-link" href="/blog/roblox-fps-lag-guide.html">
+                      <span class="guide-meta" data-lang="hg3Meta">Roblox</span>
+                      <h3 data-lang="hg3Title">Roblox Lag and Low FPS: A Practical Fix Guide</h3>
+                      <p data-lang="hg3Desc">Learn the difference between low FPS and network lag in Roblox, how to check which one you have, and which settings and habits really help on PC and mobile.</p>
+                      <span class="guide-more" data-lang="guideRead">Read the guide →</span>
+                  </a>
+                  <a class="guide-article guide-link" href="/blog/war-thunder-golden-eagles-guide.html">
+                      <span class="guide-meta" data-lang="hg4Meta">War Thunder</span>
+                      <h3 data-lang="hg4Title">War Thunder for Beginners: How to Spend Golden Eagles Wisely</h3>
+                      <p data-lang="hg4Desc">A beginner-friendly guide to War Thunder currencies: Silver Lions, Research Points and Golden Eagles, plus honest advice on what is worth buying and what to avoid.</p>
+                      <span class="guide-more" data-lang="guideRead">Read the guide →</span>
+                  </a>
+                  <a class="guide-article guide-link" href="/blog/online-surveys-guide.html">
+                      <span class="guide-meta" data-lang="hg5Meta">Surveys</span>
+                      <h3 data-lang="hg5Title">Online Surveys: How to Qualify More Often and Avoid Reversals</h3>
+                      <p data-lang="hg5Desc">Why paid surveys screen you out, how quality checks work, and simple habits that help you complete more surveys and keep the rewards you earn.</p>
+                      <span class="guide-more" data-lang="guideRead">Read the guide →</span>
+                  </a>
+                  <a class="guide-article guide-link" href="/blog/online-safety-guide.html">
+                      <span class="guide-meta" data-lang="hg6Meta">Safety</span>
+                      <h3 data-lang="hg6Title">Online Safety for Gamers: Protect Your Accounts and Your Money</h3>
+                      <p data-lang="hg6Desc">Practical online safety for gamers: strong passwords, two-factor authentication, recognising phishing and &quot;free Robux&quot; scams, and what to do if an account gets stolen.</p>
+                      <span class="guide-more" data-lang="guideRead">Read the guide →</span>
+                  </a>
               </div>
+              <p class="guides-all"><a href="/blog.html" data-lang="guidesAllLink">See all guides →</a></p>
 
               <div class="content-box faq-section">
                   <h3 style="color: #00e676; margin-bottom: 15px; text-align: center;" data-lang="faqTitle">FAQ</h3>
@@ -1072,6 +1102,12 @@ const translations = {
         }
     };
     
+    // --- TLUMACZENIA PORADNIKOW NA STRONIE GLOWNEJ ---
+    Object.assign(translations.en, {"guidesMainTitle": "📚 Guides & Blog", "guidesAllLink": "See all guides →", "guideRead": "Read the guide →", "hg1Meta": "Platform Guide", "hg1Title": "How RBX Rewards Works: Points, Payouts and Bundles Explained", "hg1Desc": "A clear, honest explanation of how RBX Rewards works: how you earn R$ points, how payouts to Revolut and game bundles work, and why some points can be reversed.", "hg2Meta": "Community", "hg2Title": "Discord for Gamers: How to Use Our Community Server Safely", "hg2Desc": "What Discord is, what you will find on the RBX Rewards server, how to set up your account securely and how to recognise the most common Discord scams.", "hg3Meta": "Roblox", "hg3Title": "Roblox Lag and Low FPS: A Practical Fix Guide", "hg3Desc": "Learn the difference between low FPS and network lag in Roblox, how to check which one you have, and which settings and habits really help on PC and mobile.", "hg4Meta": "War Thunder", "hg4Title": "War Thunder for Beginners: How to Spend Golden Eagles Wisely", "hg4Desc": "A beginner-friendly guide to War Thunder currencies: Silver Lions, Research Points and Golden Eagles, plus honest advice on what is worth buying and what to avoid.", "hg5Meta": "Surveys", "hg5Title": "Online Surveys: How to Qualify More Often and Avoid Reversals", "hg5Desc": "Why paid surveys screen you out, how quality checks work, and simple habits that help you complete more surveys and keep the rewards you earn.", "hg6Meta": "Safety", "hg6Title": "Online Safety for Gamers: Protect Your Accounts and Your Money", "hg6Desc": "Practical online safety for gamers: strong passwords, two-factor authentication, recognising phishing and \"free Robux\" scams, and what to do if an account gets stolen."});
+    Object.assign(translations.pl, {"guidesMainTitle": "📚 Poradniki i Blog", "guidesAllLink": "Zobacz wszystkie poradniki →", "guideRead": "Czytaj poradnik →", "hg1Meta": "Poradnik o platformie", "hg1Title": "Jak działa RBX Rewards: punkty, wypłaty i pakiety", "hg1Desc": "Jasne i uczciwe wyjaśnienie, jak działa RBX Rewards: skąd biorą się punkty R$, jak działają wypłaty na Revolut i pakiety do gier oraz dlaczego część punktów może zostać cofnięta.", "hg2Meta": "Społeczność", "hg2Title": "Discord dla graczy: jak bezpiecznie korzystać z naszego serwera", "hg2Desc": "Czym jest Discord, co znajdziesz na serwerze RBX Rewards, jak bezpiecznie skonfigurować konto i jak rozpoznać najczęstsze oszustwa na Discordzie.", "hg3Meta": "Roblox", "hg3Title": "Lagi i niskie FPS w Robloxie: praktyczny poradnik", "hg3Desc": "Poznaj różnicę między niskim FPS a lagami sieciowymi w Robloxie, sprawdź, który problem masz, i dowiedz się, które ustawienia i nawyki naprawdę pomagają na PC i telefonie.", "hg4Meta": "War Thunder", "hg4Title": "War Thunder dla początkujących: jak mądrze wydawać Golden Eagles", "hg4Desc": "Poradnik dla nowych graczy o walutach w War Thunder: Srebrne Lwy, Punkty Badań i Golden Eagles, oraz uczciwe porady, co warto kupić, a czego unikać.", "hg5Meta": "Ankiety", "hg5Title": "Ankiety online: jak częściej się kwalifikować i unikać cofnięć", "hg5Desc": "Dlaczego płatne ankiety Cię odrzucają, jak działają kontrole jakości i jakie proste nawyki pomagają ukończyć więcej ankiet i zatrzymać zdobyte nagrody.", "hg6Meta": "Bezpieczeństwo", "hg6Title": "Bezpieczeństwo w sieci dla graczy: chroń konta i pieniądze", "hg6Desc": "Praktyczne bezpieczeństwo w sieci dla graczy: silne hasła, uwierzytelnianie dwuskładnikowe, rozpoznawanie phishingu i oszustw typu „darmowe Robuxy\" oraz co zrobić, gdy ktoś przejmie konto."});
+    Object.assign(translations.de, {"guidesMainTitle": "📚 Guides & Blog", "guidesAllLink": "Alle Guides ansehen →", "guideRead": "Guide lesen →", "hg1Meta": "Plattform-Guide", "hg1Title": "So funktioniert RBX Rewards: Punkte, Auszahlungen und Pakete", "hg1Desc": "Eine klare und ehrliche Erklärung, wie RBX Rewards funktioniert: wie du R$-Punkte verdienst, wie Auszahlungen über Revolut und Spielpakete ablaufen und warum Punkte zurückgebucht werden können.", "hg2Meta": "Community", "hg2Title": "Discord für Gamer: So nutzt du unseren Community-Server sicher", "hg2Desc": "Was Discord ist, was dich auf dem RBX-Rewards-Server erwartet, wie du dein Konto sicher einrichtest und wie du die häufigsten Discord-Betrugsmaschen erkennst.", "hg3Meta": "Roblox", "hg3Title": "Roblox-Lag und niedrige FPS: Ein praktischer Guide", "hg3Desc": "Lerne den Unterschied zwischen niedrigen FPS und Netzwerk-Lag in Roblox kennen, prüfe, welches Problem du hast, und erfahre, welche Einstellungen am PC und Handy wirklich helfen.", "hg4Meta": "War Thunder", "hg4Title": "War Thunder für Einsteiger: Golden Eagles sinnvoll ausgeben", "hg4Desc": "Ein einsteigerfreundlicher Guide zu den Währungen in War Thunder: Silberlöwen, Forschungspunkte und Golden Eagles, mit ehrlichen Tipps, was sich lohnt und was nicht.", "hg5Meta": "Umfragen", "hg5Title": "Online-Umfragen: Öfter qualifizieren und Stornierungen vermeiden", "hg5Desc": "Warum bezahlte Umfragen dich aussortieren, wie Qualitätsprüfungen funktionieren und welche einfachen Gewohnheiten dir helfen, mehr Umfragen abzuschließen und deine Belohnungen zu behalten.", "hg6Meta": "Sicherheit", "hg6Title": "Online-Sicherheit für Gamer: Schütze deine Konten und dein Geld", "hg6Desc": "Praktische Online-Sicherheit für Gamer: starke Passwörter, Zwei-Faktor-Authentifizierung, Phishing und „Gratis-Robux\"-Betrug erkennen und was zu tun ist, wenn ein Konto gestohlen wird."});
+    Object.assign(translations.ru, {"guidesMainTitle": "📚 Гайды и блог", "guidesAllLink": "Все гайды →", "guideRead": "Читать гайд →", "hg1Meta": "Гайд по платформе", "hg1Title": "Как работает RBX Rewards: баллы, выплаты и пакеты", "hg1Desc": "Понятное и честное объяснение работы RBX Rewards: откуда берутся баллы R$, как работают выплаты на Revolut и игровые пакеты и почему баллы могут быть списаны.", "hg2Meta": "Сообщество", "hg2Title": "Discord для геймеров: как безопасно пользоваться нашим сервером", "hg2Desc": "Что такое Discord, что есть на сервере RBX Rewards, как безопасно настроить аккаунт и как распознать самые частые мошеннические схемы в Discord.", "hg3Meta": "Roblox", "hg3Title": "Лаги и низкий FPS в Roblox: практический гайд", "hg3Desc": "Разберитесь в разнице между низким FPS и сетевыми лагами в Roblox, проверьте, какая у вас проблема, и узнайте, какие настройки действительно помогают на ПК и телефоне.", "hg4Meta": "War Thunder", "hg4Title": "War Thunder для новичков: как с умом тратить Золотые орлы", "hg4Desc": "Гайд для новичков по валютам War Thunder: серебряные львы, очки исследования и Золотые орлы, а также честные советы, что стоит покупать и чего избегать.", "hg5Meta": "Опросы", "hg5Title": "Онлайн-опросы: как чаще проходить отбор и избегать отмен", "hg5Desc": "Почему платные опросы вас отсеивают, как работают проверки качества и какие простые привычки помогают проходить больше опросов и сохранять заработанные награды.", "hg6Meta": "Безопасность", "hg6Title": "Безопасность в интернете для геймеров: защитите аккаунты и деньги", "hg6Desc": "Практическая безопасность для геймеров: надёжные пароли, двухфакторная аутентификация, распознавание фишинга и схем «бесплатных Robux», а также что делать, если аккаунт украли."});
+
     function injectProtectedContent() {
         const offerwallSection = document.getElementById("offerwallSection");
         if (offerwallSection && offerwallSection.innerHTML.trim() === "") {
