@@ -3,41 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog & Gaming Guides - RBX Rewards</title>
+    <title>Blog & Guides - RBX Rewards</title>
+    <meta name="description" content="Practical guides about Roblox, War Thunder, online surveys, Discord and staying safe online, written by the RBX Rewards team.">
+    <link rel="canonical" href="https://rbx-rewards.pl/blog.html">
     <link rel="icon" type="image/png" href="/favicon.png">
+    <meta name="google-adsense-account" content="ca-pub-6665069359963275">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6665069359963275" crossorigin="anonymous"></script>
     <style>
         * { box-sizing: border-box; }
-        body { background-color: #0f1115; color: #a0a0b0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px 20px; line-height: 1.7; margin: 0; }
-        .container { max-width: 850px; margin: 0 auto; }
+        body { background-color: #0f1115; color: #b4b8c4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px 20px; line-height: 1.75; margin: 0; }
+        .container { max-width: 820px; margin: 0 auto; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
-        .nav-back { display: inline-block; padding: 10px 20px; background: #00e676; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .nav-back { display: inline-block; padding: 10px 20px; background: #00e676; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; }
         .nav-back:hover { background: #00c853; }
-        .lang-selector select { background: #181b22; color: #fff; border: 1px solid #333947; padding: 10px 14px; border-radius: 6px; font-weight: bold; outline: none; cursor: pointer; font-size: 0.95rem; }
-        header { background: #181b22; padding: 35px 30px; border-radius: 12px; border: 1px solid #2a2e39; text-align: center; margin-bottom: 30px; }
-        header h1 { color: #00e676; margin: 0; font-size: 2.4rem; }
-        header p { margin-top: 10px; font-size: 1.1rem; color: #c0c5d0; }
-        .article-card { background: #181b22; padding: 35px; border-radius: 12px; border: 1px solid #2a2e39; margin-bottom: 30px; }
-        .article-meta { font-size: 0.8rem; color: #00e676; text-transform: uppercase; letter-spacing: 1.2px; font-weight: bold; display: block; margin-bottom: 8px; }
-        .article-card h2 { color: #fff; margin-top: 0; font-size: 1.75rem; border-bottom: 2px solid #333947; padding-bottom: 15px; margin-bottom: 20px; }
-        .article-card h3 { color: #ffb703; margin-top: 25px; margin-bottom: 10px; font-size: 1.25rem; }
-        .article-card p { margin-bottom: 15px; font-size: 1.02rem; }
-        .article-card ul, .article-card ol { margin-bottom: 15px; padding-left: 22px; }
-        .article-card li { margin-bottom: 8px; }
-        footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #2a2e39; font-size: 0.9rem; color: #666; }
-        footer a { color: #00e676; text-decoration: none; margin: 0 10px; }
-        @media (max-width: 600px) {
-            body { padding: 20px 12px; }
-            .article-card { padding: 20px; }
-            header h1 { font-size: 1.9rem; }
-        }
+        .lang-selector select { background: #181b22; color: #fff; border: 1px solid #333947; padding: 10px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+        .card { background: #181b22; padding: 35px; border-radius: 12px; border: 1px solid #2a2e39; margin-bottom: 25px; }
+        .meta { font-size: 0.8rem; color: #00e676; text-transform: uppercase; letter-spacing: 1.2px; font-weight: bold; display: block; margin-bottom: 10px; }
+        h1 { color: #fff; margin: 0 0 15px 0; font-size: 2rem; line-height: 1.25; }
+        .lead { font-size: 1.12rem; color: #d6d9e0; margin-bottom: 20px; }
+        #artBody h2 { color: #ffb703; margin: 30px 0 10px 0; font-size: 1.35rem; }
+        #artBody p { margin: 0 0 15px 0; font-size: 1.03rem; }
+        #artBody ul, #artBody ol { margin: 0 0 15px 0; padding-left: 22px; }
+        #artBody li { margin-bottom: 8px; }
+        #artBody strong { color: #fff; }
+        a { color: #00e676; }
+        .ad-slot { margin: 10px 0 20px 0; }
+        .related h2, .index-head h1 { color: #00e676; }
+        .related ul { padding-left: 20px; margin: 0; }
+        .related li { margin-bottom: 8px; }
+        .post { display: block; text-decoration: none; color: inherit; transition: 0.2s; }
+        .post:hover { border-color: #00e676; transform: translateY(-2px); }
+        .post h2 { color: #fff; margin: 0 0 10px 0; font-size: 1.4rem; }
+        .post p { margin: 0 0 12px 0; }
+        .post .more { color: #00e676; font-weight: bold; }
+        footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #2a2e39; font-size: 0.9rem; color: #777; }
+        footer a { color: #00e676; text-decoration: none; margin: 0 6px; }
+        footer p { margin: 8px 0; }
+        @media (max-width: 600px) { body { padding: 20px 12px; } .card { padding: 22px; } h1 { font-size: 1.6rem; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="top-bar">
-            <a href="/" class="nav-back" data-lang="navBack">&larr; Back to Community Hub</a>
+            <a href="/" class="nav-back" data-lang="navHome">← Back to Home</a>
             <div class="lang-selector">
-                <select id="langSelect" onchange="changeLang(this.value)">
+                <select id="langSelect" onchange="changeLang(this.value)" aria-label="Language">
                     <option value="en">🇬🇧 English</option>
                     <option value="pl">🇵🇱 Polski</option>
                     <option value="de">🇩🇪 Deutsch</option>
@@ -45,223 +55,77 @@
                 </select>
             </div>
         </div>
-        
-        <header>
-            <h1 data-lang="headerTitle">Roblox Community Blog & Guides</h1>
-            <p data-lang="headerSub">In-depth tutorials, performance optimization tips, game development insights, and digital safety guides for Roblox players.</p>
+
+        <header class="card index-head">
+            <h1 data-lang="blogTitle">RBX Rewards Blog & Guides</h1>
+            <p data-lang="blogSub">Practical guides about Roblox, War Thunder, online surveys, Discord and staying safe online, written by the RBX Rewards team.</p>
         </header>
 
-        <article class="article-card">
-            <span class="article-meta" data-lang="a1Meta">Game Development • Updated October 2026</span>
-            <h2 data-lang="a1Title">Getting Started with Roblox Studio and Luau Scripting in 2026</h2>
-            <p data-lang="a1P1">Roblox has evolved from a simple sandbox game into one of the world's most powerful game creation ecosystems. At the heart of this transformation is Roblox Studio, a comprehensive development environment that allows creators to build 3D worlds, script complex mechanics using Luau, and publish experiences across PC, mobile, and console platforms simultaneously.</p>
-            
-            <h3 data-lang="a1Sub1">1. Understanding the Client-Server Model</h3>
-            <p data-lang="a1P2">One of the most important concepts for new developers to master in Roblox Studio is the distinction between the Client (the player's device) and the Server (Roblox's cloud infrastructure). Modern Roblox experiences rely on FilteringEnabled architecture to prevent cheating and maintain a synchronized world state:</p>
-            <ul>
-                <li data-lang="a1L1">LocalScripts: Run directly on the player's device. They are ideal for handling user interface (UI) animations, camera movements, and raw input detection (keyboard, mouse, or touch).</li>
-                <li data-lang="a1L2">Server Scripts: Execute on the game server. Any critical game logic—such as inventory management, leaderboards, damage calculation, and data persistence via DataStoreService—must be validated on the server.</li>
-                <li data-lang="a1L3">RemoteEvents and RemoteFunctions: Act as secure communication bridges between the client and the server, allowing local actions to request server-side verification.</li>
-            </ul>
-
-            <h3 data-lang="a1Sub2">2. Optimizing 3D Assets and Memory Usage</h3>
-            <p data-lang="a1P3">To ensure your experience runs smoothly on lower-end mobile devices as well as high-end gaming PCs, developers should enable StreamingEnabled in the Workspace properties. This feature dynamically loads and unloads 3D meshes and terrain chunks based on the player's distance, significantly reducing initial join times and client RAM consumption.</p>
-        </article>
-
-        <article class="article-card">
-            <span class="article-meta" data-lang="a2Meta">Digital Safety • Cybersecurity Guide</span>
-            <h2 data-lang="a2Title">The Ultimate Guide to Protecting Your Gaming Accounts and Digital Inventory</h2>
-            <p data-lang="a2P1">As virtual ecosystems expand, player profiles often accumulate years of progress, rare seasonal badges, and customized avatars. Consequently, account security should be every gamer's top priority. Understanding how authentication works—and how social engineering schemes operate—will keep your profile safe from unauthorized access.</p>
-            
-            <h3 data-lang="a2Sub1">Top 3 Golden Rules of Account Protection</h3>
-            <ol>
-                <li data-lang="a2L1">Never Share Passwords or Browser Cookies: Legitimate community hubs, stat trackers, and interactive quest platforms will never ask for your account password or browser cookies. Public APIs only require your public username to look up your profile.</li>
-                <li data-lang="a2L2">Use App-Based Two-Step Verification (2FA): While email verification offers basic protection, configuring an authenticator application (such as Google Authenticator or Authy) generates time-sensitive codes stored locally on your smartphone, making remote unauthorized logins virtually impossible.</li>
-                <li data-lang="a2L3">Beware of Malicious Browser Extensions: Only install browser plugins from verified developers. Fraudulent extensions often claim to enhance marketplace trading while silently reading session tokens in the background.</li>
-            </ol>
-        </article>
-
-        <article class="article-card">
-            <span class="article-meta" data-lang="a3Meta">Technical Hardware & Networking • Tutorial</span>
-            <h2 data-lang="a3Title">Understanding Network Latency, Tick Rates, and FPS Optimization</h2>
-            <p data-lang="a3P1">In competitive Roblox experiences—ranging from tactical shooters to rhythm games and obbies—every millisecond counts. Players frequently confuse low FPS (Frames Per Second) with high Ping (Network Latency), even though they stem from completely different hardware systems.</p>
-            
-            <h3 data-lang="a3Sub1">Diagnosing FPS Drops vs. Network Lag</h3>
-            <p data-lang="a3P2">You can inspect your real-time performance metrics inside any Roblox experience by pressing Shift + F5 or enabling the Performance Stats panel in the Esc menu:</p>
-            <ul>
-                <li data-lang="a3L1">CPU and GPU Frame Time: If characters move smoothly on other players' screens but your own screen stutters or freezes, your graphics card or processor is bottlenecked. Lowering manual graphics quality to level 3–5 disables expensive shadow rendering and post-processing effects.</li>
-                <li data-lang="a3L2">Network Ping (ms): Ping measures the round-trip time it takes for data packets to travel from your router to the Roblox server and back. Switching from Wi-Fi to a wired Ethernet cable and closing background downloads will immediately eliminate packet loss and rubber-banding.</li>
-            </ul>
-        </article>
-
-        <article class="article-card">
-            <span class="article-meta" data-lang="a4Meta">Gaming Culture • Community Overview</span>
-            <h2 data-lang="a4Title">The Evolution of Virtual Economies and Community Loyalty Programs</h2>
-            <p data-lang="a4P1">Modern online gaming extends far beyond the game client itself. Today's players engage in vibrant external communities—participating in Discord servers, watching live broadcasts on Twitch and Kick, and competing on community leaderboards. Loyalty hubs like RBX Rewards bridge these activities together by offering gamified quests, community rankings, and interactive challenges.</p>
-            <p data-lang="a4P2">By participating in moderated community events, testing new applications, or sharing feedback in research quizzes, gamers can actively engage with the broader digital ecosystem while climbing seasonal ranks alongside friends.</p>
-        </article>
+        <a class="card post" href="/blog/how-rbx-rewards-works.html">
+            <span class="meta" data-lang="m_how-rbx-rewards-works">Platform Guide • 20 November 2026 • RBX Rewards Team</span>
+            <h2 data-lang="t_how-rbx-rewards-works">How RBX Rewards Works: Points, Payouts and Bundles Explained</h2>
+            <p data-lang="d_how-rbx-rewards-works">A clear, honest explanation of how RBX Rewards works: how you earn R$ points, how payouts to Revolut and game bundles work, and why some points can be reversed.</p>
+            <span class="more" data-lang="readMore">Read the guide →</span>
+        </a>
+        <a class="card post" href="/blog/discord-community-guide.html">
+            <span class="meta" data-lang="m_discord-community-guide">Community • 20 November 2026 • RBX Rewards Team</span>
+            <h2 data-lang="t_discord-community-guide">Discord for Gamers: How to Use Our Community Server Safely</h2>
+            <p data-lang="d_discord-community-guide">What Discord is, what you will find on the RBX Rewards server, how to set up your account securely and how to recognise the most common Discord scams.</p>
+            <span class="more" data-lang="readMore">Read the guide →</span>
+        </a>
+        <a class="card post" href="/blog/roblox-fps-lag-guide.html">
+            <span class="meta" data-lang="m_roblox-fps-lag-guide">Roblox • 20 November 2026 • RBX Rewards Team</span>
+            <h2 data-lang="t_roblox-fps-lag-guide">Roblox Lag and Low FPS: A Practical Fix Guide</h2>
+            <p data-lang="d_roblox-fps-lag-guide">Learn the difference between low FPS and network lag in Roblox, how to check which one you have, and which settings and habits really help on PC and mobile.</p>
+            <span class="more" data-lang="readMore">Read the guide →</span>
+        </a>
+        <a class="card post" href="/blog/war-thunder-golden-eagles-guide.html">
+            <span class="meta" data-lang="m_war-thunder-golden-eagles-guide">War Thunder • 20 November 2026 • RBX Rewards Team</span>
+            <h2 data-lang="t_war-thunder-golden-eagles-guide">War Thunder for Beginners: How to Spend Golden Eagles Wisely</h2>
+            <p data-lang="d_war-thunder-golden-eagles-guide">A beginner-friendly guide to War Thunder currencies: Silver Lions, Research Points and Golden Eagles, plus honest advice on what is worth buying and what to avoid.</p>
+            <span class="more" data-lang="readMore">Read the guide →</span>
+        </a>
+        <a class="card post" href="/blog/online-surveys-guide.html">
+            <span class="meta" data-lang="m_online-surveys-guide">Surveys • 20 November 2026 • RBX Rewards Team</span>
+            <h2 data-lang="t_online-surveys-guide">Online Surveys: How to Qualify More Often and Avoid Reversals</h2>
+            <p data-lang="d_online-surveys-guide">Why paid surveys screen you out, how quality checks work, and simple habits that help you complete more surveys and keep the rewards you earn.</p>
+            <span class="more" data-lang="readMore">Read the guide →</span>
+        </a>
+        <a class="card post" href="/blog/online-safety-guide.html">
+            <span class="meta" data-lang="m_online-safety-guide">Safety • 20 November 2026 • RBX Rewards Team</span>
+            <h2 data-lang="t_online-safety-guide">Online Safety for Gamers: Protect Your Accounts and Your Money</h2>
+            <p data-lang="d_online-safety-guide">Practical online safety for gamers: strong passwords, two-factor authentication, recognising phishing and &quot;free Robux&quot; scams, and what to do if an account gets stolen.</p>
+            <span class="more" data-lang="readMore">Read the guide →</span>
+        </a>
 
         <footer>
-            <p><a href="/" data-lang="fHome">Home</a> | <a href="/terms.html" data-lang="fTerms">Terms of Service</a> | <a href="/privacy.html" data-lang="fPrivacy">Privacy Policy</a></p>
-            <p>&copy; 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
+            <p><a href="/" data-lang="fHome">Home</a> | <a href="/blog.html" data-lang="fBlog">Blog</a> | <a href="/terms.html" data-lang="fTerms">Terms of Service</a> | <a href="/privacy.html" data-lang="fPrivacy">Privacy Policy</a></p>
+            <p data-lang="fContact">Contact: our <a href="https://discord.gg/49EwqEsFTJ" target="_blank" rel="noopener">Discord server</a> (main channel) or <a href="mailto:rbxrewards.kontakt@gmail.com">rbxrewards.kontakt@gmail.com</a></p>
+            <p data-lang="fNotAff">© 2026 RBX Rewards. Not affiliated with Roblox Corporation, Gaijin Entertainment, Star Stable Entertainment or Discord.</p>
         </footer>
     </div>
 
     <script>
-        const translations = {
-            en: {
-                navBack: "← Back to Community Hub",
-                headerTitle: "Roblox Community Blog & Guides",
-                headerSub: "In-depth tutorials, performance optimization tips, game development insights, and digital safety guides for Roblox players.",
-                a1Meta: "Game Development • Updated October 2026",
-                a1Title: "Getting Started with Roblox Studio and Luau Scripting in 2026",
-                a1P1: "Roblox has evolved from a simple sandbox game into one of the world's most powerful game creation ecosystems. At the heart of this transformation is Roblox Studio, a comprehensive development environment that allows creators to build 3D worlds, script complex mechanics using Luau, and publish experiences across PC, mobile, and console platforms simultaneously.",
-                a1Sub1: "1. Understanding the Client-Server Model",
-                a1P2: "One of the most important concepts for new developers to master in Roblox Studio is the distinction between the Client (the player's device) and the Server (Roblox's cloud infrastructure). Modern Roblox experiences rely on FilteringEnabled architecture to prevent cheating and maintain a synchronized world state:",
-                a1L1: "LocalScripts: Run directly on the player's device. They are ideal for handling user interface (UI) animations, camera movements, and raw input detection (keyboard, mouse, or touch).",
-                a1L2: "Server Scripts: Execute on the game server. Any critical game logic—such as inventory management, leaderboards, damage calculation, and data persistence via DataStoreService—must be validated on the server.",
-                a1L3: "RemoteEvents and RemoteFunctions: Act as secure communication bridges between the client and the server, allowing local actions to request server-side verification.",
-                a1Sub2: "2. Optimizing 3D Assets and Memory Usage",
-                a1P3: "To ensure your experience runs smoothly on lower-end mobile devices as well as high-end gaming PCs, developers should enable StreamingEnabled in the Workspace properties. This feature dynamically loads and unloads 3D meshes and terrain chunks based on the player's distance, significantly reducing initial join times and client RAM consumption.",
-                a2Meta: "Digital Safety • Cybersecurity Guide",
-                a2Title: "The Ultimate Guide to Protecting Your Gaming Accounts and Digital Inventory",
-                a2P1: "As virtual ecosystems expand, player profiles often accumulate years of progress, rare seasonal badges, and customized avatars. Consequently, account security should be every gamer's top priority. Understanding how authentication works—and how social engineering schemes operate—will keep your profile safe from unauthorized access.",
-                a2Sub1: "Top 3 Golden Rules of Account Protection",
-                a2L1: "Never Share Passwords or Browser Cookies: Legitimate community hubs, stat trackers, and interactive quest platforms will never ask for your account password or browser cookies. Public APIs only require your public username to look up your profile.",
-                a2L2: "Use App-Based Two-Step Verification (2FA): While email verification offers basic protection, configuring an authenticator application (such as Google Authenticator or Authy) generates time-sensitive codes stored locally on your smartphone, making remote unauthorized logins virtually impossible.",
-                a2L3: "Beware of Malicious Browser Extensions: Only install browser plugins from verified developers. Fraudulent extensions often claim to enhance marketplace trading while silently reading session tokens in the background.",
-                a3Meta: "Technical Hardware & Networking • Tutorial",
-                a3Title: "Understanding Network Latency, Tick Rates, and FPS Optimization",
-                a3P1: "In competitive Roblox experiences—ranging from tactical shooters to rhythm games and obbies—every millisecond counts. Players frequently confuse low FPS (Frames Per Second) with high Ping (Network Latency), even though they stem from completely different hardware systems.",
-                a3Sub1: "Diagnosing FPS Drops vs. Network Lag",
-                a3P2: "You can inspect your real-time performance metrics inside any Roblox experience by pressing Shift + F5 or enabling the Performance Stats panel in the Esc menu:",
-                a3L1: "CPU and GPU Frame Time: If characters move smoothly on other players' screens but your own screen stutters or freezes, your graphics card or processor is bottlenecked. Lowering manual graphics quality to level 3–5 disables expensive shadow rendering and post-processing effects.",
-                a3L2: "Network Ping (ms): Ping measures the round-trip time it takes for data packets to travel from your router to the Roblox server and back. Switching from Wi-Fi to a wired Ethernet cable and closing background downloads will immediately eliminate packet loss and rubber-banding.",
-                a4Meta: "Gaming Culture • Community Overview",
-                a4Title: "The Evolution of Virtual Economies and Community Loyalty Programs",
-                a4P1: "Modern online gaming extends far beyond the game client itself. Today's players engage in vibrant external communities—participating in Discord servers, watching live broadcasts on Twitch and Kick, and competing on community leaderboards. Loyalty hubs like RBX Rewards bridge these activities together by offering gamified quests, community rankings, and interactive challenges.",
-                a4P2: "By participating in moderated community events, testing new applications, or sharing feedback in research quizzes, gamers can actively engage with the broader digital ecosystem while climbing seasonal ranks alongside friends.",
-                fHome: "Home", fTerms: "Terms of Service", fPrivacy: "Privacy Policy"
-            },
-            pl: {
-                navBack: "← Powrót na Stronę Główną",
-                headerTitle: "Blog i Poradniki Społeczności Roblox",
-                headerSub: "Szczegółowe poradniki, optymalizacja wydajności, tworzenie gier w Roblox Studio oraz bezpieczeństwo cyfrowe dla graczy.",
-                a1Meta: "Tworzenie Gier • Aktualizacja Październik 2026",
-                a1Title: "Jak Zacząć z Roblox Studio i Skryptami Luau w 2026 Roku",
-                a1P1: "Roblox ewoluował z prostej gry sandboxowej w jeden z najpotężniejszych na świecie ekosystemów do tworzenia gier. Sercem tej transformacji jest Roblox Studio – kompleksowe środowisko deweloperskie, które pozwala budować światy 3D, programować zaawansowane mechaniki w języku Luau i publikować gry jednocześnie na PC, telefonach oraz konsolach.",
-                a1Sub1: "1. Zrozumienie Modelu Klient-Serwer",
-                a1P2: "Jednym z najważniejszych pojęć dla początkujących twórców w Roblox Studio jest rozróżnienie pomiędzy Klientem (urządzeniem gracza) a Serwerem (chmurą obliczeniową Roblox). Nowoczesne gry opierają się na architekturze FilteringEnabled, aby zapobiegać oszustwom i synchronizować świat gry:",
-                a1L1: "LocalScripts (Skrypty lokalne): Działają bezpośrednio na urządzeniu gracza. Są idealne do obsługi animacji interfejsu (UI), pracy kamery oraz wykrywania wciśnięć klawiszy lub dotyku.",
-                a1L2: "Server Scripts (Skrypty serwerowe): Wykonują się po stronie serwera. Każda kluczowa logika – zarządzanie ekwipunkiem, tabela wyników, naliczanie obrażeń oraz zapis danych przez DataStoreService – musi być weryfikowana na serwerze.",
-                a1L3: "RemoteEvents i RemoteFunctions: Działają jak bezpieczne mosty komunikacyjne między klientem a serwerem, pozwalając akcjom gracza prosić serwer o autoryzację.",
-                a1Sub2: "2. Optymalizacja Modeli 3D i Pamięci RAM",
-                a1P3: "Aby gra działała płynnie zarówno na słabszych smartfonach, jak i komputerach gamingowych, twórcy powinni włączyć opcję StreamingEnabled we właściwościach Workspace. Funkcja ta dynamicznie doczytuje i ukrywa obiekty 3D w zależności od odległości gracza, co drastycznie skraca czas ładowania i zmniejsza zużycie pamięci RAM.",
-                a2Meta: "Bezpieczeństwo Cyfrowe • Poradnik",
-                a2Title: "Kompletny Poradnik Ochrony Konta Gamingowego i Cyfrowego Ekwipunku",
-                a2P1: "Wraz z rozwojem wirtualnych światów profile graczy gromadzą lata postępów, rzadkie odznaki sezonowe i unikalne przedmioty. Z tego powodu bezpieczeństwo konta powinno być priorytetem każdego gracza. Zrozumienie zasad autoryzacji uchroni Twój profil przed nieautoryzowanym dostępem.",
-                a2Sub1: "3 Złote Zasady Ochrony Konta",
-                a2L1: "Nigdy nie podawaj haseł ani plików cookie: Legalne portale społecznościowe, statystyki oraz platformy z misjami nigdy nie proszą o hasło do gry ani pliki cookie przeglądarki. Publiczne systemy potrzebują wyłącznie Twojego nicku (Username), aby przypisać postępy.",
-                a2L2: "Używaj weryfikacji dwuetapowej (2FA) przez aplikację: Zamiast polegać wyłącznie na kodach e-mail, skonfiguruj aplikację uwierzytelniającą (np. Google Authenticator lub Authy), która generuje jednorazowe kody bezpośrednio na Twoim telefonie.",
-                a2L3: "Uważaj na podejrzane wtyczki do przeglądarki: Instaluj rozszerzenia wyłącznie od zweryfikowanych twórców. Fałszywe wtyczki często obiecują ułatwienia w handlu, a w tle wykradają sesję logowania.",
-                a3Meta: "Sprzęt i Sieć • Poradnik Techniczny",
-                a3Title: "Opóźnienia Sieciowe (Ping), Tick Rate i Optymalizacja FPS",
-                a3P1: "W dynamicznych grach na platformie Roblox – od strzelanek po gry rytmiczne i obby – liczy się każda milisekunda. Gracze często mylą niską liczbę klatek (FPS) z wysokim pingiem (opóźnieniem sieciowym), mimo że odpowiadają za nie zupełnie inne elementy komputera.",
-                a3Sub1: "Jak Odróżnić Spadki FPS od Lagów Sieciowych?",
-                a3P2: "Możesz sprawdzić parametry wydajności na żywo w każdej grze Roblox, wciskając kombinację Shift + F5 lub włączając panel Performance Stats w menu ESC:",
-                a3L1: "Czas klatki CPU i GPU (FPS): Jeśli postacie innych graczy poruszają się płynnie, ale Twój obraz przycina się podczas obracania kamery, ograniczeniem jest karta graficzna lub procesor. Obniżenie suwaka grafiki do poziomu 3–5 wyłącza zasobożerne cienie i odciąża sprzęt.",
-                a3L2: "Ping sieciowy (ms): Ping określa czas, w jakim pakiety danych docierają z Twojego routera do serwera gry i z powrotem. Przejście z Wi-Fi na kabel Ethernet oraz zamknięcie pobierania w tle natychmiast wyeliminuje cofanie postaci (tzw. rubber-banding).",
-                a4Meta: "Kultura Gamingowa • Społeczność",
-                a4Title: "Ewolucja Wirtualnej Ekonomii i Społecznościowych Programów Lojalnościowych",
-                a4P1: "Współczesny gaming wykracza daleko poza samą aplikację gry. Gracze tworzą aktywne społeczności na serwerach Discord, oglądają transmisje na żywo na Twitchu i Kicku oraz rywalizują w rankingach. Portale takie jak RBX Rewards łączą te aktywności, oferując systemy misji, rankingi sezonowe i wyzwania dla społeczności.",
-                a4P2: "Biorąc udział w wydarzeniach społecznościowych, testując nowe gry czy dzieląc się opinią w quizach partnerskich, gracze mogą aktywnie rozwijać swój profil i wspinać się w tabeli liderów razem ze znajomymi.",
-                fHome: "Strona Główna", fTerms: "Regulamin", fPrivacy: "Polityka Prywatności"
-            },
-            de: {
-                navBack: "← Zurück zum Community Hub",
-                headerTitle: "Roblox Community Blog & Guides",
-                headerSub: "Ausführliche Tutorials, Tipps zur Leistungsoptimierung, Einblicke in die Spieleentwicklung und Sicherheitsleitfäden für Roblox-Spieler.",
-                a1Meta: "Spieleentwicklung • Aktualisiert Oktober 2026",
-                a1Title: "Einstieg in Roblox Studio und Luau-Scripting im Jahr 2026",
-                a1P1: "Roblox hat sich von einem einfachen Sandbox-Spiel zu einem der weltweit leistungsstärksten Ökosysteme für die Spieleentwicklung entwickelt. Das Herzstück ist Roblox Studio – eine umfassende Entwicklungsumgebung, mit der Ersteller 3D-Welten bauen, komplexe Mechaniken mit Luau programmieren und Spiele gleichzeitig für PC, Mobilgeräte und Konsolen veröffentlichen können.",
-                a1Sub1: "1. Das Client-Server-Modell verstehen",
-                a1P2: "Eines der wichtigsten Konzepte für neue Entwickler in Roblox Studio ist die Unterscheidung zwischen dem Client (dem Gerät des Spielers) und dem Server (der Cloud-Infrastruktur von Roblox). Moderne Spiele nutzen die FilteringEnabled-Architektur, um Cheating zu verhindern:",
-                a1L1: "LocalScripts: Laufen direkt auf dem Gerät des Spielers. Sie sind ideal für UI-Animationen, Kamerabewegungen und die Erkennung von Tastatur-, Maus- oder Touch-Eingaben.",
-                a1L2: "Server Scripts: Werden auf dem Spielserver ausgeführt. Jede kritische Spiellogik – wie Inventarverwaltung, Bestenlisten, Schadensberechnung und Datenspeicherung über DataStoreService – muss auf dem Server validiert werden.",
-                a1L3: "RemoteEvents und RemoteFunctions: Fungieren als sichere Kommunikationsbrücken zwischen Client und Server.",
-                a1Sub2: "2. Optimierung von 3D-Assets und Speichernutzung",
-                a1P3: "Damit dein Spiel sowohl auf älteren Smartphones als auch auf Gaming-PCs flüssig läuft, sollten Entwickler StreamingEnabled in den Workspace-Eigenschaften aktivieren. Dadurch werden 3D-Objekte dynamisch nach Entfernung geladen, was Ladezeiten und RAM-Verbrauch drastisch reduziert.",
-                a2Meta: "Digitale Sicherheit • Cybersecurity-Guide",
-                a2Title: "Der ultimative Leitfaden zum Schutz deiner Gaming-Konten und deines Inventars",
-                a2P1: "Mit dem Wachstum virtueller Welten sammeln Spielerprofile oft jahrelangen Fortschritt, seltene Abzeichen und angepasste Avatare. Daher sollte Kontosicherheit oberste Priorität haben.",
-                a2Sub1: "Die 3 goldenen Regeln zum Kontoschutz",
-                a2L1: "Teile niemals Passwörter oder Browser-Cookies: Seriöse Community-Hubs, Statistik-Tracker und Quest-Plattformen fragen niemals nach deinem Passwort oder Browser-Cookies. Öffentliche Systeme benötigen nur deinen Benutzernamen.",
-                a2L2: "Nutze App-basierte Zwei-Schritt-Verifizierung (2FA): Konfiguriere eine Authenticator-App (wie Google Authenticator oder Authy), die zeitabhängige Codes lokal auf deinem Smartphone generiert.",
-                a2L3: "Vorsicht vor schädlichen Browser-Erweiterungen: Installiere nur Plugins von verifizierten Entwicklern, um Sitzungs-Tokens vor Datendiebstahl zu schützen.",
-                a3Meta: "Hardware & Netzwerk • Technisches Tutorial",
-                a3Title: "Netzwerklatenz (Ping), Tick-Raten und FPS-Optimierung verstehen",
-                a3P1: "In kompetitiven Roblox-Spielen zählt jede Millisekunde. Spieler verwechseln häufig niedrige FPS (Bilder pro Sekunde) mit hohem Ping (Netzwerklatenz), obwohl diese völlig unterschiedliche Ursachen haben.",
-                a3Sub1: "FPS-Einbrüche vs. Netzwerk-Lag diagnostizieren",
-                a3P2: "Du kannst deine Leistungswerte in Echtzeit in jedem Roblox-Spiel überprüfen, indem du Shift + F5 drückst oder die Leistungsstatistik im Esc-Menü aktivierst:",
-                a3L1: "CPU- und GPU-Frame-Zeit: Wenn das Bild beim Drehen der Kamera ruckelt, ist deine Grafikkarte oder dein Prozessor ausgelastet. Das Reduzieren der Grafikqualität auf Stufe 3–5 deaktiviert rechenintensive Schatten.",
-                a3L2: "Netzwerk-Ping (ms): Der Ping misst die Zeit, die Datenpakete vom Router zum Server und zurück benötigen. Ein Wechsel von WLAN auf ein Ethernet-Kabel beseitigt Paketverlust sofort.",
-                a4Meta: "Gaming-Kultur • Community-Übersicht",
-                a4Title: "Die Entwicklung virtueller Ökonomien und Community-Treueprogramme",
-                a4P1: "Modernes Online-Gaming geht weit über das eigentliche Spiel hinaus. Spieler vernetzen sich auf Discord-Servern, verfolgen Livestreams auf Twitch und Kick und messen sich auf Bestenlisten. Plattformen wie RBX Rewards verbinden diese Aktivitäten durch interaktive Quests und saisonale Ranglisten.",
-                a4P2: "Durch die Teilnahme an Community-Events, das Testen neuer Apps oder das Beantworten von Partner-Quizzen können Spieler aktiv am digitalen Ökosystem teilnehmen und gemeinsam mit Freunden im Ranking aufsteigen.",
-                fHome: "Startseite", fTerms: "Nutzungsbedingungen", fPrivacy: "Datenschutzerklärung"
-            },
-            ru: {
-                navBack: "← Назад в Центр Сообщества",
-                headerTitle: "Блог и Гайды Сообщества Roblox",
-                headerSub: "Подробные руководства, советы по оптимизации FPS, разработка игр в Roblox Studio и цифровая безопасность для игроков.",
-                a1Meta: "Разработка игр • Обновлено Октябрь 2026",
-                a1Title: "Основы работы в Roblox Studio и скрипты Luau в 2026 году",
-                a1P1: "Roblox превратился из простой песочницы в одну из самых мощных в мире экосистем для создания игр. В центре этой трансформации находится Roblox Studio — среда разработки, позволяющая создавать 3D-миры, программировать механику на языке Luau и публиковать игры сразу на ПК, смартфонах и консолях.",
-                a1Sub1: "1. Понимание модели Клиент-Сервер",
-                a1P2: "Одна из важнейших концепций для начинающих разработчиков в Roblox Studio — разделение между Клиентом (устройством игрока) и Сервером (облачной инфраструктурой Roblox). Современные игры используют архитектуру FilteringEnabled для защиты от читов:",
-                a1L1: "LocalScripts (Локальные скрипты): Выполняются напрямую на устройстве игрока. Идеально подходят для анимации интерфейса (UI), управления камерой и обработки нажатий клавиш.",
-                a1L2: "Server Scripts (Серверные скрипты): Выполняются на сервере игры. Любая важная логика — инвентарь, таблицы лидеров, расчет урона и сохранение данных через DataStoreService — должна проверяться на сервере.",
-                a1L3: "RemoteEvents и RemoteFunctions: Служат защищенными мостами связи между клиентом и сервером.",
-                a1Sub2: "2. Оптимизация 3D-моделей и памяти RAM",
-                a1P3: "Чтобы игра работала плавно как на бюджетных смартфонах, так и на игровых ПК, разработчикам следует включать параметр StreamingEnabled в свойствах Workspace. Эта функция динамически подгружает 3D-объекты по мере приближения игрока, ускоряя загрузку и экономя оперативную память.",
-                a2Meta: "Цифровая безопасность • Руководство",
-                a2Title: "Полное руководство по защите игровых аккаунтов и цифрового инвентаря",
-                a2P1: "По мере развития виртуальных миров профили игроков накапливают годы прогресса, редкие значки и уникальные предметы. Поэтому безопасность аккаунта должна быть главным приоритетом каждого геймера.",
-                a2Sub1: "3 золотых правила защиты аккаунта",
-                a2L1: "Никогда не передавайте пароли или файлы cookie: Легальные порталы сообществ, трекеры статистики и платформы квестов никогда не запрашивают ваш пароль или cookie браузера. Публичным системам нужен только ваш никнейм (Username).",
-                a2L2: "Используйте двухэтапную аутентификацию (2FA) через приложение: Настройте приложение-аутентификатор (например, Google Authenticator или Authy), которое генерирует временные коды прямо на вашем смартфоне.",
-                a2L3: "Остерегайтесь вредоносных расширений для браузера: Устанавливайте плагины только от проверенных разработчиков, чтобы защитить свои сессии от кражи.",
-                a3Meta: "Железо и сеть • Технический гайд",
-                a3Title: "Сетевая задержка (Пинг), тикрейт и оптимизация FPS",
-                a3P1: "В соревновательных режимах Roblox — от шутеров до ритм-игр и обби — важна каждая миллисекунда. Игроки часто путают низкий FPS (частоту кадров) с высоким пингом (сетевой задержкой), хотя они зависят от разных компонентов ПК.",
-                a3Sub1: "Как отличить просадки FPS от сетевых лагов?",
-                a3P2: "Вы можете проверить показатели производительности в реальном времени в любой игре Roblox, нажав Shift + F5 или включив панель Performance Stats в меню Esc:",
-                a3L1: "Время кадра CPU и GPU (FPS): Если при повороте камеры картинка дергается, нагружена видеокарта или процессор. Снижение качества графики до уровня 3–5 отключает тяжелые тени и повышает плавность.",
-                a3L2: "Сетевой пинг (мс): Пинг показывает время прохождения пакетов данных от роутера до сервера игры и обратно. Переход с Wi-Fi на кабель Ethernet и отключение фоновых загрузок мгновенно устранят рывки персонажа.",
-                a4Meta: "Игровая культура • Обзор сообщества",
-                a4Title: "Эволюция виртуальной экономики и программ лояльности сообществ",
-                a4P1: "Современный онлайн-гейминг выходит далеко за рамки самого игрового клиента. Игроки общаются на серверах Discord, смотрят прямые трансляции на Twitch и Kick и соревнуются в таблицах лидеров. Платформы вроде RBX Rewards объединяют эти активности с помощью системы квестов и сезонных рейтингов.",
-                a4P2: "Участвуя в событиях сообщества, тестируя новые приложения или делясь мнением в партнерских викторинах, игроки могут активно развивать свой профиль и подниматься в рейтинге вместе с друзьями.",
-                fHome: "Главная", fTerms: "Условия использования", fPrivacy: "Политика конфиденциальности"
-            }
-        };
+        const LANG_SET = ["en", "pl", "de", "ru"];
+        const T = {"en": {"navHome": "← Back to Home", "navBlog": "← All guides", "moreGuides": "More guides", "readMore": "Read the guide →", "blogTitle": "RBX Rewards Blog & Guides", "blogSub": "Practical guides about Roblox, War Thunder, online surveys, Discord and staying safe online, written by the RBX Rewards team.", "fHome": "Home", "fBlog": "Blog", "fTerms": "Terms of Service", "fPrivacy": "Privacy Policy", "fContact": "Contact: our <a href=\"https://discord.gg/49EwqEsFTJ\" target=\"_blank\" rel=\"noopener\">Discord server<\/a> (main channel) or <a href=\"mailto:rbxrewards.kontakt@gmail.com\">rbxrewards.kontakt@gmail.com<\/a>", "fNotAff": "© 2026 RBX Rewards. Not affiliated with Roblox Corporation, Gaijin Entertainment, Star Stable Entertainment or Discord.", "m_how-rbx-rewards-works": "Platform Guide • 20 November 2026 • RBX Rewards Team", "t_how-rbx-rewards-works": "How RBX Rewards Works: Points, Payouts and Bundles Explained", "d_how-rbx-rewards-works": "A clear, honest explanation of how RBX Rewards works: how you earn R$ points, how payouts to Revolut and game bundles work, and why some points can be reversed.", "m_discord-community-guide": "Community • 20 November 2026 • RBX Rewards Team", "t_discord-community-guide": "Discord for Gamers: How to Use Our Community Server Safely", "d_discord-community-guide": "What Discord is, what you will find on the RBX Rewards server, how to set up your account securely and how to recognise the most common Discord scams.", "m_roblox-fps-lag-guide": "Roblox • 20 November 2026 • RBX Rewards Team", "t_roblox-fps-lag-guide": "Roblox Lag and Low FPS: A Practical Fix Guide", "d_roblox-fps-lag-guide": "Learn the difference between low FPS and network lag in Roblox, how to check which one you have, and which settings and habits really help on PC and mobile.", "m_war-thunder-golden-eagles-guide": "War Thunder • 20 November 2026 • RBX Rewards Team", "t_war-thunder-golden-eagles-guide": "War Thunder for Beginners: How to Spend Golden Eagles Wisely", "d_war-thunder-golden-eagles-guide": "A beginner-friendly guide to War Thunder currencies: Silver Lions, Research Points and Golden Eagles, plus honest advice on what is worth buying and what to avoid.", "m_online-surveys-guide": "Surveys • 20 November 2026 • RBX Rewards Team", "t_online-surveys-guide": "Online Surveys: How to Qualify More Often and Avoid Reversals", "d_online-surveys-guide": "Why paid surveys screen you out, how quality checks work, and simple habits that help you complete more surveys and keep the rewards you earn.", "m_online-safety-guide": "Safety • 20 November 2026 • RBX Rewards Team", "t_online-safety-guide": "Online Safety for Gamers: Protect Your Accounts and Your Money", "d_online-safety-guide": "Practical online safety for gamers: strong passwords, two-factor authentication, recognising phishing and &quot;free Robux&quot; scams, and what to do if an account gets stolen."}, "pl": {"navHome": "← Powrót na Stronę Główną", "navBlog": "← Wszystkie poradniki", "moreGuides": "Więcej poradników", "readMore": "Czytaj poradnik →", "blogTitle": "Blog i Poradniki RBX Rewards", "blogSub": "Praktyczne poradniki o Robloxie, War Thunderze, ankietach online, Discordzie i bezpieczeństwie w sieci, przygotowane przez zespół RBX Rewards.", "fHome": "Strona Główna", "fBlog": "Blog", "fTerms": "Regulamin", "fPrivacy": "Polityka Prywatności", "fContact": "Kontakt: nasz <a href=\"https://discord.gg/49EwqEsFTJ\" target=\"_blank\" rel=\"noopener\">serwer Discord<\/a> (główny kanał) lub <a href=\"mailto:rbxrewards.kontakt@gmail.com\">rbxrewards.kontakt@gmail.com<\/a>", "fNotAff": "© 2026 RBX Rewards. Nie jesteśmy powiązani z Roblox Corporation, Gaijin Entertainment, Star Stable Entertainment ani Discordem.", "m_how-rbx-rewards-works": "Poradnik o platformie • 20 listopada 2026 • Zespół RBX Rewards", "t_how-rbx-rewards-works": "Jak działa RBX Rewards: punkty, wypłaty i pakiety", "d_how-rbx-rewards-works": "Jasne i uczciwe wyjaśnienie, jak działa RBX Rewards: skąd biorą się punkty R$, jak działają wypłaty na Revolut i pakiety do gier oraz dlaczego część punktów może zostać cofnięta.", "m_discord-community-guide": "Społeczność • 20 listopada 2026 • Zespół RBX Rewards", "t_discord-community-guide": "Discord dla graczy: jak bezpiecznie korzystać z naszego serwera", "d_discord-community-guide": "Czym jest Discord, co znajdziesz na serwerze RBX Rewards, jak bezpiecznie skonfigurować konto i jak rozpoznać najczęstsze oszustwa na Discordzie.", "m_roblox-fps-lag-guide": "Roblox • 20 listopada 2026 • Zespół RBX Rewards", "t_roblox-fps-lag-guide": "Lagi i niskie FPS w Robloxie: praktyczny poradnik", "d_roblox-fps-lag-guide": "Poznaj różnicę między niskim FPS a lagami sieciowymi w Robloxie, sprawdź, który problem masz, i dowiedz się, które ustawienia i nawyki naprawdę pomagają na PC i telefonie.", "m_war-thunder-golden-eagles-guide": "War Thunder • 20 listopada 2026 • Zespół RBX Rewards", "t_war-thunder-golden-eagles-guide": "War Thunder dla początkujących: jak mądrze wydawać Golden Eagles", "d_war-thunder-golden-eagles-guide": "Poradnik dla nowych graczy o walutach w War Thunder: Srebrne Lwy, Punkty Badań i Golden Eagles, oraz uczciwe porady, co warto kupić, a czego unikać.", "m_online-surveys-guide": "Ankiety • 20 listopada 2026 • Zespół RBX Rewards", "t_online-surveys-guide": "Ankiety online: jak częściej się kwalifikować i unikać cofnięć", "d_online-surveys-guide": "Dlaczego płatne ankiety Cię odrzucają, jak działają kontrole jakości i jakie proste nawyki pomagają ukończyć więcej ankiet i zatrzymać zdobyte nagrody.", "m_online-safety-guide": "Bezpieczeństwo • 20 listopada 2026 • Zespół RBX Rewards", "t_online-safety-guide": "Bezpieczeństwo w sieci dla graczy: chroń konta i pieniądze", "d_online-safety-guide": "Praktyczne bezpieczeństwo w sieci dla graczy: silne hasła, uwierzytelnianie dwuskładnikowe, rozpoznawanie phishingu i oszustw typu „darmowe Robuxy&quot; oraz co zrobić, gdy ktoś przejmie konto."}, "de": {"navHome": "← Zurück zur Startseite", "navBlog": "← Alle Guides", "moreGuides": "Weitere Guides", "readMore": "Guide lesen →", "blogTitle": "RBX Rewards Blog & Guides", "blogSub": "Praktische Guides zu Roblox, War Thunder, Online-Umfragen, Discord und Sicherheit im Internet, geschrieben vom RBX-Rewards-Team.", "fHome": "Startseite", "fBlog": "Blog", "fTerms": "Nutzungsbedingungen", "fPrivacy": "Datenschutzerklärung", "fContact": "Kontakt: unser <a href=\"https://discord.gg/49EwqEsFTJ\" target=\"_blank\" rel=\"noopener\">Discord-Server<\/a> (Hauptkanal) oder <a href=\"mailto:rbxrewards.kontakt@gmail.com\">rbxrewards.kontakt@gmail.com<\/a>", "fNotAff": "© 2026 RBX Rewards. Nicht verbunden mit Roblox Corporation, Gaijin Entertainment, Star Stable Entertainment oder Discord.", "m_how-rbx-rewards-works": "Plattform-Guide • 20. November 2026 • RBX-Rewards-Team", "t_how-rbx-rewards-works": "So funktioniert RBX Rewards: Punkte, Auszahlungen und Pakete", "d_how-rbx-rewards-works": "Eine klare und ehrliche Erklärung, wie RBX Rewards funktioniert: wie du R$-Punkte verdienst, wie Auszahlungen über Revolut und Spielpakete ablaufen und warum Punkte zurückgebucht werden können.", "m_discord-community-guide": "Community • 20. November 2026 • RBX-Rewards-Team", "t_discord-community-guide": "Discord für Gamer: So nutzt du unseren Community-Server sicher", "d_discord-community-guide": "Was Discord ist, was dich auf dem RBX-Rewards-Server erwartet, wie du dein Konto sicher einrichtest und wie du die häufigsten Discord-Betrugsmaschen erkennst.", "m_roblox-fps-lag-guide": "Roblox • 20. November 2026 • RBX-Rewards-Team", "t_roblox-fps-lag-guide": "Roblox-Lag und niedrige FPS: Ein praktischer Guide", "d_roblox-fps-lag-guide": "Lerne den Unterschied zwischen niedrigen FPS und Netzwerk-Lag in Roblox kennen, prüfe, welches Problem du hast, und erfahre, welche Einstellungen am PC und Handy wirklich helfen.", "m_war-thunder-golden-eagles-guide": "War Thunder • 20. November 2026 • RBX-Rewards-Team", "t_war-thunder-golden-eagles-guide": "War Thunder für Einsteiger: Golden Eagles sinnvoll ausgeben", "d_war-thunder-golden-eagles-guide": "Ein einsteigerfreundlicher Guide zu den Währungen in War Thunder: Silberlöwen, Forschungspunkte und Golden Eagles, mit ehrlichen Tipps, was sich lohnt und was nicht.", "m_online-surveys-guide": "Umfragen • 20. November 2026 • RBX-Rewards-Team", "t_online-surveys-guide": "Online-Umfragen: Öfter qualifizieren und Stornierungen vermeiden", "d_online-surveys-guide": "Warum bezahlte Umfragen dich aussortieren, wie Qualitätsprüfungen funktionieren und welche einfachen Gewohnheiten dir helfen, mehr Umfragen abzuschließen und deine Belohnungen zu behalten.", "m_online-safety-guide": "Sicherheit • 20. November 2026 • RBX-Rewards-Team", "t_online-safety-guide": "Online-Sicherheit für Gamer: Schütze deine Konten und dein Geld", "d_online-safety-guide": "Praktische Online-Sicherheit für Gamer: starke Passwörter, Zwei-Faktor-Authentifizierung, Phishing und „Gratis-Robux&quot;-Betrug erkennen und was zu tun ist, wenn ein Konto gestohlen wird."}, "ru": {"navHome": "← Назад на Главную", "navBlog": "← Все гайды", "moreGuides": "Другие гайды", "readMore": "Читать гайд →", "blogTitle": "Блог и гайды RBX Rewards", "blogSub": "Практические гайды о Roblox, War Thunder, онлайн-опросах, Discord и безопасности в интернете от команды RBX Rewards.", "fHome": "Главная", "fBlog": "Блог", "fTerms": "Условия использования", "fPrivacy": "Политика конфиденциальности", "fContact": "Контакты: наш <a href=\"https://discord.gg/49EwqEsFTJ\" target=\"_blank\" rel=\"noopener\">сервер Discord<\/a> (основной канал) или <a href=\"mailto:rbxrewards.kontakt@gmail.com\">rbxrewards.kontakt@gmail.com<\/a>", "fNotAff": "© 2026 RBX Rewards. Не связаны с Roblox Corporation, Gaijin Entertainment, Star Stable Entertainment или Discord.", "m_how-rbx-rewards-works": "Гайд по платформе • 20 ноября 2026 • Команда RBX Rewards", "t_how-rbx-rewards-works": "Как работает RBX Rewards: баллы, выплаты и пакеты", "d_how-rbx-rewards-works": "Понятное и честное объяснение работы RBX Rewards: откуда берутся баллы R$, как работают выплаты на Revolut и игровые пакеты и почему баллы могут быть списаны.", "m_discord-community-guide": "Сообщество • 20 ноября 2026 • Команда RBX Rewards", "t_discord-community-guide": "Discord для геймеров: как безопасно пользоваться нашим сервером", "d_discord-community-guide": "Что такое Discord, что есть на сервере RBX Rewards, как безопасно настроить аккаунт и как распознать самые частые мошеннические схемы в Discord.", "m_roblox-fps-lag-guide": "Roblox • 20 ноября 2026 • Команда RBX Rewards", "t_roblox-fps-lag-guide": "Лаги и низкий FPS в Roblox: практический гайд", "d_roblox-fps-lag-guide": "Разберитесь в разнице между низким FPS и сетевыми лагами в Roblox, проверьте, какая у вас проблема, и узнайте, какие настройки действительно помогают на ПК и телефоне.", "m_war-thunder-golden-eagles-guide": "War Thunder • 20 ноября 2026 • Команда RBX Rewards", "t_war-thunder-golden-eagles-guide": "War Thunder для новичков: как с умом тратить Золотые орлы", "d_war-thunder-golden-eagles-guide": "Гайд для новичков по валютам War Thunder: серебряные львы, очки исследования и Золотые орлы, а также честные советы, что стоит покупать и чего избегать.", "m_online-surveys-guide": "Опросы • 20 ноября 2026 • Команда RBX Rewards", "t_online-surveys-guide": "Онлайн-опросы: как чаще проходить отбор и избегать отмен", "d_online-surveys-guide": "Почему платные опросы вас отсеивают, как работают проверки качества и какие простые привычки помогают проходить больше опросов и сохранять заработанные награды.", "m_online-safety-guide": "Безопасность • 20 ноября 2026 • Команда RBX Rewards", "t_online-safety-guide": "Безопасность в интернете для геймеров: защитите аккаунты и деньги", "d_online-safety-guide": "Практическая безопасность для геймеров: надёжные пароли, двухфакторная аутентификация, распознавание фишинга и схем «бесплатных Robux», а также что делать, если аккаунт украли."}};
+        function onLangChange(lang) { document.title = (T[lang] || T.en).blogTitle; }
 
         function changeLang(lang) {
-            if (!translations[lang]) lang = 'en';
-            localStorage.setItem('rbx_lang', lang);
-            document.getElementById('langSelect').value = lang;
+            if (!LANG_SET.includes(lang)) lang = 'en';
+            try { localStorage.setItem('rbx_lang', lang); } catch (e) {}
+            document.documentElement.lang = lang;
+            const sel = document.getElementById('langSelect'); if (sel) sel.value = lang;
             document.querySelectorAll('[data-lang]').forEach(el => {
                 const key = el.getAttribute('data-lang');
-                if (translations[lang][key]) {
-                    el.innerText = translations[lang][key];
-                }
+                const val = (T[lang] && T[lang][key]) || (T.en && T.en[key]);
+                if (val) el.innerHTML = val;
             });
+            if (typeof onLangChange === 'function') onLangChange(lang);
         }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const savedLang = localStorage.getItem('rbx_lang') || 'en';
-            changeLang(savedLang);
+        document.addEventListener('DOMContentLoaded', function () {
+            let saved = 'en';
+            try { saved = localStorage.getItem('rbx_lang') || 'en'; } catch (e) {}
+            changeLang(saved);
         });
     </script>
 </body>
