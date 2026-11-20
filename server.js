@@ -972,23 +972,39 @@ async function loadAdmobKeys() {
 async function verifyAdmobSignature(originalUrl, fetchKeys = loadAdmobKeys) {
     const queryString = String(originalUrl).split('?')[1] || '';
     const sigIndex = queryString.indexOf('&signature=');
-    if (sigIndex === -1) return false;
+    if (sigIndex === -1) return { ok: false, reason: 'brak parametru signature' };
 
     const dataToVerify = queryString.substring(0, sigIndex);
     const params = new URLSearchParams(queryString.substring(sigIndex + 1));
     const signature = params.get('signature');
     const keyId = params.get('key_id');
-    if (!signature || !keyId) return false;
+    if (!signature || !keyId) return { ok: false, reason: 'brak signature lub key_id' };
 
     const cacheOld = Date.now() - admobKeysCache.fetchedAt > 24 * 60 * 60 * 1000;
     if (cacheOld || !admobKeysCache.keys[keyId]) await fetchKeys();
     const pem = admobKeysCache.keys[keyId];
-    if (!pem) return false;
+    if (!pem) return { ok: false, reason: 'nieznany key_id ' + keyId };
 
-    const sigBase64 = signature.replace(/-/g, '+').replace(/_/g, '/');
-    const verifier = crypto.createVerify('SHA256');
-    verifier.update(dataToVerify);
-    return verifier.verify(pem, Buffer.from(sigBase64, 'base64'));
+    const sig = Buffer.from(signature.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+    // Google podpisuje dokładnie to, co wysłał. Serwer pośredni (proxy) mógł zmienić kodowanie znaków
+    // w adresie (np. %24 -> $), więc sprawdzamy też warianty z przywróconym kodowaniem.
+    // Bez prawdziwego podpisu Google żaden wariant nie przejdzie.
+    const candidates = [dataToVerify];
+    try {
+        const parts = dataToVerify.split('&').map(p => { const i = p.indexOf('='); return i < 0 ? [p, ''] : [p.slice(0, i), p.slice(i + 1)]; });
+        const dec = s => decodeURIComponent(s.replace(/\+/g, ' '));
+        const javaEnc = s => encodeURIComponent(s).replace(/%20/g, '+').replace(/[!'()~]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+        for (const enc of [encodeURIComponent, javaEnc, s => s]) {
+            const v = parts.map(([k, val]) => k + '=' + enc(dec(val))).join('&');
+            if (candidates.indexOf(v) === -1) candidates.push(v);
+        }
+    } catch (e) {}
+    for (let i = 0; i < candidates.length; i++) {
+        const verifier = crypto.createVerify('SHA256');
+        verifier.update(candidates[i]);
+        if (verifier.verify(pem, sig)) return { ok: true, variant: i };
+    }
+    return { ok: false, reason: 'podpis nie pasuje' };
 }
 
 // =================== ADMOB REWARDED VIDEO (SSV) ===================
@@ -1019,10 +1035,12 @@ app.get('/api/admob-reward', async (req, res) => {
 
     // 1) podpis Google: bez niego każdy mógłby sam wywołać ten adres i dopisać sobie R$
     try {
-        if (!(await verifyAdmobSignature(req.originalUrl))) {
-            console.warn('[AdMob SSV] Odrzucono: zły lub brak podpisu');
+        const check = await verifyAdmobSignature(req.originalUrl);
+        if (!check.ok) {
+            console.warn('[AdMob SSV] Odrzucono:', check.reason, '| adres:', req.originalUrl);
             return res.status(403).send('Invalid signature');
         }
+        if (check.variant) console.log('[AdMob SSV] Podpis OK po przywróceniu kodowania (wariant ' + check.variant + ')');
     } catch (e) {
         console.error('[AdMob SSV] Błąd weryfikacji podpisu:', e.message);
         return res.status(500).send('Verification error'); // AdMob ponowi wywołanie
