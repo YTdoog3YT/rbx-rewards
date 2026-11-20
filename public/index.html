@@ -938,14 +938,31 @@
   </div>
 
   <script>
-    // ===================== SESJA: dane logowania żyją tylko do zamknięcia karty (odświeżenie ich NIE kasuje) =====================
+// ===================== SESJA: logowanie trzyma się 6 godzin, także po zamknięciu karty =====================
 (function () {
-    const SESSION_KEYS = ['rbx_username', 'rbx_points', 'rbx_linked_paypal'];
+    const SESSION_KEYS = ['rbx_token', 'rbx_username', 'rbx_points', 'rbx_linked_paypal'];
+    const PREFIX = 'rbxs6_';
+    const MAX_MS = 6 * 60 * 60 * 1000;
     const proto = Storage.prototype;
     const _get = proto.getItem, _set = proto.setItem, _rem = proto.removeItem;
-    proto.getItem = function (k) { return _get.call(SESSION_KEYS.indexOf(k) !== -1 ? window.sessionStorage : this, k); };
-    proto.setItem = function (k, v) { return _set.call(SESSION_KEYS.indexOf(k) !== -1 ? window.sessionStorage : this, k, v); };
-    proto.removeItem = function (k) { return _rem.call(SESSION_KEYS.indexOf(k) !== -1 ? window.sessionStorage : this, k); };
+    const ls = window.localStorage;
+    const isS = k => SESSION_KEYS.indexOf(k) !== -1;
+    const clearSession = () => { SESSION_KEYS.forEach(k => _rem.call(ls, PREFIX + k)); _rem.call(ls, PREFIX + 'exp'); };
+    const expired = () => { const exp = Number(_get.call(ls, PREFIX + 'exp') || 0); return !exp || Date.now() > exp; };
+
+    // dane logowania (token, nick, saldo) trzymamy w localStorage z datą ważności 6 h
+    proto.getItem = function (k) { if (!isS(k)) return _get.call(this, k); if (expired()) { clearSession(); return null; } return _get.call(ls, PREFIX + k); };
+    proto.setItem = function (k, v) { if (!isS(k)) return _set.call(this, k, v); if (k === 'rbx_token') _set.call(ls, PREFIX + 'exp', String(Date.now() + MAX_MS)); return _set.call(ls, PREFIX + k, v); };
+    proto.removeItem = function (k) { if (!isS(k)) return _rem.call(this, k); _rem.call(ls, PREFIX + k); if (k === 'rbx_token') _rem.call(ls, PREFIX + 'exp'); };
+
+    // gdy 6 h minie przy otwartej stronie: wyloguj i pokaż okno logowania
+    const hasSession = () => !!_get.call(ls, PREFIX + 'rbx_token') && !expired();
+    let had = hasSession();
+    setInterval(function () {
+        const now = hasSession();
+        if (had && !now) { try { if (typeof sessionExpired === 'function') sessionExpired(); } catch (e) {} }
+        had = now;
+    }, 30 * 1000);
 
     // każde zapytanie do /api/ dostaje token sesji; serwer sam ustala, kim jest gracz
     const _fetch = window.fetch.bind(window);

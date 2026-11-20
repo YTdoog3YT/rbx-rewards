@@ -334,44 +334,58 @@ async function addXPAndDailyEarned(user, amount) {
 
 // =================== LOGOWANIE PIN-em I SESJE ===================
 const { hashPin, verifyPin, isValidPin, generatePin } = require('./pin-utils');
-const SESSIONS = new Map();
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const SessionSchema = new mongoose.Schema({ tokenHash: { type: String, unique: true }, username: String, expiresAt: Date });
+SessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // MongoDB sam usuwa wygasłe sesje
+const Session = mongoose.model('Session', SessionSchema);
+const SESSION_TTL_MS = 6 * 60 * 60 * 1000; // sesja ważna 6 godzin
+const sessionCache = new Map();             // krótka pamięć podręczna, żeby nie pytać bazy przy każdym zapytaniu
+const hashToken = t => crypto.createHash('sha256').update(String(t)).digest('hex');
 const PIN_MAX_ATTEMPTS = 5;
 const PIN_LOCK_MS = 15 * 60 * 1000;
 const NICK_RE = /^[A-Za-z0-9_]{3,20}$/;
 const sleepMs = ms => new Promise(r => setTimeout(r, ms));
 
-function createSession(username) {
+async function createSession(username) {
     const token = crypto.randomBytes(32).toString('hex');
-    SESSIONS.set(token, { username, expires: Date.now() + SESSION_TTL_MS });
+    await Session.create({ tokenHash: hashToken(token), username, expiresAt: new Date(Date.now() + SESSION_TTL_MS) });
     return token;
 }
-function getSession(req) {
+async function getSession(req) {
     const h = String(req.headers.authorization || '');
     if (!h.startsWith('Bearer ')) return null;
     const token = h.slice(7).trim();
-    const s = SESSIONS.get(token);
-    if (!s) return null;
-    if (s.expires < Date.now()) { SESSIONS.delete(token); return null; }
-    return { token, username: s.username };
+    if (!token) return null;
+    const tokenHash = hashToken(token);
+    const now = Date.now();
+    const c = sessionCache.get(tokenHash);
+    if (c && c.expires > now && c.checkedAt > now - 60 * 1000) return { tokenHash, username: c.username };
+    const s = await Session.findOne({ tokenHash }).lean();
+    if (!s || new Date(s.expiresAt).getTime() <= now) { sessionCache.delete(tokenHash); return null; }
+    sessionCache.set(tokenHash, { username: s.username, expires: new Date(s.expiresAt).getTime(), checkedAt: now });
+    return { tokenHash, username: s.username };
 }
-setInterval(() => { const now = Date.now(); for (const [t, s] of SESSIONS) if (s.expires < now) SESSIONS.delete(t); }, 30 * 60 * 1000).unref();
+setInterval(() => { const now = Date.now(); for (const [k, v] of sessionCache) if (v.expires < now || v.checkedAt < now - 60 * 1000) sessionCache.delete(k); }, 10 * 60 * 1000).unref();
 
 const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|bundles)\/([^/?]+)/;
 const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
     '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw']);
 
-app.use((req, res, next) => {
-    const p = req.path;
-    if (!p.startsWith('/api/')) return next();
-    const m = req.method === 'GET' ? p.match(PROTECTED_GET_RE) : null;
-    const isProtected = (m && !(m[1] === 'bundles' && m[2] === 'offers')) || (req.method === 'POST' && PROTECTED_POST.has(p));
-    if (!isProtected) return next();
-    const s = getSession(req);
-    if (!s) return res.status(401).json({ error: 'Sesja wygasła. Zaloguj się ponownie.', code: 'SESSION' });
-    if (m) req.url = req.url.replace(PROTECTED_GET_RE, (all, name) => `/api/${name}/${encodeURIComponent(s.username)}`);
-    else { req.body = req.body || {}; req.body.username = s.username; }
-    next();
+app.use(async (req, res, next) => {
+    try {
+        const p = req.path;
+        if (!p.startsWith('/api/')) return next();
+        const m = req.method === 'GET' ? p.match(PROTECTED_GET_RE) : null;
+        const isProtected = (m && !(m[1] === 'bundles' && m[2] === 'offers')) || (req.method === 'POST' && PROTECTED_POST.has(p));
+        if (!isProtected) return next();
+        const s = await getSession(req);
+        if (!s) return res.status(401).json({ error: 'Sesja wygasła. Zaloguj się ponownie.', code: 'SESSION' });
+        if (m) req.url = req.url.replace(PROTECTED_GET_RE, (all, name) => `/api/${name}/${encodeURIComponent(s.username)}`);
+        else { req.body = req.body || {}; req.body.username = s.username; }
+        next();
+    } catch (e) {
+        console.error('[auth] sesja:', e.message);
+        return res.status(500).json({ error: 'Błąd serwera.' });
+    }
 });
 
 app.post('/api/auth/register', async (req, res) => {
@@ -389,12 +403,12 @@ app.post('/api/auth/register', async (req, res) => {
             if (existing.pinHash || hasStuff) return res.status(409).json(taken);
             const claimed = await User.findOneAndUpdate({ _id: existing._id, pinHash: null }, { $set: { pinHash } }, { new: true });
             if (!claimed) return res.status(409).json(taken);
-            return res.json({ success: true, token: createSession(claimed.username), username: claimed.username });
+            return res.json({ success: true, token: await createSession(claimed.username), username: claimed.username });
         }
         const user = await new User({ username, points: 0, pinHash }).save();
         const all = await User.find({ username: new RegExp(`^${escapeRegex(username)}$`, 'i') }).select('_id').sort({ _id: 1 }).lean();
         if (all.length > 1 && String(all[0]._id) !== String(user._id)) { await User.deleteOne({ _id: user._id }); return res.status(409).json(taken); }
-        return res.json({ success: true, token: createSession(user.username), username: user.username });
+        return res.json({ success: true, token: await createSession(user.username), username: user.username });
     } catch (e) { console.error('[auth] rejestracja:', e.message); return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
@@ -430,13 +444,15 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ error: `Nieprawidłowy nick lub PIN. Pozostało prób: ${Math.max(0, PIN_MAX_ATTEMPTS - claimed.pinAttempts)}.` });
         }
         await User.updateOne({ _id: user._id }, { $set: { pinAttempts: 0, pinLockedUntil: null } });
-        return res.json({ success: true, token: createSession(user.username), username: user.username });
+        return res.json({ success: true, token: await createSession(user.username), username: user.username });
     } catch (e) { console.error('[auth] logowanie:', e.message); return res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-app.post('/api/auth/logout', (req, res) => {
-    const s = getSession(req);
-    if (s) SESSIONS.delete(s.token);
+app.post('/api/auth/logout', async (req, res) => {
+    try {
+        const s = await getSession(req);
+        if (s) { sessionCache.delete(s.tokenHash); await Session.deleteOne({ tokenHash: s.tokenHash }); }
+    } catch (e) {}
     res.json({ success: true });
 });
 
