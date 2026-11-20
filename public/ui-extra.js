@@ -13,6 +13,11 @@ Object.assign(translations.pl, {"navWheel": "Koło", "btnGoEarn": "Zacznij misje
 Object.assign(translations.de, {"navWheel": "Glücksrad", "btnGoEarn": "Quests starten", "btnWithdrawNow": "Auszahlen", "dashRateHint": "1 R$ = 0,025 USD · Mindestauszahlung 1 R$", "dashToday": "Heute", "dashEarnedToday": "Aus Umfragen verdient", "dashWheel": "Glücksrad", "dashWheelReady": "Bereit zum Drehen", "dashWheelNeed": "noch {x} R$ heute", "dashWheelIn": "nächste in {t}", "dashLevel": "Level", "dashLevelMax": "max. Level", "dashActivity": "Letzte Aktivität", "dashFullHistory": "Gesamter Verlauf", "dashNoActivity": "Noch nichts da. Mach deine erste Umfrage!", "dashPayout": "Letzte Auszahlung", "dashNoPayout": "Noch keine Auszahlungen", "dashStPending": "In Prüfung", "dashStDone": "Gesendet", "dashStRejected": "Abgelehnt", "dashBundle": "Paket", "dashNoBundle": "Kein aktives Paket – Pakete ansehen", "dashRefLink": "Dein Empfehlungslink", "dashCopy": "Kopieren", "dashCopied": "Kopiert!", "dashRefEarned": "Durch Empfehlungen verdient", "dashRefMore": "Empfehlungsdetails", "dashAdmin": "Saldokorrektur", "dashAdmob": "Werbung mit Belohnung", "dashSurvey": "Umfrage / Aufgabe"});
 Object.assign(translations.ru, {"navWheel": "Колесо", "btnGoEarn": "Начать квесты", "btnWithdrawNow": "Вывести", "dashRateHint": "1 R$ = 0,025 USD · минимальная выплата 1 R$", "dashToday": "Сегодня", "dashEarnedToday": "Заработано на опросах", "dashWheel": "Колесо", "dashWheelReady": "Можно крутить", "dashWheelNeed": "ещё {x} R$ сегодня", "dashWheelIn": "через {t}", "dashLevel": "Уровень", "dashLevelMax": "макс. уровень", "dashActivity": "Последняя активность", "dashFullHistory": "Вся история", "dashNoActivity": "Пока пусто. Пройди первый опрос!", "dashPayout": "Последняя выплата", "dashNoPayout": "Выплат пока нет", "dashStPending": "На проверке", "dashStDone": "Отправлена", "dashStRejected": "Отклонена", "dashBundle": "Пакет", "dashNoBundle": "Нет активного пакета – смотреть пакеты", "dashRefLink": "Твоя реферальная ссылка", "dashCopy": "Копировать", "dashCopied": "Скопировано!", "dashRefEarned": "Заработано на рефералах", "dashRefMore": "Подробнее о рефералах", "dashAdmin": "Корректировка баланса", "dashAdmob": "Реклама с наградой", "dashSurvey": "Опрос / задание"});
 
+Object.assign(translations.en, {"dashEarnedAds": "Earned from ads"});
+Object.assign(translations.pl, {"dashEarnedAds": "Zarobione z reklam"});
+Object.assign(translations.de, {"dashEarnedAds": "Durch Werbung verdient"});
+Object.assign(translations.ru, {"dashEarnedAds": "Заработано на рекламе"});
+
 (function () {
     const H24 = 24 * 60 * 60 * 1000;
     const LOCALES = { en: 'en-GB', pl: 'pl-PL', de: 'de-DE', ru: 'ru-RU' };
@@ -64,6 +69,7 @@ Object.assign(translations.ru, {"navWheel": "Колесо", "btnGoEarn": "Нач
         const st = (typeof userStats !== 'undefined' && userStats) ? userStats : {};
         const earned = parseFloat(st.dailyEarned) || 0;
         if ($('dashTodayEarned')) $('dashTodayEarned').innerText = fmt(earned) + ' R$';
+        if ($('dashTodayAds')) $('dashTodayAds').innerText = fmt(st.adsEarned) + ' R$';
         const w = $('dashWheelStatus');
         if (w) {
             let txt, cls;

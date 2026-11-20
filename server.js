@@ -606,11 +606,13 @@ app.get('/api/user-stats/:username', async (req, res) => {
         const safe = escapeRegex(req.params.username);
         const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.json({ xp: 0, dailyEarned: 0, claimedLevels: [], lastWheelSpin: null, wheelStreak: 0 });
         const startOfDay = getPolandMidnight();
-        const dailyEarnedAggr = await Earning.aggregate([{ $match: { username: new RegExp(`^${safe}$`, 'i'), createdAt: { $gte: startOfDay }, source: { $in: ['Survey'] } } }, { $group: { _id: null, total: { $sum: "$amount" } } }]);
-        const actualDailyEarned = dailyEarnedAggr.length > 0 ? dailyEarnedAggr[0].total : 0;
+        const dailyEarnedAggr = await Earning.aggregate([{ $match: { username: new RegExp(`^${safe}$`, 'i'), createdAt: { $gte: startOfDay }, source: { $in: ['Survey', 'AdMob Video'] } } }, { $group: { _id: "$source", total: { $sum: "$amount" } } }]);
+        const sumFor = src => { const g = dailyEarnedAggr.find(x => x._id === src); return g ? g.total : 0; };
+        const actualDailyEarned = sumFor('Survey');
+        const adsEarnedToday = sumFor('AdMob Video');
         let currentStreak = user.wheelStreak || 0;
         if (user.lastWheelSpin) { const diffHours = (new Date() - new Date(user.lastWheelSpin)) / (1000 * 60 * 60); if (diffHours > 48 && currentStreak !== 0) { currentStreak = 0; user.wheelStreak = 0; await user.save(); } }
-        res.json({ xp: user.xp || 0, dailyEarned: actualDailyEarned, claimedLevels: user.claimedLevels || [], lastWheelSpin: user.lastWheelSpin, wheelStreak: currentStreak });
+        res.json({ xp: user.xp || 0, dailyEarned: actualDailyEarned, adsEarned: adsEarnedToday, claimedLevels: user.claimedLevels || [], lastWheelSpin: user.lastWheelSpin, wheelStreak: currentStreak });
     } catch (error) { res.json({ xp: 0, dailyEarned: 0, claimedLevels: [], lastWheelSpin: null, wheelStreak: 0 }); }
 });
 
