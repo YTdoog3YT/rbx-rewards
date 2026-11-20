@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType, ChannelType } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType, ChannelType, PermissionFlagsBits, OverwriteType } = require('discord.js');
 
 const { hashPin, generatePin, isValidPin } = require('./pin-utils');
 
@@ -11,6 +11,12 @@ const KANAL_PAKIETY_WT_ID = "1566002493966516354";
 const KANAL_PAKIETY_SS_ID = KANAL_PAKIETY_ROBUX_ID; // Star Stable: na razie ten sam kanał co Robux; gdy utworzysz osobny, wpisz tu jego ID w cudzysłowie
 const BUNDLE_CAT_LABELS = { robux: 'Robux', wt: 'War Thunder', ss: 'Star Stable' };
 const ADMIN_DISCORD_ID = "398911896893521921";
+
+// Tickety (support ze strony)
+const GUILD_ID = "1543214998812102718";
+const TICKET_CATEGORY_ID = "1573458449369407488";
+const TICKET_ROLE_IDS = ["1548633150870261791", "1548633079898316800"]; // administracja, właściciel
+const TICKET_DELETE_AFTER_MS = 60 * 60 * 1000; // kanał rozwiązanego ticketu znika po godzinie
 
 let client;
 let dbModels;
@@ -300,6 +306,77 @@ module.exports = {
             }
         });
 
+        // ===================== TICKETY ZE STRONY =====================
+        // przyciski "Rozwiązano" i "Przywróć" (tylko właściciel i administracja)
+        client.on('interactionCreate', async interaction => {
+            if (!interaction.isButton()) return;
+            const cid = interaction.customId || '';
+            const isResolve = cid.startsWith('ticket_resolve_');
+            const isRestore = cid.startsWith('ticket_restore_');
+            if (!isResolve && !isRestore) return;
+            if (!canManageTickets(interaction)) return interaction.reply({ content: '❌ Tylko administracja może to kliknąć.', ephemeral: true }).catch(() => {});
+            const ticketId = cid.slice('ticket_resolve_'.length);
+            try {
+                if (isResolve) {
+                    const deleteAt = new Date(Date.now() + TICKET_DELETE_AFTER_MS);
+                    const t = await dbModels.Ticket.findOneAndUpdate(
+                        { _id: ticketId, status: 'open' },
+                        { $set: { status: 'resolved', resolvedBy: interaction.user.id, resolvedAt: new Date(), deleteAt } },
+                        { new: true }
+                    );
+                    if (!t) return interaction.reply({ content: '⚠️ Ten ticket jest już rozwiązany.', ephemeral: true });
+                    await interaction.update({ components: [] }).catch(() => {});
+                    const row = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder().setCustomId(`ticket_restore_${t._id}`).setLabel('♻️ Przywróć').setStyle(ButtonStyle.Secondary)
+                    );
+                    await interaction.channel.send({
+                        content: `✅ Ticket rozwiązany przez <@${interaction.user.id}>.\n🗑️ Kanał zostanie usunięty o **${plTime(deleteAt)}** (czasu polskiego).`,
+                        components: [row],
+                        allowedMentions: { parse: [] }
+                    });
+                } else {
+                    const t = await dbModels.Ticket.findOneAndUpdate(
+                        { _id: ticketId, status: 'resolved' },
+                        { $set: { status: 'open', resolvedBy: '', resolvedAt: null, deleteAt: null } },
+                        { new: true }
+                    );
+                    if (!t) return interaction.reply({ content: '⚠️ Tego ticketu nie da się już przywrócić.', ephemeral: true });
+                    await interaction.update({ content: `${interaction.message.content}\n♻️ Przywrócony przez <@${interaction.user.id}>.`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
+                    await interaction.channel.send({
+                        content: `♻️ Ticket przywrócony. Kanał nie zostanie usunięty.`,
+                        components: [ticketResolveRow(t._id)],
+                        allowedMentions: { parse: [] }
+                    });
+                }
+            } catch (err) {
+                console.error('[tickety] przycisk:', err.message);
+                if (!interaction.replied && !interaction.deferred) interaction.reply({ content: '❌ Błąd. Spróbuj ponownie.', ephemeral: true }).catch(() => {});
+            }
+        });
+
+        // ręcznie usunięty kanał = ticket zamknięty (żeby nie blokował limitu gracza)
+        client.on('channelDelete', channel => {
+            dbModels.Ticket.updateMany({ channelId: channel.id, status: { $in: ['open', 'resolved'] } }, { $set: { status: 'deleted' } }).catch(() => {});
+        });
+
+        // co minutę: usuwamy kanały rozwiązanych ticketów, którym minęła godzina (termin jest w bazie, więc restart serwera go nie gubi)
+        setInterval(async () => {
+            try {
+                const due = await dbModels.Ticket.find({ status: 'resolved', deleteAt: { $lte: new Date() } }).limit(20);
+                for (const t of due) {
+                    const claimed = await dbModels.Ticket.findOneAndUpdate({ _id: t._id, status: 'resolved' }, { $set: { status: 'deleted' } });
+                    if (!claimed) continue;
+                    try {
+                        const ch = t.channelId ? await client.channels.fetch(t.channelId).catch(e => { if (e && e.code === 10003) return null; throw e; }) : null;
+                        if (ch) await ch.delete('Ticket rozwiązany godzinę temu');
+                    } catch (e) {
+                        console.error('[tickety] usuwanie kanału:', e.message);
+                        await dbModels.Ticket.updateOne({ _id: t._id }, { $set: { status: 'resolved', deleteAt: new Date(Date.now() + 10 * 60 * 1000) } }).catch(() => {});
+                    }
+                }
+            } catch (e) { console.error('[tickety] sprzątanie:', e.message); }
+        }, 60 * 1000);
+
         // --- OBSŁUGA GUZIKÓW I MODALI ---
         client.on('interactionCreate', async interaction => {
 
@@ -444,20 +521,6 @@ module.exports = {
                 return;
             }
 
-            // 3. Kliknięcie w odpowiedź na Support
-            if (interaction.isButton() && interaction.customId.startsWith('reply_ticket_')) {
-                const targetUser = interaction.customId.replace('reply_ticket_', '');
-                
-                const modal = new ModalBuilder().setCustomId(`modal_reply_${targetUser}`).setTitle('Odpowiedź dla Gracza');
-                const input = new TextInputBuilder()
-                    .setCustomId('reply_text')
-                    .setLabel("Treść odpowiedzi (trafi prosto na stronę)")
-                    .setStyle(TextInputStyle.Paragraph)
-                    .setRequired(true);
-                modal.addComponents(new ActionRowBuilder().addComponents(input));
-                await interaction.showModal(modal);
-            }
-
             // --- ODBIÓR DANYCH Z MODALI (WYSKAKUJĄCYĄ OKIENEK) ---
             if (interaction.type === InteractionType.ModalSubmit) {
                 // Odpowiedź na Giveaway
@@ -477,30 +540,6 @@ module.exports = {
                     }
                 }
 
-                // Odpowiedź na Ticket
-                if (interaction.customId.startsWith('modal_reply_')) {
-                    const targetUser = interaction.customId.replace('modal_reply_', '');
-                    const replyText = interaction.fields.getTextInputValue('reply_text');
-
-                    try {
-                        const user = await dbModels.User.findOne({ username: new RegExp(`^${targetUser}$`, 'i') });
-                        if (user) {
-                            user.inbox.push({ message: replyText, date: new Date() });
-                            await user.save();
-                            
-                            // Edytujemy oryginalnego ticketa, żeby wiedzieć, że już mu odpisano
-                            const embed = interaction.message.embeds[0];
-                            await interaction.message.edit({
-                                embeds: [{ ...embed.data, title: "✅ ROZWIĄZANY TICKET", color: 0x00e676 }],
-                                components: [] // Usuwa guzik odpowiedzi
-                            });
-
-                            return interaction.reply({ content: `✅ Wysłano odpowiedź do ${targetUser}!`, ephemeral: true });
-                        } else {
-                            return interaction.reply({ content: `❌ Nie znaleziono użytkownika ${targetUser} w bazie!`, ephemeral: true });
-                        }
-                    } catch (err) { interaction.reply({ content: "Błąd.", ephemeral: true }); }
-                }
             }
         });
     },
@@ -555,22 +594,72 @@ module.exports = {
         });
     },
 
-    // Funkcja wywoływana z server.js gdy wpadnie ticket
-    sendTicketAlert: async (username, contact, message) => {
-        const supportChannel = client.channels.cache.find(c => c.name === 'support-tickets');
-        if (!supportChannel) return;
+    // ===================== TICKETY: funkcje dla server.js =====================
+    GUILD_ID,
 
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId(`reply_ticket_${username}`).setLabel('✉️ Odpowiedz Graczowi').setStyle(ButtonStyle.Primary)
-        );
+    // true = jest na serwerze, false = nie ma, null = nie da się sprawdzić (bot niegotowy / błąd)
+    isGuildMember: async (discordId) => {
+        if (!client || !client.isReady || !client.isReady()) return null;
+        try {
+            const guild = client.guilds.cache.get(GUILD_ID) || await client.guilds.fetch(GUILD_ID);
+            await guild.members.fetch({ user: String(discordId), force: true });
+            return true;
+        } catch (e) {
+            if (e && (e.code === 10007 || e.code === 10013)) return false; // Unknown Member / Unknown User
+            console.error('[tickety] sprawdzanie członka:', e.message);
+            return null;
+        }
+    },
 
-        await supportChannel.send({
-            embeds: [{
-                title: "🚨 NOWY TICKET",
-                description: `👤 **Od:** \`${username}\`\n💬 **Kontakt Zew:** \`${contact || "Brak"}\`\n\n**Wiadomość:**\n> ${message}`,
-                color: 0xff3333
-            }],
-            components: [row]
+    // tworzy prywatny kanał ticketu i wysyła na nim zgłoszenie z przyciskiem "Rozwiązano"
+    createTicketChannel: async (ticket) => {
+        if (!client || !client.isReady || !client.isReady()) throw new Error('bot niegotowy');
+        const guild = client.guilds.cache.get(GUILD_ID) || await client.guilds.fetch(GUILD_ID);
+        const nick = String(ticket.username || '').toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'gracz';
+        const name = `ticket${String(ticket.number).padStart(4, '0')}-${nick}`.slice(0, 100);
+        const P = PermissionFlagsBits;
+        const channel = await guild.channels.create({
+            name,
+            type: ChannelType.GuildText,
+            parent: TICKET_CATEGORY_ID,
+            topic: `Ticket ze strony RBX Rewards • gracz: ${ticket.username}`,
+            reason: 'Nowy ticket ze strony',
+            permissionOverwrites: [
+                { id: guild.id, type: OverwriteType.Role, deny: [P.ViewChannel] },
+                { id: client.user.id, type: OverwriteType.Member, allow: [P.ViewChannel, P.SendMessages, P.ReadMessageHistory, P.EmbedLinks, P.AttachFiles, P.ManageChannels] },
+                ...TICKET_ROLE_IDS.map(id => ({ id, type: OverwriteType.Role, allow: [P.ViewChannel, P.SendMessages, P.ReadMessageHistory, P.EmbedLinks, P.AttachFiles] })),
+                { id: String(ticket.discordId), type: OverwriteType.Member, allow: [P.ViewChannel, P.SendMessages, P.ReadMessageHistory, P.AttachFiles] }
+            ]
         });
+        try {
+            await channel.send({
+                content: `**Użytkownik** <@${ticket.discordId}> / **${ticket.username}**\n**Treść:** ${ticket.message}`,
+                components: [ticketResolveRow(ticket._id)],
+                allowedMentions: { users: [String(ticket.discordId)] }
+            });
+        } catch (e) {
+            await channel.delete('Nie udało się wysłać zgłoszenia').catch(() => {});
+            throw e;
+        }
+        return channel;
     }
 };
+
+function ticketResolveRow(ticketId) {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`ticket_resolve_${ticketId}`).setLabel('✅ Rozwiązano').setStyle(ButtonStyle.Success)
+    );
+}
+
+function canManageTickets(interaction) {
+    if (interaction.user && interaction.user.id === ADMIN_DISCORD_ID) return true;
+    const roles = interaction.member && interaction.member.roles;
+    if (!roles) return false;
+    if (roles.cache) return TICKET_ROLE_IDS.some(id => roles.cache.has(id));
+    if (Array.isArray(roles)) return TICKET_ROLE_IDS.some(id => roles.includes(id));
+    return false;
+}
+
+function plTime(date) {
+    return new Date(date).toLocaleTimeString('pl-PL', { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit' });
+}

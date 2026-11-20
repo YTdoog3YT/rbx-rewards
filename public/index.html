@@ -859,11 +859,18 @@
       <!-- ZAKŁADKA SUPPORT -->
       <main id="tab-support" style="display: none;">
         <h2 class="section-title" data-lang="supportTitle">Contact Support</h2>
-        <p style="color: #a0a0b0; margin-bottom: 15px;">Discord: <strong style="color: #fff;">ytdoog3yt</strong></p>
-        <div class="content-box">
-          <input type="text" id="ticketContactInput" data-lang-placeholder="phSupportContact" placeholder="Your Discord / Email (optional)" style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 10px;">
-          <textarea id="ticketMessageInput" rows="5" data-lang-placeholder="phSupport" placeholder="Describe your issue in detail..." style="width: 100%; max-width: 500px; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #0f1115; color: #fff; margin-bottom: 15px; resize: none;"></textarea>
-          <br><button class="btn-action" id="submitTicketBtn" onclick="submitSupportTicket()" data-lang="btnSubmitTicket">Submit Ticket</button>
+        <div class="content-box support-box">
+          <p class="support-intro" data-lang="supIntro">Support works through tickets on our Discord server. Each ticket gets a private channel that only you and our team can see.</p>
+          <div id="supportDiscordState" class="support-state"></div>
+          <div id="supportForm" class="support-form is-disabled">
+            <textarea id="ticketMessageInput" rows="5" maxlength="1500" data-lang-placeholder="phSupport" placeholder="Describe your issue in detail..." disabled></textarea>
+            <div class="support-form-foot">
+              <span id="supportCharCount" class="dash-muted">0 / 1500</span>
+              <button class="btn-action" id="submitTicketBtn" onclick="supportSubmit()" data-lang="btnSubmitTicket" disabled>Submit Ticket</button>
+            </div>
+          </div>
+          <div id="supportMsg" class="support-msg" style="display: none;"></div>
+          <div id="supportTickets" class="support-tickets"></div>
         </div>
       </main>
 
@@ -1009,6 +1016,18 @@
           <input type="text" id="chatInput" data-lang-placeholder="phChat" placeholder="Say something..." maxlength="100">
           <button onclick="sendChatMessage()" data-lang="btnSend">Send</button>
       </div>
+  </div>
+
+  <!-- OKIENKO: WYMAGANY DISCORD (SUPPORT) -->
+  <div class="modal" id="discordReqModal">
+    <div class="modal-content support-modal">
+      <svg class="support-modal-icon" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+      <h3 data-lang="supModalTitle">You need to be on our Discord</h3>
+      <p data-lang="supModalText">Tickets are created on our Discord server. Join the server first, then connect your Discord account.</p>
+      <a class="support-join-btn" href="https://discord.gg/ca8a9e33ke" target="_blank" rel="noopener" data-lang="supJoinServer">Join the Discord server</a>
+      <button class="btn-action" id="supportLinkBtn" onclick="supportStartLink(this)" data-lang="supAlreadyIn">I'm already there – connect</button>
+      <button class="support-cancel" onclick="supportCloseDiscordModal()" data-lang="btnCancel">Cancel</button>
+    </div>
   </div>
 
   <!-- OKIENKO LOGOWANIA -->
@@ -1652,20 +1671,6 @@ function updateReferredBy(name) {
                 alert(alertText);
             }
         } catch (error) {}
-    }
-
-    async function submitSupportTicket() {
-        const contactInput = document.getElementById("ticketContactInput"); const messageInput = document.getElementById("ticketMessageInput");
-        const contact = contactInput.value.trim(); const message = messageInput.value.trim(); const username = localStorage.getItem("rbx_username");
-        if (!username) return alert("Log in first!"); if (!message || message.length < 10) return alert("Message too short!");
-        const btn = document.getElementById("submitTicketBtn"); btn.innerText = "Wait..."; btn.disabled = true;
-        try {
-            const response = await fetch('/api/support-ticket', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, contact, message }) });
-            if (!response.ok) { alert("❌ Server Error!"); btn.innerText = "Submit Ticket"; btn.disabled = false; return; }
-            const data = await response.json();
-            if (data.error) alert("❌ " + data.error); else { alert("✅ " + data.message); contactInput.value = ""; messageInput.value = ""; switchTab('home'); }
-        } catch (error) { alert("Connection Error"); }
-        btn.innerText = "Submit Ticket"; btn.disabled = false;
     }
 
     let previousPoints = null;

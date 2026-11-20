@@ -116,4 +116,37 @@ body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-even
     .dash-big { font-size: 2.3rem; }
     .dash-actions button { flex: 1; justify-content: center; }
 }
-#tab-support .content-box input, #tab-support .content-box textarea { display: block; margin-left: auto; margin-right: auto; max-width: 600px !important; }
+
+/* ================= SUPPORT: TICKETY NA DISCORDZIE ================= */
+.support-box { text-align: left; max-width: 760px; margin-left: auto; margin-right: auto; }
+.support-intro { color: #b0b5c0; line-height: 1.55; margin: 0 0 16px 0; }
+.support-state { margin-bottom: 14px; }
+.support-state-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #14171d; border: 1px solid var(--c-line); border-radius: 8px; padding: 12px 14px; color: #d6d9e0; }
+.support-linked { justify-content: flex-start; color: #d6d9e0; }
+.support-linked strong { color: #fff; }
+.support-dc-ico { width: 20px; height: 20px; flex-shrink: 0; }
+.support-linked .support-dc-ico { color: #5865F2; }
+.support-discord-btn { display: inline-flex !important; align-items: center; gap: 8px; background: #5865F2 !important; color: #fff !important; border: 0 !important; border-radius: 8px !important; padding: 10px 16px !important; font-weight: bold; cursor: pointer; width: auto !important; }
+.support-discord-btn:hover { background: #4752c4 !important; }
+.support-form textarea { display: block; width: 100%; min-height: 130px; padding: 12px; border-radius: 8px; border: 1px solid #333947; background: #0f1115; color: #fff; resize: vertical; font-family: inherit; font-size: 0.95rem; }
+.support-form textarea:focus { outline: none; border-color: var(--c-green); }
+.support-form-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+.support-form-foot .btn-action { margin-top: 0 !important; }
+.support-form.is-disabled { opacity: 0.45; }
+.support-msg { margin-top: 14px; padding: 12px 14px; border-radius: 8px; font-size: 0.93rem; line-height: 1.5; }
+.support-msg a { color: inherit; font-weight: bold; }
+.support-msg-ok { background: rgba(0, 230, 118, 0.08); border: 1px solid rgba(0, 230, 118, 0.45); color: #b9f6d4; }
+.support-msg-err { background: rgba(255, 92, 92, 0.08); border: 1px solid rgba(255, 92, 92, 0.45); color: #ffc9c9; }
+.support-tickets { margin-top: 18px; }
+.support-ticket-list { list-style: none; margin: 0; padding: 0; }
+.support-ticket-list li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid #22262f; }
+.support-ticket-list li:last-child { border-bottom: 0; }
+.support-ticket-name { color: #e6e8ee; font-family: monospace; font-size: 0.92rem; margin-right: auto; }
+.support-modal h3 { color: #fff; margin: 10px 0 8px 0; }
+.support-modal p { color: #b0b5c0; line-height: 1.5; margin: 0 0 16px 0; }
+.support-modal-icon { width: 42px; height: 42px; }
+.support-join-btn { display: block; background: #5865F2; color: #fff; font-weight: bold; padding: 12px; border-radius: 8px; text-decoration: none; margin-bottom: 10px; }
+.support-join-btn:hover { background: #4752c4; }
+.support-modal .btn-action { margin-top: 0 !important; }
+.support-cancel { background: transparent !important; color: #888 !important; border: none; margin-top: 12px; cursor: pointer; }
+

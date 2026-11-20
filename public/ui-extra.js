@@ -133,3 +133,131 @@ Object.assign(translations.ru, {"dashEarnedAds": "Заработано на ре
     setInterval(window.dashRender, 5000);
     document.addEventListener('DOMContentLoaded', () => setTimeout(window.dashRender, 300));
 })();
+
+// ================= SUPPORT: TICKETY NA DISCORDZIE =================
+Object.assign(translations.en, {"supIntro": "Support works through tickets on our Discord server. Each ticket gets a private channel that only you and our team can see.", "supLoginFirst": "Log in to create a ticket.", "supNotLinked": "To create a ticket, connect your Discord account.", "supConnectBtn": "Connect with Discord", "supLinkedAs": "Connected with Discord:", "supModalTitle": "You need to be on our Discord", "supModalText": "Tickets are created on our Discord server. Join the server first, then connect your Discord account.", "supJoinServer": "Join the Discord server", "supAlreadyIn": "I'm already there – connect", "supOpenTickets": "Your tickets (unresolved: {n} / {max})", "supTicketOpen": "Open", "supTicketResolved": "Resolved – removed at {t}", "supOpenOnDiscord": "Open on Discord", "supSending": "Sending...", "supSent": "Ticket created! Our team will reply in your ticket channel on Discord:", "supErrShort": "Describe your issue in more detail (min. 10 characters).", "supErrLong": "Your message is too long (max. 1500 characters).", "supErrLimit": "You already have {max} unresolved tickets. Please wait until our team resolves them.", "supErrNoDiscord": "Connect your Discord account first.", "supErrBot": "Our Discord bot is unavailable right now. Try again in a few minutes.", "supErrBusy": "Please wait, your previous ticket is still being created.", "supErrCreate": "Could not create the ticket on Discord. Try again in a moment.", "discOk": "Discord connected! You can now create a ticket.", "discNotMember": "This Discord account is not on our server. Join the server and then click “Connect with Discord” again.", "discTaken": "This Discord account is already connected to another account on our site. If this is a mistake, contact us on Discord.", "discAlready": "Your account already has a connected Discord.", "discExpired": "The connection link expired. Please try again.", "discCancel": "Connecting Discord was cancelled.", "discError": "Could not connect Discord. Please try again in a moment."});
+Object.assign(translations.pl, {"supIntro": "Wsparcie działa przez tickety na naszym serwerze Discord. Każdy ticket dostaje prywatny kanał, który widzisz tylko Ty i nasz zespół.", "supLoginFirst": "Zaloguj się, aby utworzyć ticket.", "supNotLinked": "Aby utworzyć ticket, połącz konto Discord.", "supConnectBtn": "Połącz z Discordem", "supLinkedAs": "Połączono z Discordem:", "supModalTitle": "Musisz być na naszym Discordzie", "supModalText": "Tickety tworzymy na naszym serwerze Discord. Najpierw dołącz do serwera, a potem połącz konto Discord.", "supJoinServer": "Dołącz do serwera Discord", "supAlreadyIn": "Już jestem – połącz", "supOpenTickets": "Twoje tickety (nierozwiązane: {n} / {max})", "supTicketOpen": "Otwarty", "supTicketResolved": "Rozwiązany – usunięcie o {t}", "supOpenOnDiscord": "Otwórz na Discordzie", "supSending": "Wysyłanie...", "supSent": "Ticket utworzony! Odpowiemy na Twoim kanale ticketu na Discordzie:", "supErrShort": "Opisz problem dokładniej (min. 10 znaków).", "supErrLong": "Wiadomość jest za długa (max 1500 znaków).", "supErrLimit": "Masz już {max} nierozwiązane tickety. Poczekaj, aż administracja je rozwiąże.", "supErrNoDiscord": "Najpierw połącz konto Discord.", "supErrBot": "Nasz bot Discord jest teraz niedostępny. Spróbuj za kilka minut.", "supErrBusy": "Poczekaj chwilę, poprzedni ticket jeszcze się tworzy.", "supErrCreate": "Nie udało się utworzyć ticketu na Discordzie. Spróbuj za chwilę.", "discOk": "Discord połączony! Teraz możesz utworzyć ticket.", "discNotMember": "Tego konta Discord nie ma na naszym serwerze. Dołącz do serwera, a potem kliknij „Połącz z Discordem” jeszcze raz.", "discTaken": "To konto Discord jest już połączone z innym kontem na stronie. Jeśli to pomyłka, napisz do nas na Discordzie.", "discAlready": "Twoje konto ma już połączony Discord.", "discExpired": "Link do połączenia wygasł. Spróbuj jeszcze raz.", "discCancel": "Anulowano łączenie z Discordem.", "discError": "Nie udało się połączyć z Discordem. Spróbuj ponownie za chwilę."});
+Object.assign(translations.de, {"supIntro": "Der Support läuft über Tickets auf unserem Discord-Server. Jedes Ticket bekommt einen privaten Kanal, den nur du und unser Team sehen.", "supLoginFirst": "Melde dich an, um ein Ticket zu erstellen.", "supNotLinked": "Verbinde dein Discord-Konto, um ein Ticket zu erstellen.", "supConnectBtn": "Mit Discord verbinden", "supLinkedAs": "Mit Discord verbunden:", "supModalTitle": "Du musst auf unserem Discord sein", "supModalText": "Tickets werden auf unserem Discord-Server erstellt. Tritt zuerst dem Server bei und verbinde dann dein Discord-Konto.", "supJoinServer": "Discord-Server beitreten", "supAlreadyIn": "Bin schon da – verbinden", "supOpenTickets": "Deine Tickets (ungelöst: {n} / {max})", "supTicketOpen": "Offen", "supTicketResolved": "Gelöst – wird um {t} gelöscht", "supOpenOnDiscord": "Auf Discord öffnen", "supSending": "Wird gesendet...", "supSent": "Ticket erstellt! Wir antworten in deinem Ticket-Kanal auf Discord:", "supErrShort": "Beschreibe dein Problem genauer (mind. 10 Zeichen).", "supErrLong": "Die Nachricht ist zu lang (max. 1500 Zeichen).", "supErrLimit": "Du hast bereits {max} ungelöste Tickets. Bitte warte, bis unser Team sie bearbeitet.", "supErrNoDiscord": "Verbinde zuerst dein Discord-Konto.", "supErrBot": "Unser Discord-Bot ist gerade nicht erreichbar. Versuche es in ein paar Minuten erneut.", "supErrBusy": "Bitte warte, dein vorheriges Ticket wird noch erstellt.", "supErrCreate": "Das Ticket konnte auf Discord nicht erstellt werden. Versuche es gleich noch einmal.", "discOk": "Discord verbunden! Du kannst jetzt ein Ticket erstellen.", "discNotMember": "Dieses Discord-Konto ist nicht auf unserem Server. Tritt dem Server bei und klicke dann erneut auf „Mit Discord verbinden“.", "discTaken": "Dieses Discord-Konto ist bereits mit einem anderen Konto auf unserer Seite verbunden. Falls das ein Fehler ist, schreib uns auf Discord.", "discAlready": "Dein Konto hat bereits ein verbundenes Discord.", "discExpired": "Der Verbindungslink ist abgelaufen. Bitte versuche es erneut.", "discCancel": "Die Verbindung mit Discord wurde abgebrochen.", "discError": "Discord konnte nicht verbunden werden. Bitte versuche es gleich noch einmal."});
+Object.assign(translations.ru, {"supIntro": "Поддержка работает через тикеты на нашем сервере Discord. Каждый тикет получает приватный канал, который видите только вы и наша команда.", "supLoginFirst": "Войдите, чтобы создать тикет.", "supNotLinked": "Чтобы создать тикет, подключите аккаунт Discord.", "supConnectBtn": "Подключить Discord", "supLinkedAs": "Discord подключён:", "supModalTitle": "Нужно быть на нашем Discord", "supModalText": "Тикеты создаются на нашем сервере Discord. Сначала присоединитесь к серверу, затем подключите аккаунт Discord.", "supJoinServer": "Присоединиться к серверу Discord", "supAlreadyIn": "Я уже там – подключить", "supOpenTickets": "Ваши тикеты (нерешённых: {n} / {max})", "supTicketOpen": "Открыт", "supTicketResolved": "Решён – удаление в {t}", "supOpenOnDiscord": "Открыть в Discord", "supSending": "Отправка...", "supSent": "Тикет создан! Мы ответим в канале вашего тикета в Discord:", "supErrShort": "Опишите проблему подробнее (мин. 10 символов).", "supErrLong": "Сообщение слишком длинное (макс. 1500 символов).", "supErrLimit": "У вас уже {max} нерешённых тикета. Подождите, пока администрация их решит.", "supErrNoDiscord": "Сначала подключите аккаунт Discord.", "supErrBot": "Наш бот Discord сейчас недоступен. Попробуйте через несколько минут.", "supErrBusy": "Подождите, предыдущий тикет ещё создаётся.", "supErrCreate": "Не удалось создать тикет в Discord. Попробуйте чуть позже.", "discOk": "Discord подключён! Теперь вы можете создать тикет.", "discNotMember": "Этого аккаунта Discord нет на нашем сервере. Присоединитесь к серверу и снова нажмите «Подключить Discord».", "discTaken": "Этот аккаунт Discord уже подключён к другому аккаунту на сайте. Если это ошибка, напишите нам в Discord.", "discAlready": "К вашему аккаунту уже подключён Discord.", "discExpired": "Ссылка для подключения устарела. Попробуйте ещё раз.", "discCancel": "Подключение Discord отменено.", "discError": "Не удалось подключить Discord. Попробуйте ещё раз чуть позже."});
+
+(function () {
+    const INVITE = 'https://discord.gg/ca8a9e33ke';
+    const DSVG = '<svg class="support-dc-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>';
+    const LOCALES = { en: 'en-GB', pl: 'pl-PL', de: 'de-DE', ru: 'ru-RU' };
+    let status = null, sending = false, statusUser = '';
+    const $ = id => document.getElementById(id);
+    const tr = k => (typeof bt === 'function' ? bt(k) : k);
+    const esc = s => (typeof escHtml === 'function' ? escHtml(s) : String(s));
+    const lang = () => { const l = localStorage.getItem('rbx_lang') || 'en'; return LOCALES[l] ? l : 'en'; };
+    const hhmm = d => { try { return new Date(d).toLocaleTimeString(LOCALES[lang()], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+    const joinLink = () => `<a href="${INVITE}" target="_blank" rel="noopener">${esc(tr('supJoinServer'))}</a>`;
+
+    function setMsg(kind, html) {
+        const m = $('supportMsg'); if (!m) return;
+        if (!html) { m.style.display = 'none'; m.innerHTML = ''; return; }
+        m.className = 'support-msg support-msg-' + kind; m.innerHTML = html; m.style.display = 'block';
+    }
+
+    function setForm(enabled) {
+        const form = $('supportForm'), ta = $('ticketMessageInput'), btn = $('submitTicketBtn');
+        if (form) form.classList.toggle('is-disabled', !enabled);
+        if (ta) ta.disabled = !enabled;
+        if (btn) btn.disabled = !enabled || sending;
+    }
+
+    function render() {
+        const box = $('supportDiscordState'), list = $('supportTickets'); if (!box || !list) return;
+        const user = localStorage.getItem('rbx_username');
+        if (!user) { box.innerHTML = `<div class="support-state-row">${esc(tr('supLoginFirst'))}</div>`; list.innerHTML = ''; setForm(false); return; }
+        if (!status || statusUser !== user) { box.innerHTML = `<div class="support-state-row dash-muted">${esc(tr('loadingStats'))}</div>`; list.innerHTML = ''; setForm(false); return; }
+        if (!status.linked) {
+            box.innerHTML = `<div class="support-state-row"><span>${esc(tr('supNotLinked'))}</span><button class="support-discord-btn" onclick="supportOpenDiscordModal()">${DSVG}<span>${esc(tr('supConnectBtn'))}</span></button></div>`;
+            setForm(false);
+        } else {
+            box.innerHTML = `<div class="support-state-row support-linked">${DSVG}<span>${esc(tr('supLinkedAs'))} <strong>@${esc(status.discordName || '')}</strong></span></div>`;
+            setForm(true);
+        }
+        const tickets = status.tickets || [];
+        if (!tickets.length) { list.innerHTML = ''; return; }
+        const open = tickets.filter(t => t.status === 'open').length;
+        list.innerHTML = `<p class="dash-label">${esc(tr('supOpenTickets').replace('{n}', open).replace('{max}', status.maxOpen || 2))}</p><ul class="support-ticket-list">` +
+            tickets.map(t => `<li><span class="support-ticket-name">#${esc(t.name || '')}</span><span class="dash-chip ${t.status === 'open' ? 'dash-info' : 'dash-ok'}">${esc(t.status === 'open' ? tr('supTicketOpen') : tr('supTicketResolved').replace('{t}', hhmm(t.deleteAt)))}</span><a class="dash-link" href="https://discord.com/channels/${esc(status.guildId)}/${esc(t.channelId)}" target="_blank" rel="noopener">${esc(tr('supOpenOnDiscord'))}</a></li>`).join('') + '</ul>';
+    }
+
+    async function load() {
+        const user = localStorage.getItem('rbx_username');
+        if (!user) { status = null; render(); return; }
+        try {
+            const r = await fetch(`/api/support-status/${encodeURIComponent(user)}`);
+            if (r.ok) { status = await r.json(); statusUser = user; }
+        } catch (e) {}
+        render();
+    }
+
+    function updateCount() {
+        const ta = $('ticketMessageInput'), c = $('supportCharCount');
+        if (ta && c) c.innerText = `${ta.value.length} / 1500`;
+    }
+
+    window.supportOpenDiscordModal = function () { const m = $('discordReqModal'); if (m) m.style.display = 'flex'; };
+    window.supportCloseDiscordModal = function () { const m = $('discordReqModal'); if (m) m.style.display = 'none'; };
+
+    window.supportStartLink = async function (btn) {
+        if (btn) btn.disabled = true;
+        try {
+            const r = await fetch('/api/discord/link-start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+            const d = await r.json().catch(() => ({}));
+            if (d.url) { window.location.href = d.url; return; }
+            window.supportCloseDiscordModal();
+            setMsg('err', esc(d.code === 'ALREADY' ? tr('discAlready') : (d.error || tr('discError'))));
+            if (d.code === 'ALREADY') load();
+        } catch (e) { window.supportCloseDiscordModal(); setMsg('err', esc(tr('discError'))); }
+        if (btn) btn.disabled = false;
+    };
+
+    window.supportSubmit = async function () {
+        const ta = $('ticketMessageInput'), btn = $('submitTicketBtn'); if (!ta || !btn || sending) return;
+        const message = ta.value.trim();
+        if (message.length < 10) return setMsg('err', esc(tr('supErrShort')));
+        sending = true; btn.disabled = true; const label = btn.innerText; btn.innerText = tr('supSending'); setMsg('', '');
+        try {
+            const r = await fetch('/api/support-ticket', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+            const d = await r.json().catch(() => ({}));
+            if (d.success) {
+                ta.value = ''; updateCount();
+                setMsg('ok', `${esc(tr('supSent'))} <a href="${esc(d.channelUrl || '#')}" target="_blank" rel="noopener">#${esc(d.channelName || '')}</a>`);
+            } else {
+                const map = { SHORT: 'supErrShort', LONG: 'supErrLong', NO_DISCORD: 'supErrNoDiscord', BOT_DOWN: 'supErrBot', BUSY: 'supErrBusy', CREATE_FAILED: 'supErrCreate' };
+                if (d.code === 'LIMIT') setMsg('err', esc(tr('supErrLimit').replace('{max}', (status && status.maxOpen) || 2)));
+                else if (d.code === 'NOT_MEMBER') setMsg('err', `${esc(tr('discNotMember'))} ${joinLink()}`);
+                else setMsg('err', esc(map[d.code] ? tr(map[d.code]) : (d.error || tr('supErrCreate'))));
+            }
+        } catch (e) { setMsg('err', esc(tr('supErrCreate'))); }
+        sending = false; btn.innerText = label;
+        await load();
+    };
+
+    ['switchTab', 'changeLang'].forEach(name => {
+        const orig = window[name]; if (typeof orig !== 'function') return;
+        window[name] = function () {
+            const r = orig.apply(this, arguments);
+            try { if (name === 'switchTab' && arguments[0] === 'support') load(); else render(); } catch (e) {}
+            return r;
+        };
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const ta = $('ticketMessageInput'); if (ta) ta.addEventListener('input', updateCount);
+        const p = new URLSearchParams(window.location.search).get('discord');
+        if (p) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(() => {
+                window.switchTab('support');
+                const map = { ok: ['ok', 'discOk'], notmember: ['err', 'discNotMember'], taken: ['err', 'discTaken'], already: ['err', 'discAlready'], expired: ['err', 'discExpired'], cancel: ['err', 'discCancel'] };
+                const [kind, key] = map[p] || ['err', 'discError'];
+                setMsg(kind, esc(tr(key)) + (p === 'notmember' ? ' ' + joinLink() : ''));
+            }, 100);
+        }
+        render();
+    });
+})();

@@ -64,6 +64,7 @@ app.get('/api/admin/login', (req, res) => {
 });
 
 app.get('/api/admin/callback', async (req, res) => {
+    if (req.query.state) return discordLinkCallback(req, res, String(req.query.state));
     const code = req.query.code;
     if (!code) return res.redirect('/?error=NoCode');
 
@@ -275,8 +276,11 @@ const UserSchema = new mongoose.Schema({
     dailyEarned: { type: Number, default: 0 }, lastEarnedDate: { type: String, default: "" }, lastWheelSpin: { type: Date, default: null },
     wheelStreak: { type: Number, default: 0 }, goals: [GoalSchema],
     verified: { type: Boolean, default: false }, robloxName: { type: String, default: '' }, gaijinId: { type: String, default: '' }, discordName: { type: String, default: '' },
-    pinHash: { type: String, default: null }, pinAttempts: { type: Number, default: 0 }, pinLockedUntil: { type: Date, default: null }
+    pinHash: { type: String, default: null }, pinAttempts: { type: Number, default: 0 }, pinLockedUntil: { type: Date, default: null },
+    discordLinkedId: { type: String, default: null }, discordLinkedName: { type: String, default: '' }, discordLinkedAt: { type: Date, default: null }
 });
+// jedno konto Discord = jedno konto na stronie
+UserSchema.index({ discordLinkedId: 1 }, { unique: true, partialFilterExpression: { discordLinkedId: { $type: 'string' } } });
 const User = mongoose.model('User', UserSchema);
 
 const EarningSchema = new mongoose.Schema({ username: String, amount: Number, source: { type: String, default: 'Survey' }, details: { type: String, default: '' }, txId: String, createdAt: { type: Date, default: Date.now } });
@@ -302,7 +306,21 @@ const BundleSchema = new mongoose.Schema({
 });
 const Bundle = mongoose.model('Bundle', BundleSchema);
 
-const dbModels = { User, Earning, Payout, PromoCode, Bundle };
+// --- TICKETY (SUPPORT NA DISCORDZIE) ---
+const TicketSchema = new mongoose.Schema({
+    username: String, discordId: String, discordName: String, message: String,
+    dayKey: String, number: Number, channelId: { type: String, default: null }, channelName: { type: String, default: '' },
+    status: { type: String, default: 'open' }, // open | resolved | deleted | failed
+    resolvedBy: { type: String, default: '' }, resolvedAt: { type: Date, default: null }, deleteAt: { type: Date, default: null },
+    createdAt: { type: Date, default: Date.now }
+});
+TicketSchema.index({ username: 1, status: 1 });
+TicketSchema.index({ status: 1, deleteAt: 1 });
+const Ticket = mongoose.model('Ticket', TicketSchema);
+const CounterSchema = new mongoose.Schema({ _id: String, seq: { type: Number, default: 0 } });
+const Counter = mongoose.model('Counter', CounterSchema);
+
+const dbModels = { User, Earning, Payout, PromoCode, Bundle, Ticket, Counter };
 
 function allocateGoalProgress(user, amountToAllocate) {
     let remaining = amountToAllocate;
@@ -366,9 +384,10 @@ async function getSession(req) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, v] of sessionCache) if (v.expires < now || v.checkedAt < now - 60 * 1000) sessionCache.delete(k); }, 10 * 60 * 1000).unref();
 
-const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|bundles)\/([^/?]+)/;
+const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|bundles|support-status)\/([^/?]+)/;
 const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
-    '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw']);
+    '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw',
+    '/api/discord/link-start']);
 
 app.use(async (req, res, next) => {
     try {
@@ -688,9 +707,124 @@ app.get('/api/inbox/:username', async (req, res) => {
     try { const safe = escapeRegex(req.params.username); const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') }); if (!user) return res.json([]); const unread = user.inbox.filter(msg => !msg.read); if (unread.length > 0) { user.inbox.forEach(msg => msg.read = true); await user.save(); } res.json(unread); } catch (error) { res.json([]); }
 });
 
-app.post('/api/support-ticket', async (req, res) => {
-    try { const { username, contact, message } = req.body; if (!username || !message) return res.status(400).json({ error: 'Brak wymaganych danych.' }); discordBot.sendTicketAlert(username, contact, message); return res.json({ success: true, message: 'Ticket pomyślnie wysłany!' }); } catch (error) { return res.status(500).json({ error: 'Błąd serwera.' }); }
+// =================== DISCORD: POŁĄCZENIE KONTA I TICKETY ===================
+const DISCORD_LINK_TTL_MS = 10 * 60 * 1000;
+const discordLinkStates = new Map(); // state -> { username, expires }
+setInterval(() => { const now = Date.now(); for (const [k, v] of discordLinkStates) if (v.expires < now) discordLinkStates.delete(k); }, 10 * 60 * 1000).unref();
+
+const TICKET_MAX_OPEN = 2;
+const TICKET_MIN_LEN = 10;
+const TICKET_MAX_LEN = 1500;
+const ticketLocks = new Set();
+const polandDayKey = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' }); // np. 2026-11-20
+
+// 1) gracz klika "Połącz z Discordem" -> dostaje adres logowania Discord
+app.post('/api/discord/link-start', async (req, res) => {
+    try {
+        const user = await findUserCI(String(req.body.username || '').trim());
+        if (!user) return res.status(404).json({ error: 'Nie znaleziono konta.' });
+        if (user.discordLinkedId) return res.status(400).json({ error: 'Twoje konto ma już połączony Discord.', code: 'ALREADY' });
+        const state = crypto.randomBytes(24).toString('hex');
+        discordLinkStates.set(state, { username: user.username, expires: Date.now() + DISCORD_LINK_TTL_MS });
+        const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify&state=${state}`;
+        res.json({ url });
+    } catch (e) { console.error('[discord-link] start:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
 });
+
+// 2) Discord wraca na /api/admin/callback z parametrem state -> zapisujemy Discord na koncie
+async function discordLinkCallback(req, res, state) {
+    const back = r => res.redirect('/?discord=' + r);
+    const st = discordLinkStates.get(state);
+    discordLinkStates.delete(state);
+    if (!st || st.expires < Date.now()) return back('expired');
+    if (req.query.error || !req.query.code) return back('cancel');
+    try {
+        const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ client_id: DISCORD_CLIENT_ID, client_secret: DISCORD_CLIENT_SECRET, grant_type: 'authorization_code', code: String(req.query.code), redirect_uri: REDIRECT_URI })
+        });
+        const tokenData = await tokenResponse.json();
+        if (!tokenData.access_token) return back('error');
+        const userResponse = await fetch('https://discord.com/api/users/@me', { headers: { authorization: `Bearer ${tokenData.access_token}` } });
+        const du = await userResponse.json();
+        if (!du || !du.id) return back('error');
+
+        const member = await discordBot.isGuildMember(du.id);
+        if (member === null) return back('error');
+        if (!member) return back('notmember');
+
+        const updated = await User.findOneAndUpdate(
+            { username: st.username, discordLinkedId: null },
+            { $set: { discordLinkedId: String(du.id), discordLinkedName: String(du.username || ''), discordLinkedAt: new Date() } },
+            { new: true }
+        );
+        if (!updated) return back('already');
+        return back('ok');
+    } catch (e) {
+        if (e && e.code === 11000) return back('taken');
+        console.error('[discord-link] callback:', e.message);
+        return back('error');
+    }
+}
+
+// 3) stan zakładki Support: czy Discord połączony + tickety gracza
+app.get('/api/support-status/:username', async (req, res) => {
+    try {
+        const user = await findUserCI(req.params.username);
+        if (!user) return res.json({ linked: false, discordName: '', tickets: [], maxOpen: TICKET_MAX_OPEN, guildId: discordBot.GUILD_ID });
+        const tickets = await Ticket.find({ username: user.username, status: { $in: ['open', 'resolved'] }, channelId: { $ne: null } }).sort({ createdAt: -1 }).limit(10).lean();
+        res.json({
+            linked: !!user.discordLinkedId,
+            discordName: user.discordLinkedName || '',
+            maxOpen: TICKET_MAX_OPEN,
+            guildId: discordBot.GUILD_ID,
+            tickets: tickets.map(t => ({ name: t.channelName, channelId: t.channelId, status: t.status, createdAt: t.createdAt, deleteAt: t.deleteAt }))
+        });
+    } catch (e) { console.error('[tickety] status:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
+});
+
+// 4) nowy ticket -> prywatny kanał na Discordzie
+async function createSupportTicket(req, res) {
+    const username = String(req.body.username || '').trim();
+    const message = String(req.body.message || '').trim();
+    if (message.length < TICKET_MIN_LEN) return res.status(400).json({ error: `Opisz problem dokładniej (min. ${TICKET_MIN_LEN} znaków).`, code: 'SHORT' });
+    if (message.length > TICKET_MAX_LEN) return res.status(400).json({ error: `Wiadomość jest za długa (max ${TICKET_MAX_LEN} znaków).`, code: 'LONG' });
+    const lockKey = username.toLowerCase();
+    if (ticketLocks.has(lockKey)) return res.status(429).json({ error: 'Poczekaj chwilę, poprzedni ticket jeszcze się tworzy.', code: 'BUSY' });
+    ticketLocks.add(lockKey);
+    try {
+        const user = await findUserCI(username);
+        if (!user) return res.status(404).json({ error: 'Nie znaleziono konta.' });
+        if (!user.discordLinkedId) return res.status(400).json({ error: 'Najpierw połącz konto z Discordem.', code: 'NO_DISCORD' });
+        const open = await Ticket.countDocuments({ username: user.username, status: 'open' });
+        if (open >= TICKET_MAX_OPEN) return res.status(400).json({ error: `Masz już ${open} nierozwiązane tickety. Poczekaj, aż administracja je rozwiąże.`, code: 'LIMIT' });
+
+        const member = await discordBot.isGuildMember(user.discordLinkedId);
+        if (member === null) return res.status(503).json({ error: 'Bot Discord jest teraz niedostępny. Spróbuj za kilka minut.', code: 'BOT_DOWN' });
+        if (!member) return res.status(400).json({ error: 'Nie ma Cię na naszym serwerze Discord. Dołącz i spróbuj ponownie.', code: 'NOT_MEMBER' });
+
+        const dayKey = polandDayKey();
+        const counter = await Counter.findOneAndUpdate({ _id: 'ticket-' + dayKey }, { $inc: { seq: 1 } }, { new: true, upsert: true });
+        const ticket = await new Ticket({ username: user.username, discordId: user.discordLinkedId, discordName: user.discordLinkedName, message, dayKey, number: counter.seq }).save();
+
+        let channel;
+        try { channel = await discordBot.createTicketChannel(ticket); }
+        catch (e) {
+            console.error('[tickety] tworzenie kanału:', e.message);
+            await Ticket.updateOne({ _id: ticket._id }, { $set: { status: 'failed' } }).catch(() => {});
+            return res.status(500).json({ error: 'Nie udało się utworzyć ticketu na Discordzie. Spróbuj za chwilę.', code: 'CREATE_FAILED' });
+        }
+        await Ticket.updateOne({ _id: ticket._id }, { $set: { channelId: channel.id, channelName: channel.name } });
+        return res.json({ success: true, message: 'Ticket utworzony!', channelName: channel.name, channelUrl: `https://discord.com/channels/${discordBot.GUILD_ID}/${channel.id}` });
+    } catch (e) {
+        console.error('[tickety] nowy ticket:', e.message);
+        return res.status(500).json({ error: 'Błąd serwera.' });
+    } finally {
+        ticketLocks.delete(lockKey);
+    }
+}
+app.post('/api/support-ticket', createSupportTicket);
 
 const MIN_PAYOUT = 1;
 
