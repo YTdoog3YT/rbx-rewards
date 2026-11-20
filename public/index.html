@@ -142,6 +142,10 @@
     .about-box { text-align: left; }
     .about-box p { color: #b0b5c0; line-height: 1.6; margin-bottom: 10px; }
     @media (max-width: 760px) { .hero-facts { grid-template-columns: repeat(2, 1fr); } .proof-grid { grid-template-columns: 1fr; } }
+    .step-card { display: flex; flex-direction: column; }
+    .step-shot { margin-top: auto; padding-top: 14px; display: block; cursor: zoom-in; }
+    .step-shot img { display: block; width: 100%; height: 170px; object-fit: contain; background: #0f1115; border: 1px solid #2a2e39; border-radius: 8px; padding: 6px; transition: 0.2s; }
+    .step-shot:hover img { border-color: #00e676; }
     
     .social-tasks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
     .social-task-card { background: #14171d; border: 1px solid #2a2e39; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; text-align: left; }
@@ -396,17 +400,20 @@
                   <div class="step-card">
                       <span class="step-badge" data-lang="step1Badge">STEP 1</span>
                       <h3 data-lang="step1Title">🎮 Create an account</h3>
-                      <p data-lang="step1Desc">Enter your Roblox nickname and set your own 6-digit PIN. We never ask for your Roblox password.</p>
+                                            <p data-lang="step1Desc">Enter your Roblox nickname and set your own 6-digit PIN. We never ask for your Roblox password.</p>
+                      <a class="step-shot" href="/img/step1-login.png" target="_blank" rel="noopener"><img src="/img/step1-login.png" alt="Login window with nickname and PIN field" loading="lazy" width="400" height="300"></a>
                   </div>
                   <div class="step-card">
                       <span class="step-badge" data-lang="step2Badge">STEP 2</span>
                       <h3 data-lang="step2Title">🚀 Complete tasks</h3>
-                      <p data-lang="step2Desc">Choose surveys and tasks from our partners, such as TimeWall and CPX Research. Points are added after the partner confirms the task.</p>
+                                            <p data-lang="step2Desc">Choose surveys and tasks from our partners, such as TimeWall and CPX Research. Points are added after the partner confirms the task.</p>
+                      <a class="step-shot" href="/img/step2-quests.png" target="_blank" rel="noopener"><img src="/img/step2-quests.png" alt="Quest walls: CPX Research, TheoremReach and TimeWall" loading="lazy" width="400" height="300"></a>
                   </div>
                   <div class="step-card">
                       <span class="step-badge" data-lang="step3Badge">STEP 3</span>
                       <h3 data-lang="step3Title">💎 Cash out</h3>
-                      <p data-lang="step3Desc">Withdraw to Revolut from 1 R$ or put your points into a game bundle. Every payout is reviewed by our team.</p>
+                                            <p data-lang="step3Desc">Withdraw to Revolut from 1 R$ or put your points into a game bundle. Every payout is reviewed by our team.</p>
+                      <a class="step-shot" href="/img/step3-payout.png" target="_blank" rel="noopener"><img src="/img/step3-payout.png" alt="Payout window with locked Revtag" loading="lazy" width="400" height="300"></a>
                   </div>
               </div>
 
@@ -565,7 +572,7 @@
         });
 </script>
 <!-- KONIEC WŁASNEGO WIDŻETU -->
-
+    @media (max-width: 760px) { .hero-facts { grid-template-columns: repeat(2, 1fr); } .proof-grid { grid-template-columns: 1fr; } }
         <div class="ticker-wrap" style="width: 100%; clear: both;">
           <div class="ticker-title" data-lang="liveEarners">🔥 Live Activity</div>
           <div class="ticker-container"><div class="ticker-move" id="liveTicker"><div class="ticker-item" data-lang="loadingStats">Loading live stats...</div></div></div>
