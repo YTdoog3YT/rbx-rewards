@@ -521,16 +521,43 @@
               <div class="adsense-banner" style="margin-bottom: 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6665069359963275" data-ad-slot="1438091742" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
               
               <h2 class="section-title" data-lang="homeDashboard">Your Dashboard</h2>
-              <div id="homeBundleBar" class="mini-bundle" style="display: none;"></div>
-              <div class="content-box" style="padding: 50px 20px; border-color: #00e676; box-shadow: 0 0 30px rgba(0, 230, 118, 0.08); margin-bottom: 25px;">
-                  <p style="color: #a0a0a0; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;" data-lang="homeCurrentBalance">Current Balance</p>
-                  
-                  <h1 id="homeBigPoints" style="font-size: 4.5rem; color: #ffb703; text-shadow: 0 0 20px rgba(255, 183, 3, 0.4); margin-bottom: 5px; line-height: 1;">0.00 R$</h1>
-                  <p style="font-size: 1.8rem; color: #00e676; font-weight: bold; margin-bottom: 35px;">~ <span id="homeBigUsd">$0.00</span> USD</p>
-                  
-                  <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                      <button class="btn-action" style="margin: 0; font-size: 1.2rem; padding: 15px 40px;" onclick="switchTab('earn')" data-lang="btnGoEarn">🚀 Start Quests</button>
-                      <button class="btn-withdraw" style="display: inline-block; margin: 0; font-size: 1.2rem; padding: 15px 40px; height: auto;" onclick="openWithdrawModal()" data-lang="btnWithdrawNow">💸 Claim Reward</button>
+              <div class="dash-grid">
+                  <div class="dash-card dash-balance">
+                      <p class="dash-label" data-lang="homeCurrentBalance">Current Balance</p>
+                      <div class="dash-balance-row">
+                          <span id="homeBigPoints" class="dash-big">0.00 R$</span>
+                          <span class="dash-usd">≈ <span id="homeBigUsd">$0.00</span> USD</span>
+                      </div>
+                      <p class="dash-hint" data-lang="dashRateHint">1 R$ = $0.025 · minimum payout 1 R$</p>
+                      <div class="dash-actions">
+                          <button class="btn-action dash-btn-earn" onclick="switchTab('earn')" data-lang="btnGoEarn">Start Quests</button>
+                          <button class="btn-withdraw dash-btn-claim" onclick="openWithdrawModal()" data-lang="btnWithdrawNow">Claim Reward</button>
+                      </div>
+                  </div>
+                  <div class="dash-card dash-today">
+                      <p class="dash-label" data-lang="dashToday">Today</p>
+                      <div class="dash-stat"><span data-lang="dashEarnedToday">Earned from surveys</span><strong id="dashTodayEarned" class="dash-money">0.00 R$</strong></div>
+                      <div class="dash-stat dash-click" onclick="switchTab('wheel')"><span data-lang="dashWheel">Wheel</span><strong id="dashWheelStatus" class="dash-info">–</strong></div>
+                      <div class="dash-level dash-click" onclick="switchTab('levels')">
+                          <div class="dash-stat"><span id="dashLevelName">Level 0</span><strong id="dashLevelXp" class="dash-muted">0 XP</strong></div>
+                          <div class="dash-bar"><div id="dashLevelBar" class="dash-bar-fill"></div></div>
+                      </div>
+                  </div>
+                  <div class="dash-card dash-activity">
+                      <div class="dash-card-head"><p class="dash-label" data-lang="dashActivity">Recent activity</p><a href="#" class="dash-link" onclick="openHistoryModal(); return false;" data-lang="dashFullHistory">Full history</a></div>
+                      <ul id="dashActivityList" class="dash-list"><li class="dash-empty" data-lang="loadingStats">Loading...</li></ul>
+                  </div>
+                  <div class="dash-card dash-status">
+                      <p class="dash-label" data-lang="dashPayout">Last payout</p>
+                      <div id="dashPayoutBox" class="dash-status-box"><span class="dash-muted" data-lang="dashNoPayout">No payouts yet</span></div>
+                      <p class="dash-label dash-label-gap" data-lang="dashBundle">Bundle</p>
+                      <div id="dashBundleBox" class="dash-status-box dash-click" onclick="switchTab('bundles')"><span class="dash-muted" data-lang="dashNoBundle">No active bundle – browse bundles</span></div>
+                  </div>
+                  <div class="dash-card dash-ref">
+                      <p class="dash-label" data-lang="dashRefLink">Your referral link</p>
+                      <div class="dash-ref-row"><code id="dashRefCode">–</code><button class="dash-copy" onclick="dashCopyRef(this)" data-lang="dashCopy">Copy</button></div>
+                      <div class="dash-stat"><span data-lang="dashRefEarned">Earned from referrals</span><strong id="dashRefEarned" class="dash-money">0.00 R$</strong></div>
+                      <a href="#" class="dash-link" onclick="switchTab('referrals'); return false;" data-lang="dashRefMore">Referral details</a>
                   </div>
               </div>
 
@@ -953,6 +980,7 @@
               <a href="terms.html" target="_blank">Terms of Service</a> | 
               <a href="privacy.html" target="_blank">Privacy Policy</a>
           </div>
+          <p class="footer-contact"><a href="https://discord.gg/ca8a9e33ke" target="_blank" rel="noopener">Discord</a> · <a href="mailto:rbxrewards.kontakt@gmail.com">rbxrewards.kontakt@gmail.com</a></p>
           <p style="color: #666; margin-bottom: 2px;">© 2026 RBX Rewards. Not affiliated with Roblox Corporation.</p>
           <p style="color: #666; font-size: 0.85em; opacity: 0.7; margin-top: 0; margin-bottom: 5px;">'Roblox' and 'Robux' are registered trademarks of Roblox Corporation.</p>
       </footer>
