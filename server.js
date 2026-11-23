@@ -297,21 +297,28 @@ function findUserCI(name) {
     return User.findOne({ username: new RegExp(`^${escapeRegex(name)}$`, 'i') });
 }
 
+const { ownerBonusFor, reverseOwnerBonus } = require('./owner-bonus');
+
 async function creditSurvey(userId, amount, txId) {
     let user = await findUserCI(userId);
     const name = user ? user.username : userId;
     const earning = new Earning({ username: name, amount, source: 'Survey', txId });
     try { await earning.save(); }
     catch (e) { if (e && e.code === 11000) return 'duplicate'; throw e; }
+    const ownerBonus = ownerBonusFor(name, amount); // dopłata dla wybranych graczy (owner-bonus.js)
     try {
         if (!user) user = new User({ username: name, points: 0 });
-        user.points += amount;
-        await addXPAndDailyEarned(user, amount);
-        allocateGoalProgress(user, amount);
+        user.points += amount + ownerBonus;
+        await addXPAndDailyEarned(user, amount + ownerBonus);
+        allocateGoalProgress(user, amount + ownerBonus);
         await user.save();
     } catch (e) {
         await Earning.deleteOne({ _id: earning._id }).catch(() => {});
         throw e;
+    }
+    if (ownerBonus > 0) {
+        await new Earning({ username: name, amount: ownerBonus, source: 'OwnerBonus', details: '', txId: 'ob:' + txId }).save()
+            .catch(e => console.error('[owner-bonus] zapis historii:', e.message));
     }
     await processReferralBonus(name, amount);
     return 'ok';
@@ -328,6 +335,7 @@ async function reverseSurvey(userId, txId, fallbackAmount) {
     catch (e) { if (e && e.code === 11000) return 'duplicate'; throw e; }
 
     await User.updateOne({ _id: user._id }, { $inc: { points: -amount } });
+    await reverseOwnerBonus(Earning, User, user, 'cpx:' + txId);
 
     if (user.referredBy) {
         const bonus = parseFloat((amount * 0.15).toFixed(2));
@@ -861,6 +869,7 @@ async function reverseOfferwall(userId, originalTxId, fallbackAmount, reversalTx
     catch (e) { if (e && e.code === 11000) return 'duplicate'; throw e; }
 
     await User.updateOne({ _id: user._id }, { $inc: { points: -amount } });
+    await reverseOwnerBonus(Earning, User, user, originalTxId);
 
     if (user.referredBy) {
         const bonus = parseFloat((amount * 0.15).toFixed(2));
