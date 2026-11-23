@@ -27,6 +27,7 @@ function adminRefreshAll() {
     loadAdminTop10Payouts();
     loadAdminTop5Codes();
     loadAdminBundleUsers();
+    if (typeof adminExtraRefresh === 'function') adminExtraRefresh();
 }
 
 async function adminLogout() {
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
         const data = await res.json();
         if (!data.success) { localStorage.removeItem('rbx_admin_token'); return showLogin('Sesja panelu wygasła. Zaloguj się ponownie.'); }
-        ADMIN = { role: data.role, name: data.name || '', permissions: data.permissions || [], ready: true };
+        ADMIN = { role: data.role, name: data.name || '', permissions: data.permissions || [], allPermissions: data.allPermissions || [], ready: true };
     } catch (e) { return showLogin('Brak połączenia z serwerem.'); }
 
     document.getElementById('admLogin').style.display = 'none';
@@ -57,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('admWhoName').innerText = ADMIN.name;
     document.getElementById('admWhoRole').innerText = ADMIN.role === 'owner' ? 'Właściciel' : 'Administrator';
     document.getElementById('admWhoRole').classList.add(ADMIN.role === 'owner' ? 'is-owner' : 'is-admin');
-    document.getElementById('admViewOnly').style.display = ADMIN.permissions.length < 4 ? 'block' : 'none';
+    document.getElementById('admViewOnly').style.display = ADMIN.permissions.length < ADMIN.allPermissions.length ? 'block' : 'none';
     document.getElementById('admPanel').style.display = 'block';
     applyPerms();
     adminRefreshAll();
@@ -314,6 +315,7 @@ async function fetchUserDetails(username) {
                     </tr>`;
                 }).join('');
             }
+            if (typeof renderUserBlock === 'function') renderUserBlock(data);
             document.getElementById('adminSelectedUserDetails').style.display = 'block';
         }
     } catch(e) {}

@@ -299,6 +299,7 @@
     }
   </style>
   <link rel="stylesheet" href="/ui-extra.css">
+  <link rel="stylesheet" href="/notifications.css">
 </head>
 <body class="on-home-tab">
 
@@ -1316,7 +1317,6 @@ offerwallSection.innerHTML = `
 
         document.getElementById("chatWidget").style.display = "flex";
         fetchUserPoints(); 
-        fetchInbox();
         
         if (socket) socket.emit('user_joined', savedUser);
 
@@ -1548,18 +1548,6 @@ function updateReferredBy(name) {
             msgDiv.innerHTML = `<span class="user">${escHtml(data.username)}:</span> `; msgDiv.appendChild(safeText);
             chatBody.appendChild(msgDiv); chatBody.scrollTop = chatBody.scrollHeight; 
         });
-    }
-
-    async function fetchInbox() {
-        const username = localStorage.getItem("rbx_username"); if (!username) return;
-        try {
-            const response = await fetch(`/api/inbox/${username}`); const messages = await response.json();
-            if (messages && messages.length > 0) {
-                let alertText = "🔔 WIADOMOŚĆ OD ADMINISTRACJI:\n\n";
-                messages.forEach(msg => { alertText += `💬 "${msg.message}"\n`; });
-                alert(alertText);
-            }
-        } catch (error) {}
     }
 
     let previousPoints = null;
@@ -2297,5 +2285,6 @@ else if (item.source === 'Admin') {
 
   </script>
   <script src="/ui-extra.js"></script>
+  <script src="/notifications.js"></script>
 </body>
 </html>

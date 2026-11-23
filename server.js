@@ -73,7 +73,9 @@ const UserSchema = new mongoose.Schema({
     wheelStreak: { type: Number, default: 0 }, goals: [GoalSchema],
     verified: { type: Boolean, default: false }, robloxName: { type: String, default: '' }, gaijinId: { type: String, default: '' }, discordName: { type: String, default: '' },
     pinHash: { type: String, default: null }, pinAttempts: { type: Number, default: 0 }, pinLockedUntil: { type: Date, default: null },
-    discordLinkedId: { type: String, default: null }, discordLinkedName: { type: String, default: '' }, discordLinkedAt: { type: Date, default: null }
+    discordLinkedId: { type: String, default: null }, discordLinkedName: { type: String, default: '' }, discordLinkedAt: { type: Date, default: null },
+    notifSeenAt: { type: Date, default: null }, // kiedy gracz ostatnio otworzył dzwonek z powiadomieniami
+    payoutBlocked: { type: Boolean, default: false } // blokada wypłat ustawiana w panelu admina
 });
 // jedno konto Discord = jedno konto na stronie
 UserSchema.index({ discordLinkedId: 1 }, { unique: true, partialFilterExpression: { discordLinkedId: { $type: 'string' } } });
@@ -180,10 +182,10 @@ async function getSession(req) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, v] of sessionCache) if (v.expires < now || v.checkedAt < now - 60 * 1000) sessionCache.delete(k); }, 10 * 60 * 1000).unref();
 
-const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|referral-list|bundles|support-status)\/([^/?]+)/;
+const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|referral-list|bundles|support-status|notifications)\/([^/?]+)/;
 const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
     '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw',
-    '/api/discord/link-start']);
+    '/api/discord/link-start', '/api/notifications/seen']);
 
 app.use(async (req, res, next) => {
     try {
@@ -655,6 +657,7 @@ app.post('/api/withdraw', async (req, res) => {
         const safe = escapeRegex(username);
         const user = await User.findOne({ username: new RegExp(`^${safe}$`, 'i') });
         if (!user) return res.status(400).json({ error: 'Nie masz tylu R$!' });
+        if (user.payoutBlocked) return res.status(403).json({ error: 'Wypłaty na tym koncie są zablokowane. Napisz do administracji przez Support.' });
 
         const linked = user.linkedPayPal && String(user.linkedPayPal).startsWith('@') ? String(user.linkedPayPal).toLowerCase() : null;
 
@@ -667,7 +670,7 @@ app.post('/api/withdraw', async (req, res) => {
         }
 
         const updated = await User.findOneAndUpdate(
-            { _id: user._id, points: { $gte: pts } },
+            { _id: user._id, points: { $gte: pts }, payoutBlocked: { $ne: true } },
             { $inc: { points: -pts }, $set: { linkedPayPal: linked || payAddress } },
             { new: true }
         );
@@ -1257,8 +1260,11 @@ app.get('/api/user-balance/:username', async (req, res) => {
 });
 
 // --- PANEL ADMINA: strona /admin i adresy /api/admin/... są w pliku admin-routes.js ---
+// --- POWIADOMIENIA (dzwonek): adresy /api/notifications/... są w pliku notifications.js ---
+require('./notifications').registerNotificationRoutes(app, { User, findUserCI });
+
 require('./admin-routes')(app, {
-    User, Earning, Payout, PromoCode, Bundle, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName, onlineUsersMap,
+    User, Earning, Payout, PromoCode, Bundle, Ticket, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName, onlineUsersMap,
     getDiscordClient: () => discordClient, discordLinkCallback,
     DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, REDIRECT_URI, ADMIN_PROMO_CHANNEL_ID
 });

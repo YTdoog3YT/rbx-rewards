@@ -63,6 +63,61 @@
     </div>
 </div>
 
+<div class="content-box adm-sec">
+    <div class="adm-sec-head"><h3>📊 Zysk dzień po dniu</h3>
+        <select id="admHistDays" class="adm-select" onchange="loadAdminHistory()"><option value="7">Ostatnie 7 dni</option><option value="30">Ostatnie 30 dni</option></select></div>
+    <p class="adm-hint">Przychód = ankiety i offerwalle minus cofnięte (15 R$ = 1 USD). Koszt = wszystkie R$ rozdane graczom (1 R$ = 0,025 USD). Bez pieniędzy z AdMob.</p>
+    <div id="admHistTotals" class="adm-totals"></div>
+    <div id="admHistChart" class="adm-chart"></div>
+</div>
+
+<div class="content-box adm-sec">
+    <div class="adm-sec-head"><h3>🤝 Przychód z partnerów</h3>
+        <select id="admPartnersPeriod" class="adm-select" onchange="loadAdminPartners()"><option value="today">Dzisiaj</option><option value="yesterday">Wczoraj</option><option value="7">Ostatnie 7 dni</option><option value="30">Ostatnie 30 dni</option></select></div>
+    <div class="adm-table-wrap"><table class="ref-table">
+        <thead><tr><th>Partner</th><th>Ukończone</th><th>Zarobione R$</th><th>Cofnięte R$</th><th>Przychód</th></tr></thead>
+        <tbody id="admPartnersBody"><tr><td colspan="5" class="adm-muted">Ładowanie...</td></tr></tbody>
+    </table></div>
+</div>
+
+<div class="content-box adm-sec">
+    <div class="adm-sec-head"><h3>↩️ Cofnięte ankiety</h3>
+        <select id="admRevPeriod" class="adm-select" onchange="loadAdminReversals()"><option value="today">Dzisiaj</option><option value="yesterday">Wczoraj</option><option value="7">Ostatnie 7 dni</option><option value="30">Ostatnie 30 dni</option></select></div>
+    <div class="adm-table-wrap"><table class="ref-table">
+        <thead><tr><th>Gracz</th><th>Cofnięć</th><th>Cofnięte R$</th><th>W dolarach</th><th>Saldo teraz</th><th>Partner</th></tr></thead>
+        <tbody id="admRevBody"><tr><td colspan="6" class="adm-muted">Ładowanie...</td></tr></tbody>
+    </table></div>
+</div>
+
+<div class="content-box adm-sec">
+    <div class="adm-sec-head"><h3>🚩 Ten sam Revtag na kilku kontach</h3></div>
+    <div class="adm-table-wrap"><table class="ref-table">
+        <thead><tr><th>Revtag</th><th>Konta (saldo)</th></tr></thead>
+        <tbody id="admDupesBody"><tr><td colspan="2" class="adm-muted">Ładowanie...</td></tr></tbody>
+    </table></div>
+</div>
+
+<div class="content-box adm-sec">
+    <div class="adm-sec-head"><h3>🎫 Aktywne tickety</h3></div>
+    <p class="adm-hint">Tylko podgląd. Odpowiadanie i zamykanie ticketów jest na Discordzie.</p>
+    <div id="admTicketsList" class="adm-tickets"><p class="adm-muted">Ładowanie...</p></div>
+</div>
+
+<div class="content-box adm-sec">
+    <div class="adm-sec-head"><h3>📜 Dziennik akcji adminów</h3></div>
+    <p class="adm-hint">Ostatnie 100 akcji: w panelu i przyciskami na Discordzie.</p>
+    <div class="adm-table-wrap adm-scroll"><table class="ref-table">
+        <thead><tr><th>Data</th><th>Kto</th><th>Gdzie</th><th>Akcja</th><th>Szczegóły</th></tr></thead>
+        <tbody id="admLogsBody"><tr><td colspan="5" class="adm-muted">Ładowanie...</td></tr></tbody>
+    </table></div>
+</div>
+
+<div id="admPermsBox" class="content-box adm-sec" style="display: none;">
+    <div class="adm-sec-head"><h3>🔐 Uprawnienia adminów</h3></div>
+    <p class="adm-hint">Widzisz to tylko Ty. Zaznacz, co dany admin może klikać, i zapisz. Podgląd panelu mają wszyscy.</p>
+    <div id="admPermsList"></div>
+</div>
+
 <div id="adminOnlineList" class="content-box" style="display: none; text-align: left;">
     <h3 style="color: #00e676; margin-bottom: 10px;">Lista Graczy Online</h3>
     <div id="adminOnlineListContent" style="color: #fff; background: #0f1115; padding: 15px; border-radius: 6px; border: 1px solid #333; max-height: 200px; overflow-y: auto;">Ładowanie...</div>
@@ -88,6 +143,9 @@
     <div id="adminSelectedUserDetails" style="display: none; background: #14171d; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;">
         <p style="margin-bottom: 5px;">Wybrany gracz: <strong id="adminSelectedUsername" style="color: #fff;">-</strong></p>
         <p style="margin-bottom: 5px;">Aktualne saldo: <strong id="adminSelectedPoints" style="color: #00e676;">0.00 R$</strong></p>
+        <div id="adminSelectedValue" class="adm-value"></div>
+        <p style="margin-bottom: 5px;">Revtag: <strong id="adminSelectedRevtag" style="color: #fff;">-</strong></p>
+        <p id="adminSelectedBlock" style="margin-bottom: 5px;"></p>
         <p>Oczekujące (Pending): <strong id="adminSelectedPending" style="color: #ff3333; cursor: pointer; text-decoration: underline;" onclick="toggleSelectedUserPayouts()">0.00 R$ (Kliknij, aby pokazać wnioski)</strong></p>
         
         <div id="adminSelectedUserPayouts" style="display: none; margin-top: 15px; background: #0f1115; border-radius: 6px; border: 1px solid #2a2e39; overflow-x: auto;">
@@ -136,5 +194,6 @@
     </div>
   </div>
   <script src="/admin.js"></script>
+  <script src="/admin-extra.js"></script>
 </body>
 </html>

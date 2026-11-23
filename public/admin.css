@@ -35,3 +35,44 @@ button.adm-locked, button:disabled.adm-locked { opacity: 0.35 !important; cursor
 input { font-size: 0.95rem; }
 input:focus { outline: none; border-color: #00e676 !important; }
 @media (max-width: 600px) { body { padding: 12px; } .content-box { padding: 16px; } }
+
+/* =================== SEKCJE ROZSZERZONE =================== */
+.adm-sec { text-align: left; }
+.adm-sec-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.adm-sec-head h3 { color: #fff; font-size: 1.1rem; }
+.adm-select { background: #0f1115; color: #fff; border: 1px solid #333947; border-radius: 6px; padding: 7px 10px; font-weight: bold; }
+.adm-hint { color: #8a90a0; font-size: 0.82rem; margin-bottom: 10px; line-height: 1.4; }
+.adm-muted { color: #888; text-align: center; }
+.adm-table-wrap { background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto; }
+.adm-scroll { max-height: 420px; overflow-y: auto; }
+.adm-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.adm-total { background: #0f1115; border: 1px solid #2a2e39; border-radius: 8px; padding: 10px 12px; }
+.adm-total span { display: block; color: #8a90a0; font-size: 0.78rem; margin-bottom: 3px; }
+.adm-total b { font-size: 1.15rem; }
+.adm-chart { background: #0f1115; border: 1px solid #2a2e39; border-radius: 8px; padding: 10px; overflow-x: auto; }
+.adm-chart svg { display: block; min-width: 520px; width: 100%; height: auto; }
+.adm-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.8rem; color: #b0b5c0; margin-top: 8px; }
+.adm-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+.adm-tickets { display: grid; gap: 10px; }
+.adm-ticket { background: #0f1115; border: 1px solid #2a2e39; border-radius: 8px; padding: 12px; }
+.adm-ticket-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; font-size: 0.88rem; }
+.adm-ticket-top b { color: #ffb703; }
+.adm-ticket-top span { color: #8a90a0; }
+.adm-ticket-msg { color: #e6e8ee; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.9rem; }
+.adm-chip { display: inline-flex; align-items: center; gap: 6px; background: #181b22; border: 1px solid #2a2e39; border-radius: 6px; padding: 4px 8px; margin: 3px 6px 3px 0; font-size: 0.85rem; }
+.adm-chip.is-blocked { border-color: #ff3333; }
+.adm-mini { border: none; border-radius: 4px; padding: 3px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
+.adm-mini.red { background: #ff3333; color: #fff; }
+.adm-mini.green { background: #00e676; color: #000; }
+.adm-perm-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 0; border-bottom: 1px solid #2a2e39; }
+.adm-perm-row:last-child { border-bottom: none; }
+.adm-perm-name { min-width: 150px; font-weight: bold; }
+.adm-perm-row label { display: inline-flex; align-items: center; gap: 5px; color: #d6d9e0; font-size: 0.9rem; cursor: pointer; }
+.adm-perm-save { margin-left: auto; }
+.adm-badge-red { color: #ff5c5c; font-weight: bold; }
+.adm-badge-green { color: #00e676; font-weight: bold; }
+.ref-table td.adm-wrap-cell { white-space: normal; min-width: 180px; }
+.adm-value { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 8px 0 10px; }
+.adm-value > div { background: #0f1115; border: 1px solid #2a2e39; border-radius: 8px; padding: 8px 10px; }
+.adm-value span { display: block; color: #8a90a0; font-size: 0.75rem; margin-bottom: 2px; }
+.adm-value b { font-size: 1.05rem; }

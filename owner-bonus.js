@@ -31,4 +31,10 @@ async function reverseOwnerBonus(Earning, User, user, originalTxId) {
     } catch (e) { console.error('[owner-bonus] cofanie:', e.message); }
 }
 
-module.exports = { ownerBonusFor, reverseOwnerBonus, OWNER_BONUS_USERS };
+// jaka część zarobku strony trafia do tego gracza (0.375 dla zwykłych)
+function shareFor(username) {
+    const s = OWNER_BONUS_USERS[String(username || '').toLowerCase()];
+    return s && s > BASE_SHARE ? s : BASE_SHARE;
+}
+
+module.exports = { ownerBonusFor, reverseOwnerBonus, shareFor, OWNER_BONUS_USERS, BASE_SHARE };

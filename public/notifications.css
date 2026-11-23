@@ -1,0 +1,24 @@
+/* =================== POWIADOMIENIA (dzwonek w nagłówku) =================== */
+.ntf-wrap { position: relative; display: none; align-items: center; }
+.ntf-wrap.is-on { display: inline-flex; }
+.ntf-bell { position: relative; width: 40px; height: 40px; border-radius: 10px; border: 1px solid #2a2f3a; background: #161a22; color: #e6e8ee; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.ntf-bell:hover { border-color: #3a4150; background: #1b2029; }
+.ntf-bell svg { width: 20px; height: 20px; }
+.ntf-badge { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: #e5243b; color: #fff; font-size: 0.72rem; font-weight: 800; line-height: 19px; text-align: center; border: 2px solid #0f1115; display: none; box-sizing: content-box; }
+.ntf-badge.is-on { display: block; }
+.ntf-panel { position: absolute; top: calc(100% + 8px); right: 0; width: 340px; max-width: calc(100vw - 32px); background: #161a22; border: 1px solid #2a2f3a; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.45); z-index: 1000; display: none; overflow: hidden; text-align: left; }
+.ntf-panel.is-open { display: block; }
+.ntf-head { padding: 12px 14px; font-weight: 800; color: #fff; border-bottom: 1px solid #2a2f3a; font-size: 0.95rem; }
+.ntf-list { list-style: none; margin: 0; padding: 0; max-height: 380px; overflow-y: auto; }
+.ntf-item { display: flex; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #20252f; }
+.ntf-item:last-child { border-bottom: none; }
+.ntf-item.is-new { background: rgba(229, 36, 59, 0.08); }
+.ntf-ico { flex: 0 0 auto; font-size: 1.1rem; line-height: 1.3; }
+.ntf-body { min-width: 0; }
+.ntf-text { color: #e6e8ee; font-size: 0.88rem; line-height: 1.35; overflow-wrap: anywhere; }
+.ntf-time { color: #8a90a0; font-size: 0.76rem; margin-top: 3px; }
+.ntf-empty { padding: 22px 14px; text-align: center; color: #8a90a0; font-size: 0.88rem; }
+.ntf-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5243b; margin-left: 6px; vertical-align: middle; }
+@media (max-width: 600px) {
+  .ntf-panel { position: fixed; top: 64px; left: 16px; right: 16px; width: auto; max-width: none; }
+}
