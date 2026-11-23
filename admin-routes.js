@@ -7,8 +7,16 @@ const OWNER_DISCORD_ID = '398911896893521921';      // właściciel: może wszys
 const ADMIN_ROLE_ID = '1548633150870261791';        // rola administracji na serwerze Discord
 const ADMIN_TOKEN_TTL_MS = 12 * 60 * 60 * 1000;     // zalogowanie trwa 12 godzin
 
-// Co mogą KLIKAĆ admini (rola administracji). Widzą wszystko, ale akcje tylko z tej listy.
-// Do wyboru: 'payouts' (wypłaty), 'balance' (saldo graczy), 'promo' (kody promocyjne), 'verify' (weryfikacja graczy)
+// Uprawnienia do wyboru: 'payouts' (wypłaty), 'balance' (saldo graczy), 'promo' (kody promocyjne), 'verify' (weryfikacja graczy)
+// Każdy admin WIDZI wszystko; KLIKAĆ może tylko to, co ma na swojej liście.
+
+// Konkretni admini po ID Discorda (każdy ze swoimi uprawnieniami). Wchodzą do panelu nawet bez roli na serwerze.
+const ADMINS = {
+    '1211371515048894486': { name: 'Aleks', permissions: [] },
+    '710548443252391936': { name: 'Kruger', permissions: [] },
+};
+
+// Pozostali z rolą administracji na serwerze (nie wpisani wyżej) dostają to:
 const ADMIN_PERMISSIONS = [];
 const ALL_PERMISSIONS = ['payouts', 'balance', 'promo', 'verify'];
 
@@ -25,7 +33,11 @@ module.exports = function registerAdminRoutes(app, d) {
         if (a.expires < Date.now()) { tokens.delete(String(token)); return null; }
         return a;
     }
-    const permsFor = a => (a.role === 'owner' ? ALL_PERMISSIONS : ADMIN_PERMISSIONS);
+    const permsFor = a => {
+        if (a.role === 'owner') return ALL_PERMISSIONS;
+        const entry = ADMINS[a.discordId];
+        return (entry ? entry.permissions : ADMIN_PERMISSIONS).filter(p => ALL_PERMISSIONS.includes(p));
+    };
 
     function isAdmin(req, res, next) {
         const a = getAuth(req.headers.authorization);
@@ -76,6 +88,7 @@ module.exports = function registerAdminRoutes(app, d) {
 
             let role = null;
             if (String(du.id) === OWNER_DISCORD_ID) role = 'owner';
+            else if (ADMINS[String(du.id)]) role = 'admin';
             else if (await hasAdminRole(du.id)) role = 'admin';
             if (!role) return res.redirect('/admin?error=Unauthorized');
 
