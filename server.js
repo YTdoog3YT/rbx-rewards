@@ -384,7 +384,7 @@ async function getSession(req) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, v] of sessionCache) if (v.expires < now || v.checkedAt < now - 60 * 1000) sessionCache.delete(k); }, 10 * 60 * 1000).unref();
 
-const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|bundles|support-status)\/([^/?]+)/;
+const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|referral-list|bundles|support-status)\/([^/?]+)/;
 const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
     '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw',
     '/api/discord/link-start']);
@@ -959,6 +959,27 @@ app.get('/api/history/:username', async (req, res) => {
         });
         res.json({ history: historyMap }); 
     } catch (error) { res.status(500).json({ error: "Error" }); }
+});
+
+// --- LISTA ZAPROSZONYCH GRACZY (kto dołączył z mojego linku/kodu) ---
+app.get('/api/referral-list/:username', async (req, res) => {
+    try {
+        const me = await findUserCI(req.params.username);
+        if (!me) return res.json({ total: 0, users: [] });
+        const invited = await User.find({ referredBy: me.username }).select('username').sort({ _id: -1 }).limit(500).lean();
+        const sums = await Earning.aggregate([
+            { $match: { username: me.username, source: { $in: ['Referral', 'ReferralReversal'] } } },
+            { $group: { _id: { $toLower: '$details' }, total: { $sum: '$amount' } } }
+        ]);
+        const byNick = new Map(sums.map(x => [x._id, x.total]));
+        const users = invited.map(u => ({
+            username: u.username,
+            joinedAt: u._id.getTimestamp(),
+            earned: Math.round((byNick.get(String(u.username).toLowerCase()) || 0) * 100) / 100
+        }));
+        users.sort((a, b) => b.earned - a.earned);
+        res.json({ total: invited.length, users });
+    } catch (e) { console.error('[polecenia] lista:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
 // --- NOWE ZAROBKI POLECONYCH (Z FILTRAMI I ODJĘCIEM) ---

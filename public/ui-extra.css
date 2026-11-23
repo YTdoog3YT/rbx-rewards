@@ -150,3 +150,8 @@ body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-even
 .support-modal .btn-action { margin-top: 0 !important; }
 .support-cancel { background: transparent !important; color: #888 !important; border: none; margin-top: 12px; cursor: pointer; }
 
+
+/* ================= POLECENIA: LISTA ZAPROSZONYCH ================= */
+.ref-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.ref-list-head h3 { color: #4cc2ff; margin: 0; text-align: left; }
+.ref-list-count { background: rgba(76, 194, 255, 0.12); color: #4cc2ff; border: 1px solid #4cc2ff; border-radius: 20px; padding: 3px 12px; font-weight: bold; font-size: 0.9rem; }

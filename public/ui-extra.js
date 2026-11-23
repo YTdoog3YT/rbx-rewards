@@ -261,3 +261,46 @@ Object.assign(translations.ru, {"supIntro": "Поддержка работает
         render();
     });
 })();
+
+// ================= POLECENIA: LISTA ZAPROSZONYCH =================
+Object.assign(translations.en, {"refListTitle": "Players you invited", "refListPlayer": "Player", "refListSince": "Account since", "refListEarned": "You earned from them", "refListEmpty": "Nobody has joined from your link yet. Share it with your friends!"});
+Object.assign(translations.pl, {"refListTitle": "Zaproszeni gracze", "refListPlayer": "Gracz", "refListSince": "Konto od", "refListEarned": "Zarobiłeś z niego", "refListEmpty": "Nikt jeszcze nie dołączył z Twojego linku. Udostępnij go znajomym!"});
+Object.assign(translations.de, {"refListTitle": "Von dir eingeladene Spieler", "refListPlayer": "Spieler", "refListSince": "Konto seit", "refListEarned": "Von ihm verdient", "refListEmpty": "Noch niemand ist über deinen Link beigetreten. Teile ihn mit deinen Freunden!"});
+Object.assign(translations.ru, {"refListTitle": "Приглашённые игроки", "refListPlayer": "Игрок", "refListSince": "Аккаунт с", "refListEarned": "Заработано с него", "refListEmpty": "По вашей ссылке пока никто не присоединился. Поделитесь ею с друзьями!"});
+
+(function () {
+    const LOCALES = { en: 'en-GB', pl: 'pl-PL', de: 'de-DE', ru: 'ru-RU' };
+    let data = null, busy = false;
+    const $ = id => document.getElementById(id);
+    const tr = k => (typeof bt === 'function' ? bt(k) : k);
+    const esc = s => (typeof escHtml === 'function' ? escHtml(s) : String(s));
+    const day = d => { const l = localStorage.getItem('rbx_lang') || 'en'; try { return new Date(d).toLocaleDateString(LOCALES[l] || 'en-GB'); } catch (e) { return ''; } };
+
+    function render() {
+        const body = $('refListBody'), count = $('refListCount'); if (!body || !data) return;
+        if (count) count.innerText = data.total || 0;
+        const users = data.users || [];
+        if (!users.length) { body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">${esc(tr('refListEmpty'))}</td></tr>`; return; }
+        body.innerHTML = users.map(u => {
+            const e = parseFloat(u.earned) || 0;
+            const color = e > 0 ? '#ffb703' : (e < 0 ? '#ff5c5c' : '#8a90a0');
+            return `<tr><td style="font-weight: bold; color: #fff;">👤 ${esc(u.username)}</td><td style="color: #a0a0b0; font-size: 0.9rem;">${esc(day(u.joinedAt))}</td><td style="color: ${color}; font-weight: bold;">${e > 0 ? '+' : ''}${e.toFixed(2)} R$</td></tr>`;
+        }).join('');
+    }
+
+    async function load() {
+        const user = localStorage.getItem('rbx_username'); if (!user || busy) return;
+        busy = true;
+        try { const r = await fetch(`/api/referral-list/${encodeURIComponent(user)}`); if (r.ok) data = await r.json(); } catch (e) {}
+        busy = false; render();
+    }
+
+    ['switchTab', 'changeLang'].forEach(name => {
+        const orig = window[name]; if (typeof orig !== 'function') return;
+        window[name] = function () {
+            const r = orig.apply(this, arguments);
+            try { if (name === 'switchTab' && arguments[0] === 'referrals') load(); else render(); } catch (e) {}
+            return r;
+        };
+    });
+})();
