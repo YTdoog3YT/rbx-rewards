@@ -299,13 +299,13 @@ function findUserCI(name) {
 
 const { ownerBonusFor, reverseOwnerBonus } = require('./owner-bonus');
 
-async function creditSurvey(userId, amount, txId) {
+async function creditSurvey(userId, amount, txId, allowOwnerBonus = true) {
     let user = await findUserCI(userId);
     const name = user ? user.username : userId;
     const earning = new Earning({ username: name, amount, source: 'Survey', txId });
     try { await earning.save(); }
     catch (e) { if (e && e.code === 11000) return 'duplicate'; throw e; }
-    const ownerBonus = ownerBonusFor(name, amount); // dopłata dla wybranych graczy (owner-bonus.js)
+    const ownerBonus = allowOwnerBonus ? ownerBonusFor(name, amount) : 0; // dopłata dla wybranych graczy (owner-bonus.js), nie za screenouty
     try {
         if (!user) user = new User({ username: name, points: 0 });
         user.points += amount + ownerBonus;
@@ -360,7 +360,9 @@ app.get('/postback', async (req, res) => {
     try {
         if (status === '1') {
             if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_SURVEY_REWARD) return console.warn('[postback] CPX: zła kwota');
-            await creditSurvey(userId, amount, 'cpx:' + txId);
+            // bonus od właściciela tylko za ukończoną ankietę (type=complete), nie za screenout (out) ani bonus CPX
+            const cpxType = String(req.query.type || '').trim().toLowerCase();
+            await creditSurvey(userId, amount, 'cpx:' + txId, cpxType === 'complete');
         } else if (status === '2') {
             await reverseSurvey(userId, txId, amount);
         }
@@ -379,7 +381,9 @@ app.all('/api/theoremreach-postback/:key?', async (req, res) => {
     if (!uid || !Number.isFinite(reward)) return res.status(400).send('0');
     if (isReversal || reward <= 0) return res.status(200).send('1');
     if (reward > MAX_SURVEY_REWARD || !txId) return res.status(400).send('0');
-    try { await creditSurvey(uid, reward, 'tr:' + txId); return res.status(200).send('1'); }
+    // bonus od właściciela nie za screenout
+    const trScreenout = String(q.screenout || '').toLowerCase() === 'true';
+    try { await creditSurvey(uid, reward, 'tr:' + txId, !trScreenout); return res.status(200).send('1'); }
     catch (e) { console.error('[postback] TR błąd:', e.message); return res.status(500).send('0'); }
 });
 
