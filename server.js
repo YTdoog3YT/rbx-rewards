@@ -185,6 +185,7 @@ async function getSession(req) {
 setInterval(() => { const now = Date.now(); for (const [k, v] of sessionCache) if (v.expires < now || v.checkedAt < now - 60 * 1000) sessionCache.delete(k); }, 10 * 60 * 1000).unref();
 
 const accountBlock = require('./account-block');
+const { chatRoleFor } = require('./chat-roles');
 const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|referral-list|bundles|support-status|notifications|block-status)\/([^/?]+)/;
 const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
     '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw',
@@ -1254,7 +1255,26 @@ app.post('/api/bundles/withdraw', async (req, res) => {
 // =================== WEBSOCKETS (Zdarzenia) ===================
 io.on('connection', (socket) => { 
     socket.on('user_joined', (username) => { if(username) onlineUsersMap.set(socket.id, username); });
-    socket.on('chatMessage', (data) => { io.emit('chatMessage', data); }); 
+    // czat: nick i odznakę (CEO / ADMIN z chat-roles.js) ustala serwer na podstawie sesji, nie tego, co wyśle przeglądarka
+    let lastChatAt = 0;
+    socket.on('chatMessage', async (data) => {
+        try {
+            let text = String((data && data.text) || '').trim();
+            if (!text) return;
+            const s = await getSession({ headers: { authorization: 'Bearer ' + String((data && data.token) || '') } });
+            if (!s) return socket.emit('chatError', { code: 'SESSION' });
+            const u = await User.findOne({ username: s.username }).select('username accountBlocked blockedUntil').lean();
+            if (!u || accountBlock.isAccountBlocked(u)) return;
+            const role = chatRoleFor(u.username);
+            if (!role) { // zwykli gracze: max 300 znaków i 1 wiadomość na 1,5 s (CEO i ADMIN bez limitów)
+                const now = Date.now();
+                if (now - lastChatAt < 1500) return;
+                lastChatAt = now;
+                text = text.slice(0, 300);
+            }
+            io.emit('chatMessage', { username: u.username, text, role });
+        } catch (e) { console.error('[czat]', e.message); }
+    });
     socket.on('disconnect', () => { onlineUsersMap.delete(socket.id); });
 });
 

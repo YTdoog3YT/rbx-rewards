@@ -288,7 +288,7 @@ Object.assign(translations.ru, {"refListTitle": "Приглашённые игр
         body.innerHTML = users.map(u => {
             const e = parseFloat(u.earned) || 0;
             const color = e > 0 ? '#ffb703' : (e < 0 ? '#ff5c5c' : '#8a90a0');
-            return `<tr><td style="font-weight: bold; color: #fff;">👤 ${esc(u.username)}</td><td style="color: #a0a0b0; font-size: 0.9rem;">${esc(day(u.joinedAt))}</td><td style="color: ${color}; font-weight: bold;">${e > 0 ? '+' : ''}${e.toFixed(2)} R$</td></tr>`;
+            return `<tr><td style="font-weight: bold; color: #fff;">👤 <span data-player="${esc(u.username)}">${esc(u.username)}</span></td><td style="color: #a0a0b0; font-size: 0.9rem;">${esc(day(u.joinedAt))}</td><td style="color: ${color}; font-weight: bold;">${e > 0 ? '+' : ''}${e.toFixed(2)} R$</td></tr>`;
         }).join('');
     }
 

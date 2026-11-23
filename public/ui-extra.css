@@ -155,3 +155,12 @@ body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-even
 .ref-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .ref-list-head h3 { color: #4cc2ff; margin: 0; text-align: left; }
 .ref-list-count { background: rgba(76, 194, 255, 0.12); color: #4cc2ff; border: 1px solid #4cc2ff; border-radius: 20px; padding: 3px 12px; font-weight: bold; font-size: 0.9rem; }
+
+/* =================== CZAT: odznaki CEO / ADMIN =================== */
+.chat-badge { display: inline-block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 5px; margin-right: 6px; vertical-align: 1px; line-height: 1.4; }
+.chat-badge.ceo { background: linear-gradient(135deg, #ffd24a, #ff9f1a); color: #1a1200; box-shadow: 0 0 10px rgba(255, 183, 3, 0.35); }
+.chat-badge.admin { background: #e5243b; color: #fff; }
+.chat-msg.chat-role-ceo { border-left-color: #ffb703 !important; background: linear-gradient(90deg, rgba(255, 183, 3, 0.12), #1e1e26 70%) !important; }
+.chat-msg.chat-role-ceo .user { color: #ffd24a !important; }
+.chat-msg.chat-role-admin { border-left-color: #e5243b !important; background: linear-gradient(90deg, rgba(229, 36, 59, 0.12), #1e1e26 70%) !important; }
+.chat-msg.chat-role-admin .user { color: #ff6b7a !important; }

@@ -1538,15 +1538,18 @@ function updateReferredBy(name) {
     function sendChatMessage() {
         const input = document.getElementById('chatInput'); const msg = input.value.trim(); const username = localStorage.getItem("rbx_username");
         if (!username) return alert("Log in first!");
-        if (msg) { if (socket) { socket.emit('chatMessage', { username: username, text: msg }); input.value = ''; } else { alert("Chat offline."); } }
+        if (msg) { if (socket) { socket.emit('chatMessage', { text: msg, token: window.sessionStorage.getItem('rbx_token') }); input.value = ''; } else { alert("Chat offline."); } }
     }
     document.getElementById('chatInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') sendChatMessage(); });
 
     if (socket) {
         socket.on('chatMessage', (data) => {
-            const chatBody = document.getElementById('chatMessages'); const msgDiv = document.createElement('div'); msgDiv.className = 'chat-msg';
+            const chatBody = document.getElementById('chatMessages'); const msgDiv = document.createElement('div');
+            const role = data.role === 'ceo' || data.role === 'admin' ? data.role : '';
+            msgDiv.className = 'chat-msg' + (role ? ' chat-role-' + role : '');
             const safeText = document.createTextNode(data.text);
-            msgDiv.innerHTML = `<span class="user">${escHtml(data.username)}:</span> `; msgDiv.appendChild(safeText);
+            const badge = role === 'ceo' ? '<span class="chat-badge ceo">👑 CEO</span>' : role === 'admin' ? '<span class="chat-badge admin">🛡️ ADMIN</span>' : '';
+            msgDiv.innerHTML = `${badge}<span class="user" data-player="${escHtml(data.username)}">${escHtml(data.username)}:</span> `; msgDiv.appendChild(safeText);
             chatBody.appendChild(msgDiv); chatBody.scrollTop = chatBody.scrollHeight; 
         });
     }
@@ -2149,7 +2152,7 @@ async function loadReferralStats() {
             } else {
                 let rows = ''; 
                 stats.myReferralsEarnedForMe.forEach(item => { 
-                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">👤 ${escHtml(item.username)}</td><td style="color: #00e676; font-weight: bold;">+${item.commission.toFixed(2)} R$</td></tr>`; 
+                    rows += `<tr><td style="color: #a0a0b0;">📅 ${item.date}</td><td style="font-weight: bold; color: #fff;">👤 <span data-player="${escHtml(item.username)}">${escHtml(item.username)}</span></td><td style="color: #00e676; font-weight: bold;">+${item.commission.toFixed(2)} R$</td></tr>`; 
                 });
                 tableBody1.innerHTML = rows;
             }
@@ -2193,11 +2196,11 @@ if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) {
             const data = await response.json();
             if (!data || data.length === 0) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ffb703;">No data for this period!</td></tr>`; return; }
             const top3 = data.slice(0, 3); const rest = data.slice(3, 100); let podiumHtml = '';
-            if (top3[1]) podiumHtml += `<div class="podium-step podium-2"><div class="podium-avatar">🥈</div><div class="podium-name">${escHtml(top3[1].username)}</div><div class="podium-score">${(parseFloat(top3[1].earned)||0).toFixed(2)} R$</div></div>`;
-            if (top3[0]) podiumHtml += `<div class="podium-step podium-1"><div class="podium-avatar">👑</div><div class="podium-name">${escHtml(top3[0].username)}</div><div class="podium-score">${(parseFloat(top3[0].earned)||0).toFixed(2)} R$</div></div>`;
-            if (top3[2]) podiumHtml += `<div class="podium-step podium-3"><div class="podium-avatar">🥉</div><div class="podium-name">${escHtml(top3[2].username)}</div><div class="podium-score">${(parseFloat(top3[2].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[1]) podiumHtml += `<div class="podium-step podium-2"><div class="podium-avatar">🥈</div><div class="podium-name"><span data-player="${escHtml(top3[1].username)}">${escHtml(top3[1].username)}</span></div><div class="podium-score">${(parseFloat(top3[1].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[0]) podiumHtml += `<div class="podium-step podium-1"><div class="podium-avatar">👑</div><div class="podium-name"><span data-player="${escHtml(top3[0].username)}">${escHtml(top3[0].username)}</span></div><div class="podium-score">${(parseFloat(top3[0].earned)||0).toFixed(2)} R$</div></div>`;
+            if (top3[2]) podiumHtml += `<div class="podium-step podium-3"><div class="podium-avatar">🥉</div><div class="podium-name"><span data-player="${escHtml(top3[2].username)}">${escHtml(top3[2].username)}</span></div><div class="podium-score">${(parseFloat(top3[2].earned)||0).toFixed(2)} R$</div></div>`;
             podiumArea.innerHTML = podiumHtml;
-            let rows = ''; rest.forEach((user, index) => { rows += `<tr><td class="rank-number">#${index + 4}</td><td style="font-weight: bold; color: #fff;">👤 ${escHtml(user.username)}</td><td style="color: #00e676; font-weight: bold;">${(parseFloat(user.earned)||0).toFixed(2)} R$</td></tr>`; });
+            let rows = ''; rest.forEach((user, index) => { rows += `<tr><td class="rank-number">#${index + 4}</td><td style="font-weight: bold; color: #fff;">👤 <span data-player="${escHtml(user.username)}">${escHtml(user.username)}</span></td><td style="color: #00e676; font-weight: bold;">${(parseFloat(user.earned)||0).toFixed(2)} R$</td></tr>`; });
             if(rows === '') rows = `<tr><td colspan="3" style="text-align: center; color: #555;">No more players to show.</td></tr>`; tableBody.innerHTML = rows;
         } catch (error) { podiumArea.innerHTML = ''; tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error loading leaderboard.</td></tr>`; }
     }
@@ -2260,8 +2263,8 @@ else if (item.source === 'Admin') {
         const response = await fetch('/api/latest-earners'); const earners = await response.json(); const lang = localStorage.getItem('rbx_lang') || 'en'; const tLang = translations[lang] ? lang : 'en';
         if (!earners || earners.length === 0) { const emptyMsg = translations[tLang].emptyEarners || "Be the first!"; document.getElementById('liveTicker').innerHTML = `<div class="ticker-item" style="color:#ffb703;">${emptyMsg}</div>`; return; }
         let tickerHTML = '';
-        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${escHtml(t.username)} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
-        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 ${escHtml(t.username)} collected <span>+${amt.toFixed(2)} R$</span></div>`; });
+        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 <span data-player="${escHtml(t.username)}">${escHtml(t.username)}</span> collected <span>+${amt.toFixed(2)} R$</span></div>`; });
+        earners.forEach(t => { const amt = parseFloat(t.amount) || 0; tickerHTML += `<div class="ticker-item">🎮 <span data-player="${escHtml(t.username)}">${escHtml(t.username)}</span> collected <span>+${amt.toFixed(2)} R$</span></div>`; });
         document.getElementById('liveTicker').innerHTML = tickerHTML;
       } catch (error) {}
     }
@@ -2278,7 +2281,7 @@ else if (item.source === 'Admin') {
                 const date = new Date(p.createdAt); const timeString = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const rawPts = p.pointsWithdrawn !== undefined ? p.pointsWithdrawn : p.points; const pts = parseFloat(rawPts) || 0;
                 const usd = (pts * 0.025).toFixed(2);
-                html += `<tr><td style="font-weight: bold; color: #fff;">👤 ${escHtml(p.username)}</td><td style="color: #00e676; font-weight: bold;">+${pts.toFixed(2)} R$ <span style="color: #8a90a0; font-weight: normal; font-size: 0.85rem;">($${usd})</span></td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
+                html += `<tr><td style="font-weight: bold; color: #fff;">👤 <span data-player="${escHtml(p.username)}">${escHtml(p.username)}</span></td><td style="color: #00e676; font-weight: bold;">+${pts.toFixed(2)} R$ <span style="color: #8a90a0; font-weight: normal; font-size: 0.85rem;">($${usd})</span></td><td style="color: #a0a0b0; font-size: 0.85rem;">${timeString}</td></tr>`;
             });
             bodies.forEach(tb => { tb.innerHTML = html; });
         } catch (error) {}
@@ -2288,5 +2291,6 @@ else if (item.source === 'Admin') {
   <script src="/ui-extra.js"></script>
   <script src="/notifications.js"></script>
   <script src="/account-block.js"></script>
+  <script src="/staff-links.js"></script>
 </body>
 </html>

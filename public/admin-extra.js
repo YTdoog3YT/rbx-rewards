@@ -14,7 +14,29 @@ const rs = n => (parseFloat(n) || 0).toFixed(2) + ' R$';
 const plDate = d => { try { return new Date(d).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
 const errRow = (cols, text) => `<tr><td colspan="${cols}" class="adm-muted">${escHtml(text)}</td></tr>`;
 
+// /admin?user=Nick (kliknięty nick na stronie): zapamiętaj i po zalogowaniu od razu wyszukaj gracza
+(function () {
+    try {
+        const p = new URLSearchParams(location.search), u = p.get('user');
+        if (u) {
+            sessionStorage.setItem('adm_open_user', u);
+            p.delete('user');
+            history.replaceState({}, document.title, location.pathname + (p.toString() ? '?' + p.toString() : ''));
+        }
+    } catch (e) {}
+})();
+function openPendingUser() {
+    let u = null;
+    try { u = sessionStorage.getItem('adm_open_user'); sessionStorage.removeItem('adm_open_user'); } catch (e) {}
+    if (!u) return;
+    const input = document.getElementById('adminSearchUser');
+    if (input) input.value = u;
+    if (typeof fetchUserDetails === 'function') fetchUserDetails(u);
+    setTimeout(() => { const box = document.getElementById('adminSearchUser'); if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 400);
+}
+
 function adminExtraRefresh() {
+    openPendingUser();
     loadAdminHistory(); loadAdminPartners(); loadAdminReversals(); loadAdminDupes(); loadAdminTickets();
 }
 
