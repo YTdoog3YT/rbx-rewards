@@ -327,6 +327,29 @@ module.exports = {
             }
         });
 
+        // ===================== BLOKADA KONTA: decyzja na tickecie (tylko właściciel) =====================
+        client.on('interactionCreate', async interaction => {
+            if (!interaction.isButton()) return;
+            const cid = interaction.customId || '';
+            const isKeep = cid.startsWith('blockkeep_'), isUnblock = cid.startsWith('blockunblock_');
+            if (!isKeep && !isUnblock) return;
+            if (interaction.user.id !== ADMIN_DISCORD_ID) return interaction.reply({ content: '❌ O blokadzie decyduje tylko właściciel.', ephemeral: true }).catch(() => {});
+            try {
+                const ticketId = cid.slice(cid.indexOf('_') + 1);
+                const t = await dbModels.Ticket.findById(ticketId).lean();
+                if (!t) return interaction.reply({ content: '⚠️ Nie znaleziono ticketu.', ephemeral: true });
+                if (isUnblock) {
+                    await dbModels.User.updateOne({ username: t.username }, { $set: { accountBlocked: false, blockedUntil: null } });
+                    await interaction.update({ content: `🔓 Konto **${t.username}** zostało odblokowane przez <@${interaction.user.id}>.`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
+                } else {
+                    await interaction.update({ content: `🔒 Blokada konta **${t.username}** zostaje (decyzja: <@${interaction.user.id}>).`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
+                }
+            } catch (err) {
+                console.error('[blokada] przycisk:', err.message);
+                if (!interaction.replied && !interaction.deferred) interaction.reply({ content: '❌ Błąd. Spróbuj ponownie.', ephemeral: true }).catch(() => {});
+            }
+        });
+
         // ===================== TICKETY ZE STRONY =====================
         // przyciski "Rozwiązano" i "Przywróć" (tylko właściciel i administracja)
         client.on('interactionCreate', async interaction => {
@@ -666,9 +689,33 @@ module.exports = {
             await channel.delete('Nie udało się wysłać zgłoszenia').catch(() => {});
             throw e;
         }
+        // ticket zablokowanego gracza: decyzja o blokadzie (klika tylko właściciel)
+        if (ticket.blockAppeal) {
+            try {
+                const u = await dbModels.User.findOne({ username: ticket.username }).select('blockedUntil').lean();
+                const until = u && u.blockedUntil ? `do **${plDateTime(u.blockedUntil)}** (czasu polskiego)` : '**na zawsze**';
+                await channel.send({
+                    content: `🔒 Ten gracz ma **zablokowane konto** ${until}.
+Decyzję podejmuje właściciel:`,
+                    components: [blockDecisionRow(ticket._id)],
+                    allowedMentions: { parse: [] }
+                });
+            } catch (e) { console.error('[blokada] wiadomość w tickecie:', e.message); }
+        }
         return channel;
     }
 };
+
+function blockDecisionRow(ticketId) {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`blockkeep_${ticketId}`).setLabel('🔒 Zostaw blokadę').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(`blockunblock_${ticketId}`).setLabel('🔓 Odblokuj').setStyle(ButtonStyle.Success)
+    );
+}
+
+function plDateTime(date) {
+    return new Date(date).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 function ticketResolveRow(ticketId) {
     return new ActionRowBuilder().addComponents(

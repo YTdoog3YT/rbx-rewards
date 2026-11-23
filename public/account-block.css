@@ -1,0 +1,23 @@
+/* =================== EKRAN BLOKADY KONTA =================== */
+.blk-overlay { position: fixed; inset: 0; z-index: 99999; background: #0b0d11; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+.blk-card { width: 100%; max-width: 460px; background: #161a22; border: 1px solid #ff3b4e; border-radius: 16px; padding: 26px 22px; text-align: center; color: #e6e8ee; box-shadow: 0 20px 50px rgba(0,0,0,0.5); margin: auto; }
+.blk-icon { font-size: 2.6rem; margin-bottom: 6px; }
+.blk-title { font-size: 1.35rem; font-weight: 900; color: #fff; margin-bottom: 8px; }
+.blk-until { color: #ffb4bb; font-weight: 700; margin-bottom: 4px; }
+.blk-left { color: #8a90a0; font-size: 0.9rem; margin-bottom: 16px; }
+.blk-balance { background: #0f1115; border: 1px solid #2a2f3a; border-radius: 10px; padding: 12px; margin-bottom: 18px; }
+.blk-balance span { display: block; color: #8a90a0; font-size: 0.8rem; margin-bottom: 3px; }
+.blk-balance b { color: #ffb703; font-size: 1.6rem; font-weight: 900; }
+.blk-info { color: #b0b5c0; font-size: 0.9rem; line-height: 1.45; margin-bottom: 12px; }
+.blk-card textarea { display: block; width: 100%; min-height: 110px; padding: 10px; border-radius: 8px; border: 1px solid #333947; background: #0f1115; color: #fff; resize: vertical; font-family: inherit; font-size: 0.92rem; margin-bottom: 10px; box-sizing: border-box; }
+.blk-btn { display: inline-block; width: 100%; border: none; border-radius: 10px; padding: 12px 16px; font-weight: 800; font-size: 1rem; cursor: pointer; text-decoration: none; box-sizing: border-box; }
+.blk-btn.primary { background: #00e676; color: #000; }
+.blk-btn.discord { background: #5865F2; color: #fff; }
+.blk-btn.ghost { background: transparent; color: #8a90a0; border: 1px solid #2a2f3a; margin-top: 12px; font-weight: 700; font-size: 0.9rem; }
+.blk-btn:disabled { opacity: 0.6; cursor: wait; }
+.blk-msg { margin-top: 10px; font-size: 0.88rem; min-height: 1em; }
+.blk-msg.err { color: #ff8a95; }
+.blk-msg.ok { color: #00e676; }
+.blk-ticket { background: #0f1115; border: 1px solid #2a2f3a; border-radius: 10px; padding: 12px; font-size: 0.9rem; color: #e6e8ee; margin-bottom: 10px; }
+.blk-ticket b { color: #ffb703; font-family: monospace; }
+body.blk-locked { overflow: hidden !important; }

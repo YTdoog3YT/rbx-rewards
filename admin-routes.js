@@ -2,7 +2,8 @@
 // Logowanie przez Discord, uprawnienia (właściciel / administracja) i wszystkie adresy /api/admin/...
 const path = require('path');
 const crypto = require('crypto');
-const { notify } = require('./notifications');
+const { notify, Notification } = require('./notifications');
+const { isAccountBlocked, blockUntilFrom } = require('./account-block');
 const { shareFor, BASE_SHARE } = require('./owner-bonus');
 
 
@@ -25,7 +26,7 @@ const ADMIN_PERMISSIONS = [];
 const ALL_PERMISSIONS = ['payouts', 'balance', 'promo', 'verify', 'block'];
 
 module.exports = function registerAdminRoutes(app, d) {
-    const { User, Earning, Payout, PromoCode, Bundle, Ticket, getDiscordClient, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName,
+    const { User, Earning, Payout, PromoCode, Bundle, Ticket, Session, getDiscordClient, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName,
         onlineUsersMap, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, REDIRECT_URI, ADMIN_PROMO_CHANNEL_ID, discordLinkCallback } = d;
 
     const tokens = new Map(); // token -> { expires, role, discordId, name }
@@ -185,7 +186,8 @@ module.exports = function registerAdminRoutes(app, d) {
                 value.profitUsd = userUsd / share - userUsd;
                 value.bonusShare = share > BASE_SHARE ? share : null;
             }
-            res.json({ username: user.username, points: user.points, pendingSum: pendingSum, pendingRequests: pending, payoutBlocked: !!user.payoutBlocked, revtag: user.linkedPayPal || '', value });
+            res.json({ username: user.username, points: user.points, pendingSum: pendingSum, pendingRequests: pending, payoutBlocked: !!user.payoutBlocked, revtag: user.linkedPayPal || '', value,
+                accountBlocked: isAccountBlocked(user), blockedUntil: isAccountBlocked(user) ? (user.blockedUntil || null) : null });
         } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
     });
 
@@ -336,15 +338,16 @@ module.exports = function registerAdminRoutes(app, d) {
                 { $group: { _id: { source: '$source', prefix: { $arrayElemAt: [{ $split: [{ $ifNull: ['$txId', ''] }, ':'] }, 0] } }, total: { $sum: '$amount' }, count: { $sum: 1 } } }
             ]);
             const NAMES = { cpx: 'CPX Research', 'cpx-rev': 'CPX Research', tr: 'TheoremReach', tw: 'TimeWall', 'tw-cb': 'TimeWall' };
+            const OLD = 'Starsze (sprzed 30.10, bez nazwy partnera)'; // wpisy zapisane, zanim strona zaczęła zapisywać ID transakcji
             const out = {};
             for (const g of aggr) {
-                const name = NAMES[g._id.prefix] || 'Inne';
+                const name = NAMES[g._id.prefix] || OLD;
                 const p = out[name] || (out[name] = { partner: name, earnedRobux: 0, reversedRobux: 0, completes: 0, reversals: 0 });
                 if (g._id.source === 'Survey') { p.earnedRobux += g.total; p.completes += g.count; }
                 else { p.reversedRobux += -g.total; p.reversals += g.count; }
             }
-            const list = ['CPX Research', 'TheoremReach', 'TimeWall', 'Inne'].map(n => out[n] || { partner: n, earnedRobux: 0, reversedRobux: 0, completes: 0, reversals: 0 })
-                .filter(p => p.partner !== 'Inne' || p.completes || p.reversals)
+            const list = ['CPX Research', 'TheoremReach', 'TimeWall', OLD].map(n => out[n] || { partner: n, earnedRobux: 0, reversedRobux: 0, completes: 0, reversals: 0 })
+                .filter(p => p.partner !== OLD || p.completes || p.reversals)
                 .map(p => ({ ...p, netRobux: p.earnedRobux - p.reversedRobux, revenueUsd: (p.earnedRobux - p.reversedRobux) / 15 }));
             res.json(list);
         } catch (e) { console.error('[admin] partnerzy:', e.message); res.status(500).json({ error: 'Błąd statystyk' }); }
@@ -400,6 +403,54 @@ module.exports = function registerAdminRoutes(app, d) {
         } catch (e) { res.status(500).json([]); }
     });
 
+
+    // =================== BLOKADA CAŁEGO KONTA ===================
+    // body: { username, blocked: true, forever: true } albo { username, blocked: true, value: 3, unit: 'days' } albo { username, blocked: false }
+    app.post('/api/admin/set-account-block', isAdmin, requirePerm('block'), async (req, res) => {
+        try {
+            const user = await findUserCI(cleanName(req.body.username));
+            if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza.' });
+            if (req.body.blocked !== true) {
+                await User.updateOne({ _id: user._id }, { $set: { accountBlocked: false, blockedUntil: null } });
+                return res.json({ success: true, accountBlocked: false });
+            }
+            let until = null;
+            if (req.body.forever !== true) {
+                until = blockUntilFrom(req.body.value, String(req.body.unit || ''));
+                if (!until) return res.status(400).json({ error: 'Podaj poprawny czas blokady (liczba od 1).' });
+            }
+            await User.updateOne({ _id: user._id }, { $set: { accountBlocked: true, blockedUntil: until } });
+            res.json({ success: true, accountBlocked: true, blockedUntil: until });
+        } catch (e) { res.status(500).json({ error: 'Błąd serwera.' }); }
+    });
+
+    // =================== USUNIĘCIE KONTA CAŁKOWICIE (tylko właściciel) ===================
+    // kasuje gracza i wszystko o nim: historię, wypłaty, pakiety, tickety, powiadomienia, sesje (znika też z rankingów)
+    app.post('/api/admin/delete-account', isAdmin, async (req, res) => {
+        if (req.admin.role !== 'owner') return res.status(403).json({ error: 'Tylko właściciel.' });
+        try {
+            const user = await findUserCI(cleanName(req.body.username));
+            if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza.' });
+            if (String(req.body.confirm || '') !== user.username) return res.status(400).json({ error: 'Potwierdzenie się nie zgadza (wpisz dokładnie nick).' });
+            const name = user.username;
+            const exact = new RegExp(`^${escapeRegex(name)}$`, 'i');
+            const [e, p, b, t, n, s] = await Promise.all([
+                Earning.deleteMany({ username: exact }),
+                Payout.deleteMany({ username: exact }),
+                Bundle ? Bundle.deleteMany({ username: exact }) : { deletedCount: 0 },
+                Ticket ? Ticket.deleteMany({ username: exact }) : { deletedCount: 0 },
+                Notification.deleteMany({ userKey: name.toLowerCase() }),
+                Session ? Session.deleteMany({ username: exact }) : { deletedCount: 0 }
+            ]);
+            // polecenia: usuń z list innych graczy, a jego poleceni nie mają już polecającego
+            await User.updateMany({ referredUsers: name }, { $pull: { referredUsers: name } });
+            await User.updateMany({ referredBy: name }, { $set: { referredBy: null } });
+            await User.deleteOne({ _id: user._id });
+            for (const [k, v] of onlineUsersMap) if (String(v).toLowerCase() === name.toLowerCase()) onlineUsersMap.delete(k);
+            console.log(`[admin] usunięto konto ${name} (historia ${e.deletedCount}, wypłaty ${p.deletedCount}, pakiety ${b.deletedCount}, tickety ${t.deletedCount}, powiadomienia ${n.deletedCount}, sesje ${s.deletedCount})`);
+            res.json({ success: true, username: name, deleted: { earnings: e.deletedCount, payouts: p.deletedCount, bundles: b.deletedCount, tickets: t.deletedCount } });
+        } catch (err) { console.error('[admin] usuwanie konta:', err.message); res.status(500).json({ error: 'Błąd serwera.' }); }
+    });
 
     // =================== BLOKADA WYPŁAT ===================
     app.post('/api/admin/set-payout-block', isAdmin, requirePerm('block'), async (req, res) => {

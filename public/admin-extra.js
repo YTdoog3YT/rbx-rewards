@@ -114,9 +114,81 @@ function renderUserBlock(data) {
         val.innerHTML = html;
     }
     const rev = document.getElementById('adminSelectedRevtag'); if (rev) rev.innerText = data.revtag || 'brak';
+    renderAccountBlock(data);
     const el = document.getElementById('adminSelectedBlock'); if (!el) return;
     el.innerHTML = 'Wypłaty: ' + (data.payoutBlocked ? '<span class="adm-badge-red">🔒 zablokowane</span>' : '<span class="adm-badge-green">✔ dozwolone</span>') + ' ' + blockBtn(data.username, data.payoutBlocked);
 }
+// --- blokada całego konta + usuwanie konta ---
+let admChooserFor = null; // dla kogo jest otwarty wybór czasu blokady (zostaje otwarty po odświeżeniu danych)
+function toggleBlockChooser(username, open) {
+    admChooserFor = open ? String(username).toLowerCase() : null;
+    const c = document.getElementById('admBlockChooser'); if (c) c.style.display = open ? 'flex' : 'none';
+}
+function renderAccountBlock(data) {
+    const el = document.getElementById('adminSelectedAccountBlock'); if (!el) return;
+    const u = escHtml(data.username);
+    let status;
+    if (!data.accountBlocked) status = '<span class="adm-badge-green">✔ aktywne</span>';
+    else status = '<span class="adm-badge-red">🔒 zablokowane ' + (data.blockedUntil ? 'do ' + plDate(data.blockedUntil) : 'na zawsze') + '</span>';
+    let html = `<div class="adm-acc-line">Konto: ${status} `;
+    html += data.accountBlocked
+        ? `<button class="adm-mini green" data-perm="block" data-user="${u}" onclick="adminSetAccountBlock(this.dataset.user, false, this)">Odblokuj konto</button>`
+        : `<button class="adm-mini red" data-perm="block" data-user="${u}" onclick="toggleBlockChooser(this.dataset.user, true)">Zablokuj konto</button>`;
+    if (ADMIN.role === 'owner') html += ` <button class="adm-mini dark" data-user="${u}" onclick="adminDeleteAccount(this.dataset.user, this)">🗑️ Usuń konto całkowicie</button>`;
+    html += '</div>';
+    if (!data.accountBlocked) {
+        const openNow = admChooserFor === String(data.username).toLowerCase();
+        html += `<div id="admBlockChooser" class="adm-block-chooser" style="display:${openNow ? 'flex' : 'none'};">
+            <button class="adm-mini red" data-perm="block" data-user="${u}" onclick="adminSetAccountBlock(this.dataset.user, true, this, true)">Na zawsze</button>
+            <span class="adm-muted-inline">albo na czas:</span>
+            <input type="number" id="admBlockValue" min="1" value="1" class="adm-num">
+            <select id="admBlockUnit" class="adm-select"><option value="seconds">sekundy</option><option value="minutes">minuty</option><option value="hours">godziny</option><option value="days" selected>dni</option><option value="months">miesiące</option><option value="years">lata</option></select>
+            <button class="adm-mini red" data-perm="block" data-user="${u}" onclick="adminSetAccountBlock(this.dataset.user, true, this, false)">Zablokuj na ten czas</button>
+            <button class="adm-mini dark" onclick="toggleBlockChooser('', false)">Anuluj</button>
+        </div>`;
+    }
+    const keepVal = document.getElementById('admBlockValue'), keepUnit = document.getElementById('admBlockUnit');
+    const v = keepVal ? keepVal.value : null, un = keepUnit ? keepUnit.value : null;
+    el.innerHTML = html;
+    if (v && document.getElementById('admBlockValue')) { document.getElementById('admBlockValue').value = v; document.getElementById('admBlockUnit').value = un; }
+}
+async function adminSetAccountBlock(username, blocked, btn, forever) {
+    const body = { username, blocked };
+    let label = 'Odblokować konto';
+    if (blocked) {
+        if (forever) { body.forever = true; label = 'Zablokować NA ZAWSZE konto'; }
+        else {
+            body.value = parseInt(document.getElementById('admBlockValue').value, 10);
+            body.unit = document.getElementById('admBlockUnit').value;
+            if (!(body.value >= 1)) return alert('Wpisz liczbę od 1.');
+            const unitTxt = document.getElementById('admBlockUnit').selectedOptions[0].text;
+            label = `Zablokować na ${body.value} (${unitTxt}) konto`;
+        }
+    }
+    if (!confirm(`${label} gracza ${username}?`)) return;
+    if (btn) btn.disabled = true;
+    try {
+        const data = await admPost('/api/admin/set-account-block', body);
+        if (data.error) { alert('Błąd: ' + data.error); if (btn) btn.disabled = false; return; }
+        admChooserFor = null;
+        if (typeof fetchUserDetails === 'function') fetchUserDetails(username);
+    } catch (e) { alert('Błąd połączenia.'); if (btn) btn.disabled = false; }
+}
+async function adminDeleteAccount(username, btn) {
+    const typed = prompt(`UWAGA! To usunie konto ${username} i WSZYSTKO o nim: saldo, historię, wypłaty, pakiety, tickety, powiadomienia. Zniknie też z rankingów. Tego nie da się cofnąć.\n\nWpisz dokładnie nick gracza, żeby potwierdzić:`);
+    if (typed === null) return;
+    if (typed !== username) return alert('Nick się nie zgadza, nic nie usunięto.');
+    if (btn) btn.disabled = true;
+    try {
+        const data = await admPost('/api/admin/delete-account', { username, confirm: typed });
+        if (data.error) { alert('Błąd: ' + data.error); if (btn) btn.disabled = false; return; }
+        alert(`Usunięto konto ${data.username}.`);
+        document.getElementById('adminSelectedUserDetails').style.display = 'none';
+        document.getElementById('adminSearchUser').value = '';
+        if (typeof adminRefreshAll === 'function') adminRefreshAll();
+    } catch (e) { alert('Błąd połączenia.'); if (btn) btn.disabled = false; }
+}
+
 async function adminSetPayoutBlock(username, blocked, btn) {
     if (!confirm(`${blocked ? 'Zablokować' : 'Odblokować'} wypłaty gracza ${username}?`)) return;
     if (btn) btn.disabled = true;

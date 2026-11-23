@@ -75,7 +75,8 @@ const UserSchema = new mongoose.Schema({
     pinHash: { type: String, default: null }, pinAttempts: { type: Number, default: 0 }, pinLockedUntil: { type: Date, default: null },
     discordLinkedId: { type: String, default: null }, discordLinkedName: { type: String, default: '' }, discordLinkedAt: { type: Date, default: null },
     notifSeenAt: { type: Date, default: null }, // kiedy gracz ostatnio otworzył dzwonek z powiadomieniami
-    payoutBlocked: { type: Boolean, default: false } // blokada wypłat ustawiana w panelu admina
+    payoutBlocked: { type: Boolean, default: false }, // blokada wypłat ustawiana w panelu admina
+    accountBlocked: { type: Boolean, default: false }, blockedUntil: { type: Date, default: null } // blokada całego konta (null = na zawsze)
 });
 // jedno konto Discord = jedno konto na stronie
 UserSchema.index({ discordLinkedId: 1 }, { unique: true, partialFilterExpression: { discordLinkedId: { $type: 'string' } } });
@@ -109,6 +110,7 @@ const TicketSchema = new mongoose.Schema({
     username: String, discordId: String, discordName: String, message: String,
     dayKey: String, number: Number, channelId: { type: String, default: null }, channelName: { type: String, default: '' },
     status: { type: String, default: 'open' }, // open | resolved | deleted | failed
+    blockAppeal: { type: Boolean, default: false }, // ticket zablokowanego gracza (przyciski Odblokuj / Zostaw blokadę)
     resolvedBy: { type: String, default: '' }, resolvedAt: { type: Date, default: null }, deleteAt: { type: Date, default: null },
     createdAt: { type: Date, default: Date.now }
 });
@@ -182,7 +184,8 @@ async function getSession(req) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, v] of sessionCache) if (v.expires < now || v.checkedAt < now - 60 * 1000) sessionCache.delete(k); }, 10 * 60 * 1000).unref();
 
-const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|referral-list|bundles|support-status|notifications)\/([^/?]+)/;
+const accountBlock = require('./account-block');
+const PROTECTED_GET_RE = /^\/api\/(points|user-stats|goals|earning-history|inbox|promo-history|referral-stats|referral-list|bundles|support-status|notifications|block-status)\/([^/?]+)/;
 const PROTECTED_POST = new Set(['/api/withdraw', '/api/goals/add', '/api/goals/cancel', '/api/goals/clear', '/api/claim-level', '/api/spin-wheel',
     '/api/redeem-promo', '/api/redeem-code', '/api/support-ticket', '/api/bundles/create', '/api/bundles/deposit', '/api/bundles/withdraw',
     '/api/discord/link-start', '/api/notifications/seen']);
@@ -196,6 +199,12 @@ app.use(async (req, res, next) => {
         if (!isProtected) return next();
         const s = await getSession(req);
         if (!s) return res.status(401).json({ error: 'Sesja wygasła. Zaloguj się ponownie.', code: 'SESSION' });
+        // zablokowane konto: tylko saldo, ekran blokady i ticket (account-block.js)
+        const allowedWhenBlocked = m ? accountBlock.BLOCKED_ALLOWED_GET.has(m[1]) : accountBlock.BLOCKED_ALLOWED_POST.has(p);
+        if (!allowedWhenBlocked) {
+            const bu = await User.findOne({ username: s.username }).select('accountBlocked blockedUntil').lean();
+            if (accountBlock.isAccountBlocked(bu)) return res.status(403).json({ error: 'Twoje konto jest zablokowane.', code: 'BLOCKED' });
+        }
         if (m) req.url = req.url.replace(PROTECTED_GET_RE, (all, name) => `/api/${name}/${encodeURIComponent(s.username)}`);
         else { req.body = req.body || {}; req.body.username = s.username; }
         next();
@@ -608,6 +617,8 @@ async function createSupportTicket(req, res) {
         if (!user) return res.status(404).json({ error: 'Nie znaleziono konta.' });
         if (!user.discordLinkedId) return res.status(400).json({ error: 'Najpierw połącz konto z Discordem.', code: 'NO_DISCORD' });
         const open = await Ticket.countDocuments({ username: user.username, status: 'open' });
+        const blocked = accountBlock.isAccountBlocked(user); // zablokowany gracz: tylko 1 nierozwiązany ticket
+        if (blocked && open >= 1) return res.status(400).json({ error: 'Masz już nierozwiązany ticket. Poczekaj na odpowiedź administracji.', code: 'LIMIT' });
         if (open >= TICKET_MAX_OPEN) return res.status(400).json({ error: `Masz już ${open} nierozwiązane tickety. Poczekaj, aż administracja je rozwiąże.`, code: 'LIMIT' });
 
         const member = await discordBot.isGuildMember(user.discordLinkedId);
@@ -616,7 +627,7 @@ async function createSupportTicket(req, res) {
 
         const dayKey = polandDayKey();
         const counter = await Counter.findOneAndUpdate({ _id: 'ticket-' + dayKey }, { $inc: { seq: 1 } }, { new: true, upsert: true });
-        const ticket = await new Ticket({ username: user.username, discordId: user.discordLinkedId, discordName: user.discordLinkedName, message, dayKey, number: counter.seq }).save();
+        const ticket = await new Ticket({ username: user.username, discordId: user.discordLinkedId, discordName: user.discordLinkedName, message, dayKey, number: counter.seq, blockAppeal: blocked }).save();
 
         let channel;
         try { channel = await discordBot.createTicketChannel(ticket); }
@@ -1262,9 +1273,11 @@ app.get('/api/user-balance/:username', async (req, res) => {
 // --- PANEL ADMINA: strona /admin i adresy /api/admin/... są w pliku admin-routes.js ---
 // --- POWIADOMIENIA (dzwonek): adresy /api/notifications/... są w pliku notifications.js ---
 require('./notifications').registerNotificationRoutes(app, { User, findUserCI });
+// --- BLOKADA KONTA: ekran blokady /api/block-status/... jest w pliku account-block.js ---
+accountBlock.registerBlockRoutes(app, { User, Ticket, findUserCI, discordGuildId: () => discordBot.GUILD_ID });
 
 require('./admin-routes')(app, {
-    User, Earning, Payout, PromoCode, Bundle, Ticket, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName, onlineUsersMap,
+    User, Earning, Payout, PromoCode, Bundle, Ticket, Session, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName, onlineUsersMap,
     getDiscordClient: () => discordClient, discordLinkCallback,
     DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, REDIRECT_URI, ADMIN_PROMO_CHANNEL_ID
 });

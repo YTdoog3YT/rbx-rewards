@@ -71,3 +71,9 @@ input:focus { outline: none; border-color: #00e676 !important; }
 .adm-value > div { background: #0f1115; border: 1px solid #2a2e39; border-radius: 8px; padding: 8px 10px; }
 .adm-value span { display: block; color: #8a90a0; font-size: 0.75rem; margin-bottom: 2px; }
 .adm-value b { font-size: 1.05rem; }
+.adm-acc-block { margin-bottom: 6px; }
+.adm-acc-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.adm-block-chooser { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding: 10px; background: #0f1115; border: 1px solid #ff3333; border-radius: 8px; }
+.adm-num { width: 80px; background: #181b22; color: #fff; border: 1px solid #333947; border-radius: 6px; padding: 6px 8px; font-weight: bold; }
+.adm-muted-inline { color: #8a90a0; font-size: 0.85rem; }
+.adm-mini.dark { background: #2a2e39; color: #fff; }
