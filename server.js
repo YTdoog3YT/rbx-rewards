@@ -1258,7 +1258,7 @@ app.get('/api/user-balance/:username', async (req, res) => {
 
 // --- PANEL ADMINA: strona /admin i adresy /api/admin/... są w pliku admin-routes.js ---
 require('./admin-routes')(app, {
-    User, Earning, Payout, PromoCode, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName, onlineUsersMap,
+    User, Earning, Payout, PromoCode, Bundle, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName, onlineUsersMap,
     getDiscordClient: () => discordClient, discordLinkCallback,
     DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, REDIRECT_URI, ADMIN_PROMO_CHANNEL_ID
 });

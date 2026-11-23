@@ -107,8 +107,10 @@ async function loadAdminStats() {
             document.getElementById('adminStatOnline').innerText = data.online || 0;
             document.getElementById('adminStatDaily').innerText = dailyR.toFixed(2);
             
-const revenueUsd = dailyR / 15;
-            const costUsd = dailyR * 0.025;
+            // przychód = ankiety/offerwalle (15 R$ = 1 USD), koszt = wszystkie rozdane R$ (1 R$ = 0.025 USD)
+            const revenueUsd = (data.revenueRobux || 0) / 15;
+            const costUsd = (data.costRobux || 0) * 0.025;
+            const bonusUsd = (data.ownerBonusRobux || 0) * 0.025;
             const profitUsd = revenueUsd - costUsd;
 
             const revEl = document.getElementById('adminStatDailyUsdRevenue');
@@ -116,6 +118,12 @@ const revenueUsd = dailyR / 15;
             
             const costEl = document.getElementById('adminStatDailyUsdCost');
             if(costEl) costEl.innerText = '💸 Wypłaty: $' + costUsd.toFixed(2) + ' USD';
+
+            const bonusEl = document.getElementById('adminStatDailyUsdOwnerBonus');
+            if(bonusEl) bonusEl.innerText = '⭐ w tym bonus od właściciela: $' + bonusUsd.toFixed(2) + ' USD';
+
+            const bundlesEl = document.getElementById('adminStatDailyBundles');
+            if(bundlesEl) bundlesEl.innerText = '📦 Pakiety wydane dziś: ' + (data.bundlesDoneCount || 0) + ' szt. · ' + (data.bundlesDoneRobux || 0).toFixed(2) + ' R$ ($' + ((data.bundlesDoneRobux || 0) * 0.025).toFixed(2) + ' USD)';
 
             const profitEl = document.getElementById('adminStatDailyUsdProfit');
             if(profitEl) profitEl.innerText = '👑 Czysty Zysk: $' + profitUsd.toFixed(2) + ' USD';

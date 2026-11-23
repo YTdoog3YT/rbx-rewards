@@ -21,7 +21,7 @@ const ADMIN_PERMISSIONS = [];
 const ALL_PERMISSIONS = ['payouts', 'balance', 'promo', 'verify'];
 
 module.exports = function registerAdminRoutes(app, d) {
-    const { User, Earning, Payout, PromoCode, getDiscordClient, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName,
+    const { User, Earning, Payout, PromoCode, Bundle, getDiscordClient, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName,
         onlineUsersMap, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, REDIRECT_URI, ADMIN_PROMO_CHANNEL_ID, discordLinkCallback } = d;
 
     const tokens = new Map(); // token -> { expires, role, discordId, name }
@@ -119,13 +119,35 @@ module.exports = function registerAdminRoutes(app, d) {
                 { $group: { _id: null, total: { $sum: "$amount" } } }
             ]);
             const dailyRobux = dailyPointsAggr.length > 0 ? dailyPointsAggr[0].total : 0;
+            // Do przeliczenia zysku: suma R$ z dzisiaj dla każdego źródła
+            const bySourceAggr = await Earning.aggregate([
+                { $match: { createdAt: { $gte: polandMidnight } } },
+                { $group: { _id: '$source', total: { $sum: '$amount' } } }
+            ]);
+            const src = name => { const g = bySourceAggr.find(x => x._id === name); return g ? g.total : 0; };
+            // przychód: tylko to, za co płacą partnerzy (ankiety/offerwalle minus cofnięte)
+            const revenueRobux = src('Survey') + src('Reversal');
+            // bonus od właściciela dla wybranych graczy (minus cofnięte)
+            const ownerBonusRobux = src('OwnerBonus') + src('OwnerBonusReversal');
+            // koszt: wszystkie R$ rozdane graczom (bez korekt admina i przesunięć na pakiety)
+            const NOT_COST = ['Admin', 'BundleDeposit', 'BundleRefund', 'BundleRejected', 'BundleDone'];
+            const costRobux = bySourceAggr.filter(g => !NOT_COST.includes(g._id)).reduce((s, g) => s + (g.total || 0), 0);
+            // pakiety zrealizowane dzisiaj (status 'done'), w R$
+            let bundlesDoneRobux = 0, bundlesDoneCount = 0;
+            if (Bundle) {
+                const bAggr = await Bundle.aggregate([
+                    { $match: { status: 'done', doneAt: { $gte: polandMidnight } } },
+                    { $group: { _id: null, totalC: { $sum: '$priceC' }, count: { $sum: 1 } } }
+                ]);
+                if (bAggr.length) { bundlesDoneRobux = (bAggr[0].totalC || 0) / 100; bundlesDoneCount = bAggr[0].count || 0; }
+            }
             const pendingPayoutsAggr = await Payout.aggregate([
                 { $match: { status: 'Pending Manual' } },
                 { $group: { _id: null, total: { $sum: "$pointsWithdrawn" } } }
             ]);
             const pendingRobux = pendingPayoutsAggr.length > 0 ? pendingPayoutsAggr[0].total : 0;
             const uniqueOnline = new Set(onlineUsersMap.values()).size;
-            res.json({ online: uniqueOnline, dailyRobux: dailyRobux, pendingRobux: pendingRobux });
+            res.json({ online: uniqueOnline, dailyRobux: dailyRobux, pendingRobux: pendingRobux, revenueRobux, costRobux, ownerBonusRobux, bundlesDoneRobux, bundlesDoneCount });
         } catch (err) { res.status(500).json({ error: 'Błąd statystyk' }); }
     });
 
