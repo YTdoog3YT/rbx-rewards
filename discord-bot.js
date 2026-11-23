@@ -2,9 +2,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBui
 
 const { hashPin, generatePin, isValidPin } = require('./pin-utils');
 const { notify, notifyAll, hasUnreadTicketNotice } = require('./notifications');
-const { logAdmin } = require('./admin-log');
 const KANAL_OGLOSZENIA_ID = "1566148109535416420"; // nowa wiadomość tutaj = powiadomienie "nowe ogłoszenie" na stronie
-const actorOf = interaction => ({ discordId: interaction.user.id, name: interaction.user.globalName || interaction.user.username, where: 'discord' });
 
 // Twoje kanały
 const KANAL_PUBLICZNY_ID = "1566002632848449616";
@@ -348,7 +346,6 @@ module.exports = {
                         { new: true }
                     );
                     if (!t) return interaction.reply({ content: '⚠️ Ten ticket jest już rozwiązany.', ephemeral: true });
-                    await logAdmin(actorOf(interaction), 'Rozwiązano ticket', `#${String(t.number).padStart(4, '0')} (${t.username})`);
                     await interaction.update({ components: [] }).catch(() => {});
                     const row = new ActionRowBuilder().addComponents(
                         new ButtonBuilder().setCustomId(`ticket_restore_${t._id}`).setLabel('♻️ Przywróć').setStyle(ButtonStyle.Secondary)
@@ -365,7 +362,6 @@ module.exports = {
                         { new: true }
                     );
                     if (!t) return interaction.reply({ content: '⚠️ Tego ticketu nie da się już przywrócić.', ephemeral: true });
-                    await logAdmin(actorOf(interaction), 'Przywrócono ticket', `#${String(t.number).padStart(4, '0')} (${t.username})`);
                     await interaction.update({ content: `${interaction.message.content}\n♻️ Przywrócony przez <@${interaction.user.id}>.`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
                     await interaction.channel.send({
                         content: `♻️ Ticket przywrócony. Kanał nie zostanie usunięty.`,
@@ -462,7 +458,6 @@ module.exports = {
                     }
                     try { await interaction.update({ embeds: [{ ...embed.data, title: "❌ ODRZUCONE ZLECENIE", color: 0xff3333 }], components: [] }); } catch (e) {}
                     await notify(payout.username, 'payout_rejected', { points: payout.pointsWithdrawn, usd: payout.usdAmount });
-                    await logAdmin(actorOf(interaction), 'Odrzucono wypłatę', `${payout.username}: ${payout.pointsWithdrawn} R$ ($${payout.usdAmount})`);
                     return;
                 }
 
@@ -482,7 +477,6 @@ module.exports = {
                 } catch (e) {}
                 try { await interaction.update({ embeds: [{ ...embed.data, title: "✅ OPŁACONE ZLECENIE", color: 0x00FFAA }], components: [] }); } catch (e) {}
                 await notify(payout.username, 'payout_done', { points: payout.pointsWithdrawn, usd: payout.usdAmount });
-                await logAdmin(actorOf(interaction), 'Zatwierdzono wypłatę', `${payout.username}: ${payout.pointsWithdrawn} R$ ($${payout.usdAmount})`);
                 return;
             }
 
@@ -528,7 +522,6 @@ module.exports = {
                     }
                     try { await interaction.update({ embeds: [{ ...embed.data, title: "❌ PAKIET ODRZUCONY (zwrot R$)", color: 0xff3333 }], components: [] }); } catch (e) {}
                     await notify(bundle.username, 'bundle_rejected', { category: bundle.category, title: bundle.title });
-                    await logAdmin(actorOf(interaction), 'Odrzucono pakiet', `${bundle.username}: ${label}`);
                     return;
                 }
 
@@ -550,7 +543,6 @@ module.exports = {
                 } catch (e) {}
                 try { await interaction.update({ embeds: [{ ...embed.data, title: "✅ PAKIET ZREALIZOWANY", color: 0x00FFAA }], components: [] }); } catch (e) {}
                 await notify(bundle.username, 'bundle_done', { category: bundle.category, title: bundle.title });
-                await logAdmin(actorOf(interaction), 'Zrealizowano pakiet', `${bundle.username}: ${label}`);
                 return;
             }
 

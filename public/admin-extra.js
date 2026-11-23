@@ -1,5 +1,5 @@
 // =================== PANEL ADMINA: SEKCJE ROZSZERZONE ===================
-// wykres zysku, partnerzy, cofnięcia, revtagi, tickety, dziennik, uprawnienia, blokada wypłat
+// wykres zysku, partnerzy, cofnięcia, revtagi, tickety, blokada wypłat
 const admToken = () => localStorage.getItem('rbx_admin_token');
 async function admGet(url) {
     const res = await fetch(url, { headers: { 'Authorization': admToken() } });
@@ -15,8 +15,7 @@ const plDate = d => { try { return new Date(d).toLocaleString('pl-PL', { day: '2
 const errRow = (cols, text) => `<tr><td colspan="${cols}" class="adm-muted">${escHtml(text)}</td></tr>`;
 
 function adminExtraRefresh() {
-    loadAdminHistory(); loadAdminPartners(); loadAdminReversals(); loadAdminDupes(); loadAdminTickets(); loadAdminLogs();
-    if (ADMIN.role === 'owner') loadAdminPerms(); else { const b = document.getElementById('admPermsBox'); if (b) b.style.display = 'none'; }
+    loadAdminHistory(); loadAdminPartners(); loadAdminReversals(); loadAdminDupes(); loadAdminTickets();
 }
 
 // --- 1. wykres ---
@@ -124,7 +123,7 @@ async function adminSetPayoutBlock(username, blocked, btn) {
     try {
         const data = await admPost('/api/admin/set-payout-block', { username, blocked });
         if (data.error) { alert('Błąd: ' + data.error); if (btn) btn.disabled = false; return; }
-        loadAdminDupes(); loadAdminReversals(); loadAdminLogs();
+        loadAdminDupes(); loadAdminReversals();
         const sel = document.getElementById('adminSelectedUsername');
         if (sel && sel.innerText.toLowerCase() === String(username).toLowerCase() && typeof fetchUserDetails === 'function') fetchUserDetails(username);
     } catch (e) { alert('Błąd połączenia.'); if (btn) btn.disabled = false; }
@@ -139,39 +138,4 @@ async function loadAdminTickets() {
         if (!list.length) { box.innerHTML = '<p class="adm-muted">Brak aktywnych ticketów 🎉</p>'; return; }
         box.innerHTML = list.map(t => `<div class="adm-ticket"><div class="adm-ticket-top"><div><b>#${String(t.number || 0).padStart(4, '0')}</b> · 👤 ${escHtml(t.username)}${t.discordName ? ' · @' + escHtml(t.discordName) : ''}</div><span>${plDate(t.createdAt)}</span></div><div class="adm-ticket-msg">${escHtml(t.message)}</div></div>`).join('');
     } catch (e) { box.innerHTML = '<p class="adm-muted">Błąd ładowania</p>'; }
-}
-
-// --- 5. dziennik ---
-async function loadAdminLogs() {
-    const body = document.getElementById('admLogsBody'); if (!body) return;
-    try {
-        const list = await admGet('/api/admin/logs');
-        if (!Array.isArray(list)) throw new Error();
-        if (!list.length) { body.innerHTML = errRow(5, 'Na razie pusto.'); return; }
-        body.innerHTML = list.map(l => `<tr><td style="color:#8a90a0;">${plDate(l.createdAt)}</td><td style="font-weight:bold;">${escHtml(l.name || l.discordId)}</td><td>${l.where === 'discord' ? 'Discord' : 'Panel'}</td><td>${escHtml(l.action)}</td><td class="adm-wrap-cell" style="color:#a0a0b0;">${escHtml(l.details)}</td></tr>`).join('');
-    } catch (e) { body.innerHTML = errRow(5, 'Błąd ładowania'); }
-}
-
-// --- 8. uprawnienia (tylko właściciel) ---
-async function loadAdminPerms() {
-    const box = document.getElementById('admPermsBox'), list = document.getElementById('admPermsList');
-    if (!box || ADMIN.role !== 'owner') return;
-    try {
-        const data = await admGet('/api/admin/perms');
-        if (data.error) { box.style.display = 'none'; return; }
-        const row = (id, name, perms) => `<div class="adm-perm-row" data-admin="${escHtml(id)}"><span class="adm-perm-name">${escHtml(name)}</span>${data.all.map(p => `<label><input type="checkbox" value="${p}"${perms.includes(p) ? ' checked' : ''}> ${escHtml(data.labels[p] || p)}</label>`).join('')}<button class="adm-btn-ghost adm-perm-save" onclick="saveAdminPerms(this)">Zapisz</button></div>`;
-        list.innerHTML = data.admins.map(a => row(a.discordId, a.name, a.permissions)).join('') + row('role', 'Pozostali z rolą administracji', data.roleDefault);
-        box.style.display = 'block';
-    } catch (e) { box.style.display = 'none'; }
-}
-async function saveAdminPerms(btn) {
-    const row = btn.closest('.adm-perm-row');
-    const permissions = [...row.querySelectorAll('input:checked')].map(i => i.value);
-    btn.disabled = true; const old = btn.innerText; btn.innerText = 'Zapisuję...';
-    try {
-        const data = await admPost('/api/admin/perms', { discordId: row.dataset.admin, permissions });
-        if (data.error) alert('Błąd: ' + data.error);
-        else { btn.innerText = '✔ Zapisano'; setTimeout(() => { btn.innerText = old; }, 1500); loadAdminLogs(); }
-    } catch (e) { alert('Błąd połączenia.'); }
-    btn.disabled = false; if (btn.innerText === 'Zapisuję...') btn.innerText = old;
 }

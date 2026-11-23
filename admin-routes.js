@@ -2,14 +2,9 @@
 // Logowanie przez Discord, uprawnienia (właściciel / administracja) i wszystkie adresy /api/admin/...
 const path = require('path');
 const crypto = require('crypto');
-const mongoose = require('mongoose');
-const { AdminLog, logAdmin } = require('./admin-log');
 const { notify } = require('./notifications');
 const { shareFor, BASE_SHARE } = require('./owner-bonus');
 
-// ustawienia zapisane w bazie (np. uprawnienia adminów zmieniane w panelu)
-const AdminSettingSchema = new mongoose.Schema({ key: { type: String, unique: true }, value: mongoose.Schema.Types.Mixed });
-const AdminSetting = mongoose.models.AdminSetting || mongoose.model('AdminSetting', AdminSettingSchema);
 
 const OWNER_DISCORD_ID = '398911896893521921';      // właściciel: może wszystko
 const ADMIN_ROLE_ID = '1548633150870261791';        // rola administracji na serwerze Discord
@@ -17,7 +12,7 @@ const ADMIN_TOKEN_TTL_MS = 12 * 60 * 60 * 1000;     // zalogowanie trwa 12 godzi
 
 // Uprawnienia do wyboru: 'payouts' (wypłaty), 'balance' (saldo graczy), 'promo' (kody promocyjne), 'verify' (weryfikacja graczy),
 // 'block' (blokada wypłat gracza). Każdy admin WIDZI wszystko; KLIKAĆ może tylko to, co ma na swojej liście.
-// Listy poniżej to ustawienia startowe - właściciel zmienia je w panelu (sekcja "Uprawnienia adminów"), zapis idzie do bazy.
+// Uprawnienia zmieniasz tylko tutaj, w kodzie (np. permissions: ['payouts', 'block']).
 
 // Konkretni admini po ID Discorda (każdy ze swoimi uprawnieniami). Wchodzą do panelu nawet bez roli na serwerze.
 const ADMINS = {
@@ -28,7 +23,6 @@ const ADMINS = {
 // Pozostali z rolą administracji na serwerze (nie wpisani wyżej) dostają to:
 const ADMIN_PERMISSIONS = [];
 const ALL_PERMISSIONS = ['payouts', 'balance', 'promo', 'verify', 'block'];
-const PERMISSION_LABELS = { payouts: 'Wypłaty', balance: 'Saldo graczy', promo: 'Kody promo', verify: 'Weryfikacja', block: 'Blokada wypłat' };
 
 module.exports = function registerAdminRoutes(app, d) {
     const { User, Earning, Payout, PromoCode, Bundle, Ticket, getDiscordClient, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName,
@@ -43,21 +37,11 @@ module.exports = function registerAdminRoutes(app, d) {
         if (a.expires < Date.now()) { tokens.delete(String(token)); return null; }
         return a;
     }
-    // uprawnienia zmienione w panelu (z bazy); klucz = ID Discorda albo 'role' (pozostali z rolą)
-    let permOverrides = {};
-    AdminSetting.findOne({ key: 'perms' }).lean()
-        .then(s => { if (s && s.value && typeof s.value === 'object') permOverrides = s.value; })
-        .catch(e => console.error('[admin] wczytanie uprawnień:', e.message));
-
     const permsFor = a => {
         if (a.role === 'owner') return ALL_PERMISSIONS;
         const entry = ADMINS[a.discordId];
-        let list;
-        if (entry) list = Array.isArray(permOverrides[a.discordId]) ? permOverrides[a.discordId] : entry.permissions;
-        else list = Array.isArray(permOverrides.role) ? permOverrides.role : ADMIN_PERMISSIONS;
-        return list.filter(p => ALL_PERMISSIONS.includes(p));
+        return (entry ? entry.permissions : ADMIN_PERMISSIONS).filter(p => ALL_PERMISSIONS.includes(p));
     };
-    const actor = req => ({ discordId: req.admin.discordId, name: req.admin.name, where: 'panel' });
 
     function isAdmin(req, res, next) {
         const a = getAuth(req.headers.authorization);
@@ -241,7 +225,6 @@ module.exports = function registerAdminRoutes(app, d) {
                 await new Earning({ username: user.username, amount: -amt, source: 'Admin', details: 'Odebrano ręcznie' }).save();
             } else return res.status(400).json({ error: 'Nieznana akcja.' });
             await user.save();
-            await logAdmin(actor(req), action === 'add' ? 'Dodano R$' : 'Odebrano R$', `${user.username}: ${amt} R$`);
             res.json({ success: true, newBalance: user.points });
         } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
     });
@@ -265,7 +248,6 @@ module.exports = function registerAdminRoutes(app, d) {
                 }
             }
             await notify(payout.username, action === 'complete' ? 'payout_done' : 'payout_rejected', { points: payout.pointsWithdrawn, usd: payout.usdAmount });
-            await logAdmin(actor(req), action === 'complete' ? 'Zatwierdzono wypłatę' : 'Odrzucono wypłatę', `${payout.username}: ${payout.pointsWithdrawn} R$ ($${payout.usdAmount})`);
             res.json({ success: true });
         } catch (e) { res.status(500).json({ error: 'Błąd' }); }
     });
@@ -275,7 +257,6 @@ module.exports = function registerAdminRoutes(app, d) {
         if (!code || !reward || !maxUses) return res.status(400).json({ error: 'Uzupełnij wszystkie pola!' });
         try {
             await new PromoCode({ code: String(code).toUpperCase(), reward, maxUses, usedBy: [] }).save();
-            await logAdmin(actor(req), 'Dodano kod promo', `${String(code).toUpperCase()}: ${reward} R$ × ${maxUses}`);
             const client = getDiscordClient();
             if (client && ADMIN_PROMO_CHANNEL_ID) {
                 const channel = client.channels.cache.get(ADMIN_PROMO_CHANNEL_ID);
@@ -287,8 +268,7 @@ module.exports = function registerAdminRoutes(app, d) {
 
     app.post('/api/admin/delete-code', isAdmin, requirePerm('promo'), async (req, res) => {
         try {
-            const removed = await PromoCode.findByIdAndDelete(req.body.codeId);
-            if (removed) await logAdmin(actor(req), 'Usunięto kod promo', removed.code);
+            await PromoCode.findByIdAndDelete(req.body.codeId);
             res.json({ success: true });
         }
         catch (e) { res.status(500).json({ error: 'Błąd usuwania kodu' }); }
@@ -300,7 +280,6 @@ module.exports = function registerAdminRoutes(app, d) {
             if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza.' });
             const verified = req.body.verified === true;
             await User.updateOne({ _id: user._id }, { $set: { verified } });
-            await logAdmin(actor(req), verified ? 'Zweryfikowano gracza' : 'Cofnięto weryfikację', user.username);
             res.json({ success: true, username: user.username, verified });
         } catch (e) { res.status(500).json({ error: 'Błąd serwera.' }); }
     });
@@ -421,36 +400,6 @@ module.exports = function registerAdminRoutes(app, d) {
         } catch (e) { res.status(500).json([]); }
     });
 
-    // dziennik akcji adminów (widzi każdy admin)
-    app.get('/api/admin/logs', isAdmin, async (req, res) => {
-        try { res.json(await AdminLog.find({}).sort({ createdAt: -1 }).limit(100).lean()); }
-        catch (e) { res.status(500).json([]); }
-    });
-
-    // =================== UPRAWNIENIA ADMINÓW (tylko właściciel) ===================
-    const ownerOnly = (req, res, next) => (req.admin && req.admin.role === 'owner') ? next() : res.status(403).json({ error: 'Tylko właściciel.' });
-
-    app.get('/api/admin/perms', isAdmin, ownerOnly, (req, res) => {
-        res.json({
-            all: ALL_PERMISSIONS, labels: PERMISSION_LABELS,
-            admins: Object.entries(ADMINS).map(([id, a]) => ({ discordId: id, name: a.name, permissions: permsFor({ role: 'admin', discordId: id }) })),
-            roleDefault: permsFor({ role: 'admin', discordId: '' })
-        });
-    });
-
-    app.post('/api/admin/perms', isAdmin, ownerOnly, async (req, res) => {
-        try {
-            const target = String(req.body.discordId || '');
-            if (target !== 'role' && !ADMINS[target]) return res.status(400).json({ error: 'Nieznany admin.' });
-            const perms = (Array.isArray(req.body.permissions) ? req.body.permissions : []).map(String).filter(p => ALL_PERMISSIONS.includes(p));
-            const next = { ...permOverrides, [target]: [...new Set(perms)] };
-            await AdminSetting.updateOne({ key: 'perms' }, { $set: { value: next } }, { upsert: true });
-            permOverrides = next;
-            const who = target === 'role' ? 'Pozostali z rolą' : ADMINS[target].name;
-            await logAdmin(actor(req), 'Zmieniono uprawnienia', `${who}: ${perms.length ? perms.map(p => PERMISSION_LABELS[p] || p).join(', ') : 'brak'}`);
-            res.json({ success: true });
-        } catch (e) { console.error('[admin] uprawnienia:', e.message); res.status(500).json({ error: 'Błąd zapisu.' }); }
-    });
 
     // =================== BLOKADA WYPŁAT ===================
     app.post('/api/admin/set-payout-block', isAdmin, requirePerm('block'), async (req, res) => {
@@ -459,7 +408,6 @@ module.exports = function registerAdminRoutes(app, d) {
             if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza.' });
             const blocked = req.body.blocked === true;
             await User.updateOne({ _id: user._id }, { $set: { payoutBlocked: blocked } });
-            await logAdmin(actor(req), blocked ? 'Zablokowano wypłaty' : 'Odblokowano wypłaty', user.username);
             res.json({ success: true, username: user.username, payoutBlocked: blocked });
         } catch (e) { res.status(500).json({ error: 'Błąd serwera.' }); }
     });

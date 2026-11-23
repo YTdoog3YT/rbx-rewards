@@ -64,11 +64,6 @@ input:focus { outline: none; border-color: #00e676 !important; }
 .adm-mini { border: none; border-radius: 4px; padding: 3px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
 .adm-mini.red { background: #ff3333; color: #fff; }
 .adm-mini.green { background: #00e676; color: #000; }
-.adm-perm-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 0; border-bottom: 1px solid #2a2e39; }
-.adm-perm-row:last-child { border-bottom: none; }
-.adm-perm-name { min-width: 150px; font-weight: bold; }
-.adm-perm-row label { display: inline-flex; align-items: center; gap: 5px; color: #d6d9e0; font-size: 0.9rem; cursor: pointer; }
-.adm-perm-save { margin-left: auto; }
 .adm-badge-red { color: #ff5c5c; font-weight: bold; }
 .adm-badge-green { color: #00e676; font-weight: bold; }
 .ref-table td.adm-wrap-cell { white-space: normal; min-width: 180px; }
