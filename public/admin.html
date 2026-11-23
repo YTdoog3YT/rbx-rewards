@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel admina - RBX Rewards</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <div class="adm-wrap">
+    <header class="adm-top">
+      <a href="/" class="adm-brand"><img src="/logo.png" alt="RBX Rewards"><span>Panel admina</span></a>
+      <div id="admWho" class="adm-who" style="display: none;">
+        <span id="admWhoName"></span>
+        <span id="admWhoRole" class="adm-role"></span>
+        <button class="adm-btn-ghost" onclick="adminRefreshAll()">↻ Odśwież</button>
+        <button class="adm-btn-ghost" onclick="adminLogout()">Wyloguj</button>
+      </div>
+    </header>
+
+    <div id="admLogin" class="content-box adm-login" style="display: none;">
+      <h2>Panel admina</h2>
+      <p>Zaloguj się kontem Discord. Wejść mogą właściciel i osoby z rolą administracji na serwerze RBX Rewards.</p>
+      <p id="admError" class="adm-error" style="display: none;"></p>
+      <a class="btn-action adm-discord" href="/api/admin/login">Zaloguj przez Discord</a>
+    </div>
+
+    <div id="admViewOnly" class="adm-viewonly" style="display: none;">👀 Tryb podglądu: widzisz wszystko, ale wyszarzone przyciski (akcje) są dla Ciebie zablokowane.</div>
+
+    <div id="admPanel" style="display: none;">
+<div class="content-box" style="text-align: left;">
+    <h3 style="color: #00e676; margin-bottom: 10px;">✅ Weryfikacja graczy (Pakiety)</h3>
+    <p style="color: #a0a0b0; font-size: 0.85rem; margin-bottom: 10px;">Sprawdź w opisie profilu Roblox gracza, czy jest tam jego nazwa Discord, i dopiero wtedy kliknij „Zweryfikuj".</p>
+    <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
+        <table class="ref-table" style="width: 100%; min-width: 500px; font-size: 0.9rem;">
+            <thead><tr><th>Gracz</th><th>Roblox / Gaijin</th><th>Discord</th><th>Status</th><th>Akcja</th></tr></thead>
+            <tbody id="adminBundleUsersBody"><tr><td colspan="5" style="text-align: center; color: #888;">Ładowanie...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="steps-grid" style="margin-bottom: 20px;">
+    <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminOnlineUsers()">
+        <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">🟢 Online Users (Click)</h3>
+        <p id="adminStatOnline" style="color: #00e676; font-size: 2.2rem; font-weight: 900;">0</p>
+    </div>
+    <div class="step-card" style="text-align: center; padding: 25px 15px;">
+        <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">📈 Dzienne R$ (Reset 00:00)</h3>
+        <p id="adminStatDaily" style="color: #ffb703; font-size: 2.2rem; font-weight: 900;">0.00</p>
+        <div style="margin-top: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+            <p id="adminStatDailyUsdRevenue" style="color: #00e676; font-size: 0.95rem; font-weight: bold; margin-bottom: 4px;" title="Całkowity przychód z ankiet (1 USD = 15 R$)">💰 Przychód: $0.00 USD</p>
+            <p id="adminStatDailyUsdCost" style="color: #ff3333; font-size: 0.95rem; font-weight: bold; margin-bottom: 6px;" title="Koszt na wypłaty dla graczy (1 R$ = 0.025 USD)">💸 Wypłaty: $0.00 USD</p>
+            <p id="adminStatDailyUsdProfit" style="color: #ffb703; font-size: 1.05rem; font-weight: 900; border-top: 1px solid #333; padding-top: 5px; text-shadow: 0 0 10px rgba(255, 183, 3, 0.3);" title="Twój dochód na czysto (Przychód minus Wypłaty)">👑 Czysty Zysk: $0.00 USD</p>
+        </div>
+    </div>
+    <div class="step-card" style="text-align: center; padding: 25px 15px; cursor: pointer;" onclick="showAdminPendingPayouts()">
+        <h3 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">💸 Pending Payouts (Click)</h3>
+        <p id="adminStatPending" style="color: #ff3333; font-size: 2.2rem; font-weight: 900;">0.00</p>
+    </div>
+</div>
+
+<div id="adminOnlineList" class="content-box" style="display: none; text-align: left;">
+    <h3 style="color: #00e676; margin-bottom: 10px;">Lista Graczy Online</h3>
+    <div id="adminOnlineListContent" style="color: #fff; background: #0f1115; padding: 15px; border-radius: 6px; border: 1px solid #333; max-height: 200px; overflow-y: auto;">Ładowanie...</div>
+</div>
+
+<div id="adminPendingList" class="content-box" style="display: none; text-align: left;">
+    <h3 style="color: #ff3333; margin-bottom: 10px;">Wszystkie Oczekujące Wypłaty (Global)</h3>
+    <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
+        <table class="ref-table" style="width: 100%; min-width: 500px;">
+            <thead><tr><th>Użytkownik</th><th>Metoda/Adres</th><th>Kwota</th><th>Akcja</th></tr></thead>
+            <tbody id="adminPendingListContent"><tr><td colspan="4" style="text-align:center;">Ładowanie...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="content-box" style="text-align: left;">
+    <h3 style="color: #ffb703; margin-bottom: 15px;">🔧 Zarządzanie Robuxami Graczy</h3>
+    <div style="position: relative;">
+        <input type="text" id="adminSearchUser" oninput="searchAdminUsers()" onchange="fetchUserDetails(this.value)" placeholder="Wpisz nazwę gracza (Wyszukiwarka alfabetyczna)..." autocomplete="off" style="width: 100%; padding: 12px; margin-bottom: 10px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+        <ul id="adminUserDropdown" style="display: none; position: absolute; top: 45px; left: 0; background: #1e1e26; width: 100%; list-style: none; padding: 0; margin: 0; border: 1px solid #333; border-radius: 6px; z-index: 10; max-height: 180px; overflow-y: auto;"></ul>
+    </div>
+    
+    <div id="adminSelectedUserDetails" style="display: none; background: #14171d; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;">
+        <p style="margin-bottom: 5px;">Wybrany gracz: <strong id="adminSelectedUsername" style="color: #fff;">-</strong></p>
+        <p style="margin-bottom: 5px;">Aktualne saldo: <strong id="adminSelectedPoints" style="color: #00e676;">0.00 R$</strong></p>
+        <p>Oczekujące (Pending): <strong id="adminSelectedPending" style="color: #ff3333; cursor: pointer; text-decoration: underline;" onclick="toggleSelectedUserPayouts()">0.00 R$ (Kliknij, aby pokazać wnioski)</strong></p>
+        
+        <div id="adminSelectedUserPayouts" style="display: none; margin-top: 15px; background: #0f1115; border-radius: 6px; border: 1px solid #2a2e39; overflow-x: auto;">
+            <table class="ref-table" style="width: 100%; min-width: 500px; font-size: 0.9rem;">
+                <thead><tr><th>Metoda/Adres</th><th>Kwota</th><th>Data</th><th>Akcja</th></tr></thead>
+                <tbody id="adminSelectedUserPayoutsBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <input type="number" id="adminBalanceAmount" placeholder="Wpisz kwotę R$..." step="0.01" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+    
+    <div style="display: flex; gap: 15px;">
+        <button class="btn-action" style="flex: 1; background: #ff3333; color: #fff; margin-top: 0;" data-perm="balance" onclick="adminManageBalance('subtract')">➖ Odejmij</button>
+        <button class="btn-action" style="flex: 1; background: #00e676; color: #000; margin-top: 0;" data-perm="balance" onclick="adminManageBalance('add')">➕ Dodaj</button>
+    </div>
+</div>
+
+<div class="content-box" style="text-align: left;">
+    <h3 style="color: #00e676; margin-bottom: 15px;">🎟️ Generator Kodów Promocyjnych</h3>
+    <input type="text" id="adminPromoCode" placeholder="Nazwa kodu (np. ROBUX2026)" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+        <input type="number" id="adminPromoReward" placeholder="Nagroda w R$" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+        <input type="number" id="adminPromoUses" placeholder="Limit użyć (np. 100)" style="flex: 1; padding: 12px; background: #0f1115; border: 1px solid #333; color: #fff; border-radius: 6px; font-weight: bold;">
+    </div>
+    <button class="btn-action" style="width: 100%; margin-bottom: 20px; padding: 15px; font-size: 1.1rem;" data-perm="promo" onclick="createAdminPromoCode()">🚀 Wygeneruj Kod i Powiadom Discord</button>
+    
+    <h4 style="color: #a0a0b0; font-size: 1rem; margin-bottom: 10px;">📋 Top 5 Aktywnych Kodów</h4>
+    <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
+        <table class="ref-table" style="width: 100%; min-width: 400px; font-size: 0.9rem;">
+            <thead><tr><th>Kod</th><th>Użycia</th><th>Wartość</th><th>Akcja</th></tr></thead>
+            <tbody id="adminTop5CodesBody"><tr><td colspan="4" style="text-align:center; color:#888;">Ładowanie...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="content-box" style="text-align: left;">
+    <h3 style="color: #ff3333; margin-bottom: 15px;">🚨 Top 10 Najnowszych Oczekujących Wypłat</h3>
+    <div style="background: #0f1115; border-radius: 6px; border: 1px solid #333; overflow-x: auto;">
+        <table class="ref-table" style="width: 100%; min-width: 500px;">
+            <thead><tr><th>Użytkownik</th><th>Metoda/Adres</th><th>Kwota</th><th>Data</th><th>Akcja</th></tr></thead>
+            <tbody id="adminTop10PayoutsBody"><tr><td colspan="5" style="text-align:center;">Ładowanie...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+    </div>
+  </div>
+  <script src="/admin.js"></script>
+</body>
+</html>

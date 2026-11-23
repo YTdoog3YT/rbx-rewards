@@ -1,0 +1,37 @@
+/* =================== PANEL ADMINA =================== */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background: #0f1115; color: #fff; padding: 20px; background-image: radial-gradient(900px 500px at 10% -10%, rgba(0, 230, 118, 0.06), transparent 60%); background-attachment: fixed; }
+.adm-wrap { max-width: 1100px; margin: 0 auto; }
+.adm-top { display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; }
+.adm-brand { display: flex; align-items: center; gap: 12px; color: #fff; text-decoration: none; font-weight: bold; font-size: 1.15rem; }
+.adm-brand img { height: 40px; }
+.adm-who { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #d6d9e0; font-weight: bold; }
+.adm-role { font-size: 0.78rem; padding: 3px 10px; border-radius: 20px; border: 1px solid currentColor; }
+.adm-role.is-owner { color: #ffb703; }
+.adm-role.is-admin { color: #4cc2ff; }
+.adm-btn-ghost { background: #252a34; color: #fff; border: 1px solid #333947; border-radius: 6px; padding: 7px 12px; font-weight: bold; cursor: pointer; }
+.adm-btn-ghost:hover { border-color: #00e676; }
+.adm-login { max-width: 480px; margin: 60px auto; }
+.adm-login h2 { margin-bottom: 10px; }
+.adm-login p { color: #b0b5c0; line-height: 1.5; margin-bottom: 15px; }
+.adm-error { color: #ffc9c9 !important; background: rgba(255, 92, 92, 0.08); border: 1px solid rgba(255, 92, 92, 0.45); border-radius: 8px; padding: 10px; }
+.adm-discord { display: inline-block; background: #5865F2 !important; color: #fff !important; text-decoration: none; }
+.adm-discord:hover { background: #4752c4 !important; }
+.adm-viewonly { background: rgba(76, 194, 255, 0.08); border: 1px solid rgba(76, 194, 255, 0.45); color: #bfe6ff; border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; font-size: 0.92rem; }
+button.adm-locked, button:disabled.adm-locked { opacity: 0.35 !important; cursor: not-allowed !important; filter: grayscale(1); }
+
+/* elementy przeniesione ze strony głównej */
+.content-box { background: #181b22; border-radius: 12px; padding: 25px; border: 1px solid #2a2e39; margin-bottom: 25px; text-align: center; }
+.btn-action { width: auto; background: #00e676; color: #000; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-block; margin-top: 15px; }
+.btn-action:hover { background: #00c853; }
+.btn-action:disabled { cursor: not-allowed; }
+.steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 15px; margin-bottom: 25px; }
+.step-card { background: #181b22; border: 1px solid #2a2e39; border-radius: 12px; padding: 20px; text-align: left; position: relative; transition: 0.3s; }
+.step-card:hover { border-color: #00e676; }
+.ref-table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; min-width: 300px; }
+.ref-table th, .ref-table td { padding: 12px; border-bottom: 1px solid #2a2e39; white-space: nowrap; }
+.ref-table th { background: #1e1e26; color: #00e676; }
+.ref-table tr:hover { background: #14171d; }
+input { font-size: 0.95rem; }
+input:focus { outline: none; border-color: #00e676 !important; }
+@media (max-width: 600px) { body { padding: 12px; } .content-box { padding: 16px; } }

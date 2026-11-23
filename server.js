@@ -32,20 +32,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const activeAdminTokens = new Map(); // token -> czas wygaśnięcia
-const ADMIN_TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 godzin
-function adminTokenValid(token) {
-    const expires = token ? activeAdminTokens.get(token) : null;
-    if (!expires) return false;
-    if (expires < Date.now()) { activeAdminTokens.delete(token); return false; }
-    return true;
-}
-function isAdmin(req, res, next) {
-    const token = req.headers.authorization;
-    if (adminTokenValid(token)) return next();
-    return res.status(403).json({ error: 'Brak dostępu!' });
-}
-
 function escapeRegex(text) {
     return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -58,203 +44,13 @@ function getPolandMidnight() {
     return new Date(polandTime.getTime() - diffMs);
 }
 
-app.get('/api/admin/login', (req, res) => {
-    const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
-    res.redirect(authUrl);
-});
-
-app.get('/api/admin/callback', async (req, res) => {
-    if (req.query.state) return discordLinkCallback(req, res, String(req.query.state));
-    const code = req.query.code;
-    if (!code) return res.redirect('/?error=NoCode');
-
-    try {
-        const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                client_id: DISCORD_CLIENT_ID,
-                client_secret: DISCORD_CLIENT_SECRET,
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: REDIRECT_URI
-            })
-        });
-        const tokenData = await tokenResponse.json();
-        if (!tokenData.access_token) return res.redirect('/?error=AuthFailed');
-
-        const userResponse = await fetch('https://discord.com/api/users/@me', {
-            headers: { authorization: `Bearer ${tokenData.access_token}` }
-        });
-        const userData = await userResponse.json();
-
-        if (userData.id === ADMIN_DISCORD_ID) {
-            const sessionToken = crypto.randomBytes(32).toString('hex');
-            activeAdminTokens.set(sessionToken, Date.now() + ADMIN_TOKEN_TTL_MS);
-            res.redirect(`/?adminToken=${sessionToken}`); 
-        } else {
-            res.redirect('/?error=Unauthorized');
-        }
-    } catch (error) { res.redirect('/?error=ServerError'); }
-});
-
-app.post('/api/admin/verify', (req, res) => {
-    const { token } = req.body;
-    if (adminTokenValid(token)) res.json({ success: true });
-    else res.json({ success: false });
-});
-
 // Wystawienie pliku app-ads.txt dla botów Google
 app.get('/app-ads.txt', (req, res) => {
   res.sendFile(path.join(__dirname, 'app-ads.txt'));
 });
 
-// --- ADMIN API ---
+// --- GRACZE ONLINE (socket; podgląd w panelu admina) ---
 const onlineUsersMap = new Map();
-
-app.get('/api/admin/stats', isAdmin, async (req, res) => {
-    try {
-        const polandMidnight = getPolandMidnight();
-
-        const dailyPointsAggr = await Earning.aggregate([
-            { $match: { createdAt: { $gte: polandMidnight }, source: { $nin: ['Admin', 'Promo', 'BundleDeposit', 'BundleRefund', 'BundleRejected', 'BundleDone'] } } },
-            { $group: { _id: null, total: { $sum: "$amount" } } }
-        ]);
-        const dailyRobux = dailyPointsAggr.length > 0 ? dailyPointsAggr[0].total : 0;
-
-        const pendingPayoutsAggr = await Payout.aggregate([
-            { $match: { status: 'Pending Manual' } },
-            { $group: { _id: null, total: { $sum: "$pointsWithdrawn" } } }
-        ]);
-        const pendingRobux = pendingPayoutsAggr.length > 0 ? pendingPayoutsAggr[0].total : 0;
-        
-        const uniqueOnline = new Set(onlineUsersMap.values()).size;
-        
-        res.json({ online: uniqueOnline, dailyRobux: dailyRobux, pendingRobux: pendingRobux });
-    } catch (err) { res.status(500).json({ error: 'Błąd statystyk' }); }
-});
-
-app.get('/api/admin/online', isAdmin, (req, res) => {
-    res.json(Array.from(new Set(onlineUsersMap.values())).sort((a, b) => a.localeCompare(b)));
-});
-
-app.get('/api/admin/users/search', isAdmin, async (req, res) => {
-    try {
-        const q = (req.query.q || '').trim();
-        if (q.length < 1) return res.json([]);
-        const safeQ = escapeRegex(q);
-        const users = await User.find({ username: new RegExp(`^${safeQ}`, 'i') })
-            .select('username')
-            .sort({ username: 1 })
-            .limit(20);
-        const sortedNames = users.map(u => u.username).sort((a, b) => a.localeCompare(b));
-        res.json(sortedNames);
-    } catch (e) { res.status(500).json([]); }
-});
-
-app.get('/api/admin/user-details/:username', isAdmin, async (req, res) => {
-    try {
-        const safeName = escapeRegex(req.params.username.trim());
-        const regex = new RegExp(`^${safeName}$`, 'i');
-        const user = await User.findOne({ username: regex });
-        if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza' });
-        
-        const pending = await Payout.find({ username: regex, status: 'Pending Manual' }).sort({ createdAt: -1 });
-        const pendingSum = pending.reduce((sum, p) => sum + (p.pointsWithdrawn || 0), 0);
-        
-        res.json({
-            username: user.username,
-            points: user.points,
-            pendingSum: pendingSum,
-            pendingRequests: pending
-        });
-    } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
-});
-
-app.post('/api/admin/manage-balance', isAdmin, async (req, res) => {
-    const { username, amount, action } = req.body;
-    try {
-        const safeName = escapeRegex((username || '').trim());
-        let user = await User.findOne({ username: new RegExp(`^${safeName}$`, 'i') });
-        if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza!' });
-        
-        let amt = parseFloat(amount);
-        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Nieprawidłowa kwota!' });
-        
-        if (action === 'add') {
-            user.points += amt;
-            await new Earning({ username: user.username, amount: amt, source: 'Admin', details: 'Dodano ręcznie' }).save();
-        } else if (action === 'subtract') {
-            user.points = Math.max(0, user.points - amt);
-            await new Earning({ username: user.username, amount: -amt, source: 'Admin', details: 'Odebrano ręcznie' }).save();
-        }
-        
-        await user.save();
-        res.json({ success: true, newBalance: user.points });
-    } catch (e) { res.status(500).json({ error: 'Błąd serwera' }); }
-});
-
-app.get('/api/admin/pending-payouts', isAdmin, async (req, res) => {
-    try {
-        const payouts = await Payout.find({ status: 'Pending Manual' }).sort({ createdAt: -1 });
-        res.json(payouts);
-    } catch(e) { res.status(500).json([]); }
-});
-
-app.post('/api/admin/resolve-payout', isAdmin, async (req, res) => {
-    const { payoutId, action } = req.body; 
-    try {
-        const payout = await Payout.findById(payoutId);
-        if(!payout) return res.status(404).json({ error: 'Wypłata nie istnieje' });
-        
-        if(action === 'complete') {
-            payout.status = 'Completed';
-            await payout.save();
-        } else if(action === 'reject') {
-            const safeName = escapeRegex(payout.username);
-            let user = await User.findOne({ username: new RegExp(`^${safeName}$`, 'i') });
-            if(user) {
-                user.points += payout.pointsWithdrawn;
-                await user.save();
-            }
-            payout.status = 'Rejected';
-            await payout.save();
-        }
-        res.json({ success: true });
-    } catch(e) { res.status(500).json({ error: 'Błąd' }); }
-});
-
-app.post('/api/admin/create-code', isAdmin, async (req, res) => {
-    const { code, reward, maxUses } = req.body;
-    if (!code || !reward || !maxUses) return res.status(400).json({ error: 'Uzupełnij wszystkie pola!' });
-    try {
-        const newCode = new PromoCode({ code: code.toUpperCase(), reward, maxUses, usedBy: [] });
-        await newCode.save();
-        if (discordClient && ADMIN_PROMO_CHANNEL_ID) {
-            const channel = discordClient.channels.cache.get(ADMIN_PROMO_CHANNEL_ID);
-            if (channel) {
-                channel.send(`🎉 **Nowy Kod Promocyjny!** 🎉\n\n🎟️ Kod: \`${code.toUpperCase()}\`\n💰 Wartość: **${reward} R$**\n👥 Limit użyć: **${maxUses}**\n\nSzybko wbijajcie na stronę i odbierajcie!`);
-            }
-        }
-        res.json({ success: true });
-    } catch (error) { res.status(500).json({ error: 'Błąd dodawania kodu. Kod już istnieje?' }); }
-});
-
-app.get('/api/admin/promo-codes', isAdmin, async (req, res) => {
-    try {
-        const codes = await PromoCode.find({}).sort({ _id: -1 });
-        const activeCodes = codes.filter(c => c.currentUses < c.maxUses);
-        res.json(activeCodes);
-    } catch (e) { res.status(500).json([]); }
-});
-
-app.post('/api/admin/delete-code', isAdmin, async (req, res) => {
-    try {
-        const { codeId } = req.body;
-        await PromoCode.findByIdAndDelete(codeId);
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: 'Błąd usuwania kodu' }); }
-});
 
 app.get('/ping', (req, res) => { res.status(200).send('OK'); });
 
@@ -1428,24 +1224,6 @@ app.post('/api/bundles/withdraw', async (req, res) => {
     } catch (e) { console.error('[bundles] withdraw:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
 });
 
-app.post('/api/admin/set-verified', isAdmin, async (req, res) => {
-    try {
-        const user = await findUserCI(cleanName(req.body.username));
-        if (!user) return res.status(404).json({ error: 'Nie znaleziono gracza.' });
-        const verified = req.body.verified === true;
-        await User.updateOne({ _id: user._id }, { $set: { verified } });
-        res.json({ success: true, username: user.username, verified });
-    } catch (e) { res.status(500).json({ error: 'Błąd serwera.' }); }
-});
-
-app.get('/api/admin/bundle-users', isAdmin, async (req, res) => {
-    try {
-        const users = await User.find({ discordName: { $exists: true, $nin: ['', null] } })
-            .select('username verified robloxName gaijinId discordName').sort({ verified: 1, username: 1 }).limit(200).lean();
-        res.json(users);
-    } catch (e) { res.status(500).json([]); }
-});
-
 // =================== WEBSOCKETS (Zdarzenia) ===================
 io.on('connection', (socket) => { 
     socket.on('user_joined', (username) => { if(username) onlineUsersMap.set(socket.id, username); });
@@ -1463,6 +1241,13 @@ app.get('/api/user-balance/:username', async (req, res) => {
         console.error('Błąd pobierania salda dla:', req.params.username, error);
         res.status(500).json({ error: 'Błąd serwera' });
     }
+});
+
+// --- PANEL ADMINA: strona /admin i adresy /api/admin/... są w pliku admin-routes.js ---
+require('./admin-routes')(app, {
+    User, Earning, Payout, PromoCode, discordBot, escapeRegex, getPolandMidnight, findUserCI, cleanName, onlineUsersMap,
+    getDiscordClient: () => discordClient, discordLinkCallback,
+    DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, REDIRECT_URI, ADMIN_PROMO_CHANNEL_ID
 });
 
 const PORT = process.env.PORT || 3000;
