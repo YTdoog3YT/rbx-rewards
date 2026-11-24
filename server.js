@@ -1,3 +1,4 @@
+const errorAlerts = require('./error-alerts'); // błędy z console.error lecą też na kanał Discord (error-alerts.js)
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -133,15 +134,25 @@ function allocateGoalProgress(user, amountToAllocate) {
     }
 }
 
+// 15% dla polecającego. Punkty dopisujemy samym $inc (bez zapisu całego konta, który mógł się po cichu wywalać),
+// a każdy problem trafia do console.error -> logi Rendera + kanał błędów na Discordzie.
 async function processReferralBonus(username, amountEarned) {
+    let ctx = `${username}, ${amountEarned} R$`;
     try {
-        const user = await User.findOne({ username: username });
-        if (user && user.referredBy) {
-            const bonus = parseFloat((amountEarned * 0.15).toFixed(2));
-            const referrer = await User.findOne({ username: user.referredBy });
-            if (referrer) { referrer.points += bonus; allocateGoalProgress(referrer, bonus); await referrer.save(); await new Earning({ username: referrer.username, amount: bonus, source: 'Referral', details: username }).save(); }
-        }
-    } catch (err) {}
+        const user = await User.findOne({ username: username }).select('referredBy').lean();
+        if (!user || !user.referredBy) return;
+        const bonus = parseFloat((amountEarned * 0.15).toFixed(2));
+        if (!(bonus > 0)) return;
+        ctx = `${username} → ${user.referredBy}, ${bonus} R$`;
+        const referrer = await findUserCI(user.referredBy);
+        if (!referrer) { console.error(`[polecenia] nie znaleziono polecającego (${ctx}) - 15% nie dopisane`); return; }
+        await User.updateOne({ _id: referrer._id }, { $inc: { points: bonus } });
+        await new Earning({ username: referrer.username, amount: bonus, source: 'Referral', details: username }).save();
+        try { // postęp celów polecającego (osobno, żeby błąd celów nie blokował punktów)
+            allocateGoalProgress(referrer, bonus);
+            await User.updateOne({ _id: referrer._id }, { $set: { goals: referrer.goals } });
+        } catch (e) { console.error(`[polecenia] punkty dopisane, ale nie zapisał się postęp celów (${ctx}):`, e.message); }
+    } catch (err) { console.error(`[polecenia] nie dopisano 15% z polecenia (${ctx}):`, err.message); }
 }
 
 async function addXPAndDailyEarned(user, amount) {
@@ -795,11 +806,11 @@ app.get('/api/referral-list/:username', async (req, res) => {
             { $group: { _id: { $toLower: '$details' }, total: { $sum: '$amount' } } }
         ]);
         const byNick = new Map(sums.map(x => [x._id, x.total]));
-        const users = invited.map(u => ({
-            username: u.username,
-            joinedAt: u._id.getTimestamp(),
-            earned: Math.round((byNick.get(String(u.username).toLowerCase()) || 0) * 100) / 100
-        }));
+        const fixParts = await require('./referral-fix').fixPartsFor(me.username); // jednorazowe wyrównanie zaległych bonusów
+        const users = invited.map(u => {
+            const k = String(u.username).toLowerCase();
+            return { username: u.username, joinedAt: u._id.getTimestamp(), earned: Math.round(((byNick.get(k) || 0) + (fixParts.get(k) || 0)) * 100) / 100 };
+        });
         users.sort((a, b) => b.earned - a.earned);
         res.json({ total: invited.length, users });
     } catch (e) { console.error('[polecenia] lista:', e.message); res.status(500).json({ error: 'Błąd serwera.' }); }
@@ -1309,6 +1320,7 @@ if (discordClient) {
     discordClient.once('ready', () => { 
         console.log(`🤖 Bot Discord połączony!`); 
         discordBot.init(discordClient, dbModels); 
+        errorAlerts.attachDiscord(discordClient);
     });
     discordClient.login(DISCORD_BOT_TOKEN).catch(console.error);
 }

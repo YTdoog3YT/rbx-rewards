@@ -38,6 +38,7 @@ function openPendingUser() {
 function adminExtraRefresh() {
     openPendingUser();
     loadAdminHistory(); loadAdminPartners(); loadAdminReversals(); loadAdminDupes(); loadAdminTickets();
+    if (ADMIN.role === 'owner') loadReferralFix();
 }
 
 // --- 1. wykres ---
@@ -140,6 +141,33 @@ function renderUserBlock(data) {
     const el = document.getElementById('adminSelectedBlock'); if (!el) return;
     el.innerHTML = 'Wypłaty: ' + (data.payoutBlocked ? '<span class="adm-badge-red">🔒 zablokowane</span>' : '<span class="adm-badge-green">✔ dozwolone</span>') + ' ' + blockBtn(data.username, data.payoutBlocked);
 }
+// --- zaległe bonusy z poleceń (tylko właściciel) ---
+async function loadReferralFix() {
+    const box = document.getElementById('admRefFixBox'), body = document.getElementById('admRefFixBody'), btn = document.getElementById('admRefFixBtn');
+    if (!box) return;
+    box.style.display = 'block';
+    try {
+        const list = await admGet('/api/admin/referral-fix');
+        if (!Array.isArray(list)) throw new Error();
+        if (!list.length) { body.innerHTML = errRow(3, 'Wszyscy polecający mają dopisane, co im się należy 👍'); btn.style.display = 'none'; return; }
+        body.innerHTML = list.map(e => `<tr><td style="font-weight:bold;">👤 ${escHtml(e.referrer)}</td><td class="adm-wrap-cell" style="color:#a0a0b0;">${e.people.map(p => escHtml(p.username) + ' <span style="color:#ffb703;">+' + p.missing.toFixed(2) + '</span>').join(', ')}</td><td style="color:#00e676;font-weight:bold;">+${rs(e.total)}</td></tr>`).join('');
+        const total = list.reduce((s, e) => s + e.total, 0);
+        btn.innerText = `💸 Dopisz wszystkim (${list.length} os., razem ${total.toFixed(2)} R$)`;
+        btn.style.display = 'inline-block';
+    } catch (e) { body.innerHTML = errRow(3, 'Błąd ładowania'); btn.style.display = 'none'; }
+}
+async function applyReferralFix(btn) {
+    if (!confirm('Dopisać wszystkim polecającym zaległe bonusy? Każdy dostanie jeden wpis w historii „przepraszamy za błąd”.')) return;
+    btn.disabled = true;
+    try {
+        const data = await admPost('/api/admin/referral-fix', {});
+        if (data.error) alert('Błąd: ' + data.error);
+        else alert(`Gotowe: dopisano ${data.total.toFixed(2)} R$ dla ${data.referrers} polecających.`);
+    } catch (e) { alert('Błąd połączenia.'); }
+    btn.disabled = false;
+    loadReferralFix();
+}
+
 // --- blokada całego konta + usuwanie konta ---
 let admChooserFor = null; // dla kogo jest otwarty wybór czasu blokady (zostaje otwarty po odświeżeniu danych)
 function toggleBlockChooser(username, open) {

@@ -2233,6 +2233,7 @@ if (!stats.iEarnedForReferrer || stats.iEarnedForReferrer.length === 0) {
                     else if (item.source === 'BundleDone') { actionText = (translations[tLang].historyBundleDone || "Bundle delivered") + (item.details ? ` – ${item.details}` : ''); }
                     else if (item.source === 'Reversal') { actionText = translations[tLang].historyReversal || "Quest Reversal (canceled by partner)"; if (item.details) actionText += ` (${item.details})`; }
                     else if (item.source === 'ReferralReversal') { actionText = translations[tLang].historyRefReversal || "Referral Bonus Reversed"; if (item.details) actionText += ` (${translations[tLang].historyFrom || "from:"} ${item.details})`; }
+                    else if (item.source === 'ReferralFix') { actionText = translations[tLang].historyReferralFix || "Referral bonus correction – sorry for the error"; }
                     else if (item.source === 'OwnerBonus') { actionText = `<span style="display: inline-block; background: rgba(255, 183, 3, 0.15); color: #ffb703; font-weight: 800; padding: 3px 9px; border-radius: 6px; border: 1px solid #ffb703;">${translations[tLang].historyOwnerBonus || "⭐ Bonus from Owner"}</span>`; }
                     else if (item.source === 'OwnerBonusReversal') { actionText = translations[tLang].historyOwnerBonusReversal || "Owner Bonus reversed (quest canceled)"; }
 else if (item.source === 'Admin') {

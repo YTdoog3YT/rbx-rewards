@@ -16,6 +16,10 @@ Object.assign(translations.en, {"historyOwnerBonus": "⭐ Bonus from Owner", "hi
 Object.assign(translations.pl, {"historyOwnerBonus": "⭐ Bonus od właściciela", "historyOwnerBonusReversal": "Cofnięty bonus od właściciela (misja anulowana)"});
 Object.assign(translations.de, {"historyOwnerBonus": "⭐ Bonus vom Inhaber", "historyOwnerBonusReversal": "Inhaber-Bonus zurückgebucht (Quest storniert)"});
 Object.assign(translations.ru, {"historyOwnerBonus": "⭐ Бонус от владельца", "historyOwnerBonusReversal": "Бонус от владельца отменён (квест аннулирован)"});
+Object.assign(translations.en, {"historyReferralFix": "Referral bonus correction – sorry for the error"});
+Object.assign(translations.pl, {"historyReferralFix": "Wyrównanie bonusów z poleceń – przepraszamy za błąd"});
+Object.assign(translations.de, {"historyReferralFix": "Ausgleich der Empfehlungsboni – entschuldige den Fehler"});
+Object.assign(translations.ru, {"historyReferralFix": "Компенсация реферальных бонусов – извините за ошибку"});
 
 Object.assign(translations.en, {"dashEarnedAds": "Earned from ads"});
 Object.assign(translations.pl, {"dashEarnedAds": "Zarobione z reklam"});
@@ -37,7 +41,7 @@ Object.assign(translations.ru, {"dashEarnedAds": "Заработано на ре
 
     function actName(it) {
         if (it.recordType === 'payout') return tr('historyPayout');
-        const map = { Promo: 'historyPromo', Referral: 'historyRef', LevelUp: 'historyLevel', Wheel: 'historyWheel', Spinner: 'historyWheel', BundleDeposit: 'historyBundle', BundleRefund: 'historyBundleRefund', BundleRejected: 'historyBundleRejected', BundleDone: 'historyBundleDone', Reversal: 'historyReversal', ReferralReversal: 'historyRefReversal', OwnerBonus: 'historyOwnerBonus', OwnerBonusReversal: 'historyOwnerBonusReversal', Admin: 'dashAdmin', 'AdMob Video': 'dashAdmob' };
+        const map = { Promo: 'historyPromo', Referral: 'historyRef', LevelUp: 'historyLevel', Wheel: 'historyWheel', Spinner: 'historyWheel', BundleDeposit: 'historyBundle', BundleRefund: 'historyBundleRefund', BundleRejected: 'historyBundleRejected', BundleDone: 'historyBundleDone', Reversal: 'historyReversal', ReferralReversal: 'historyRefReversal', OwnerBonus: 'historyOwnerBonus', ReferralFix: 'historyReferralFix', OwnerBonusReversal: 'historyOwnerBonusReversal', Admin: 'dashAdmin', 'AdMob Video': 'dashAdmob' };
         return tr(map[it.source] || 'dashSurvey');
     }
 

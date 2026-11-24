@@ -103,6 +103,16 @@
     <div id="admTicketsList" class="adm-tickets"><p class="adm-muted">Ładowanie...</p></div>
 </div>
 
+<div id="admRefFixBox" class="content-box adm-sec" style="display: none;">
+    <div class="adm-sec-head"><h3>🔧 Zaległe bonusy z poleceń</h3></div>
+    <p class="adm-hint">Widzisz to tylko Ty. Lista polecających, którym przez błąd nie dopisały się bonusy 15%. „Dopisz wszystkim” wyśle każdemu brakującą kwotę jednorazowo, z wpisem w historii „przepraszamy za błąd”. Drugie kliknięcie niczego nie zdubluje.</p>
+    <div class="adm-table-wrap"><table class="ref-table">
+        <thead><tr><th>Polecający</th><th>Od kogo (brakuje)</th><th>Razem</th></tr></thead>
+        <tbody id="admRefFixBody"><tr><td colspan="3" class="adm-muted">Ładowanie...</td></tr></tbody>
+    </table></div>
+    <button id="admRefFixBtn" class="btn-action" style="display: none;" onclick="applyReferralFix(this)">💸 Dopisz wszystkim</button>
+</div>
+
 <div id="adminOnlineList" class="content-box" style="display: none; text-align: left;">
     <h3 style="color: #00e676; margin-bottom: 10px;">Lista Graczy Online</h3>
     <div id="adminOnlineListContent" style="color: #fff; background: #0f1115; padding: 15px; border-radius: 6px; border: 1px solid #333; max-height: 200px; overflow-y: auto;">Ładowanie...</div>

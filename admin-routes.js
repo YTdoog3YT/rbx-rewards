@@ -2,6 +2,13 @@
 // Logowanie przez Discord, uprawnienia (właściciel / administracja) i wszystkie adresy /api/admin/...
 const path = require('path');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
+
+// zalogowania do panelu zapisane w bazie, żeby nie znikały przy każdym restarcie/wdrożeniu serwera
+const AdminTokenSchema = new mongoose.Schema({ tokenHash: { type: String, unique: true }, role: String, discordId: String, name: String, expiresAt: Date });
+AdminTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // MongoDB sam usuwa wygasłe
+const AdminToken = mongoose.models.AdminToken || mongoose.model('AdminToken', AdminTokenSchema);
+const hashAdminToken = t => crypto.createHash('sha256').update(String(t)).digest('hex');
 const { notify, Notification } = require('./notifications');
 const { isAccountBlocked, blockUntilFrom } = require('./account-block');
 const { shareFor, BASE_SHARE } = require('./owner-bonus');
@@ -32,10 +39,18 @@ module.exports = function registerAdminRoutes(app, d) {
     const tokens = new Map(); // token -> { expires, role, discordId, name }
     setInterval(() => { const now = Date.now(); for (const [k, v] of tokens) if (v.expires < now) tokens.delete(k); }, 30 * 60 * 1000).unref();
 
-    function getAuth(token) {
-        const a = token ? tokens.get(String(token)) : null;
+    async function getAuth(token) {
+        if (!token) return null;
+        token = String(token);
+        let a = tokens.get(token);
+        if (!a) { // po restarcie serwera: szukamy w bazie
+            try {
+                const t = await AdminToken.findOne({ tokenHash: hashAdminToken(token) }).lean();
+                if (t) { a = { expires: new Date(t.expiresAt).getTime(), role: t.role, discordId: t.discordId, name: t.name }; tokens.set(token, a); }
+            } catch (e) { console.error('[admin] token z bazy:', e.message); }
+        }
         if (!a) return null;
-        if (a.expires < Date.now()) { tokens.delete(String(token)); return null; }
+        if (a.expires < Date.now()) { tokens.delete(token); return null; }
         return a;
     }
     const permsFor = a => {
@@ -44,8 +59,8 @@ module.exports = function registerAdminRoutes(app, d) {
         return (entry ? entry.permissions : ADMIN_PERMISSIONS).filter(p => ALL_PERMISSIONS.includes(p));
     };
 
-    function isAdmin(req, res, next) {
-        const a = getAuth(req.headers.authorization);
+    async function isAdmin(req, res, next) {
+        const a = await getAuth(req.headers.authorization);
         if (!a) return res.status(403).json({ error: 'Brak dostępu!' });
         req.admin = a;
         next();
@@ -98,20 +113,23 @@ module.exports = function registerAdminRoutes(app, d) {
             if (!role) return res.redirect('/admin?error=Unauthorized');
 
             const token = crypto.randomBytes(32).toString('hex');
-            tokens.set(token, { expires: Date.now() + ADMIN_TOKEN_TTL_MS, role, discordId: String(du.id), name: String(du.global_name || du.username || '') });
+            const auth = { expires: Date.now() + ADMIN_TOKEN_TTL_MS, role, discordId: String(du.id), name: String(du.global_name || du.username || '') };
+            tokens.set(token, auth);
+            await AdminToken.create({ tokenHash: hashAdminToken(token), role, discordId: auth.discordId, name: auth.name, expiresAt: new Date(auth.expires) })
+                .catch(e => console.error('[admin] zapis tokenu:', e.message));
             return res.redirect(`/admin?token=${token}`);
         } catch (error) { console.error('[admin] logowanie:', error.message); return res.redirect('/admin?error=ServerError'); }
     });
 
-    app.post('/api/admin/verify', (req, res) => {
-        const a = getAuth(req.body && req.body.token);
+    app.post('/api/admin/verify', async (req, res) => {
+        const a = await getAuth(req.body && req.body.token);
         if (!a) return res.json({ success: false });
         res.json({ success: true, role: a.role, name: a.name, permissions: permsFor(a), allPermissions: ALL_PERMISSIONS });
     });
 
     app.post('/api/admin/logout', (req, res) => {
         const t = req.body && req.body.token;
-        if (t) tokens.delete(String(t));
+        if (t) { tokens.delete(String(t)); AdminToken.deleteOne({ tokenHash: hashAdminToken(t) }).catch(() => {}); }
         res.json({ success: true });
     });
 
@@ -403,6 +421,21 @@ module.exports = function registerAdminRoutes(app, d) {
         } catch (e) { res.status(500).json([]); }
     });
 
+
+    // =================== WYRÓWNANIE ZALEGŁYCH BONUSÓW Z POLECEŃ (tylko właściciel) ===================
+    const referralFix = require('./referral-fix');
+    app.get('/api/admin/referral-fix', isAdmin, async (req, res) => {
+        if (req.admin.role !== 'owner') return res.status(403).json({ error: 'Tylko właściciel.' });
+        try { res.json(await referralFix.computeMissing({ User, Earning })); }
+        catch (e) { console.error('[polecenia] podgląd wyrównania:', e.message); res.status(500).json({ error: 'Błąd liczenia.' }); }
+    });
+    app.post('/api/admin/referral-fix', isAdmin, async (req, res) => {
+        if (req.admin.role !== 'owner') return res.status(403).json({ error: 'Tylko właściciel.' });
+        try {
+            const done = await referralFix.applyMissing({ User, Earning });
+            res.json({ success: true, referrers: done.length, total: Math.round(done.reduce((s, e) => s + e.total, 0) * 100) / 100 });
+        } catch (e) { console.error('[polecenia] wyrównanie:', e.message); res.status(500).json({ error: e.message || 'Błąd.' }); }
+    });
 
     // =================== BLOKADA CAŁEGO KONTA ===================
     // body: { username, blocked: true, forever: true } albo { username, blocked: true, value: 3, unit: 'days' } albo { username, blocked: false }
