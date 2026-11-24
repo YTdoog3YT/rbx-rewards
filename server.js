@@ -1328,6 +1328,7 @@ if (discordClient) {
         discordBot.init(discordClient, dbModels); 
         errorAlerts.attachDiscord(discordClient);
         require('./daily-report').startDailyReport(discordClient, dbModels); // raport dzienny o północy (daily-report.js)
+        require('./reminders').startReminders(discordClient); // przypomnienia na prywatne wiadomości (reminders.js)
     });
     discordClient.login(DISCORD_BOT_TOKEN).catch(console.error);
 }
