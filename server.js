@@ -1317,7 +1317,7 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => { console.log(`🚀 Serwer śmiga na porcie ${PORT}`); });
 
 if (discordClient) {
-    discordClient.once('ready', () => { 
+    discordClient.once('clientReady', () => { 
         console.log(`🤖 Bot Discord połączony!`); 
         discordBot.init(discordClient, dbModels); 
         errorAlerts.attachDiscord(discordClient);

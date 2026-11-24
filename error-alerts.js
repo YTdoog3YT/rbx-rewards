@@ -52,10 +52,17 @@ async function flush() {
     finally { flushing = false; }
 }
 
+// to nie są błędy (ostrzeżenia Node o przestarzałych funkcjach, komunikaty dotenv) - tylko do logów, nie na Discorda
+const NOT_ERRORS = [/DeprecationWarning/, /ExperimentalWarning/, /injected env/, /\[dotenv/];
+
 // podmiana console.error: dalej pisze do logów Rendera, a dodatkowo wysyła na Discorda
 console.error = (...args) => {
     origError(...args);
-    try { report(toText(args)); } catch (e) {}
+    try {
+        const text = toText(args);
+        if (NOT_ERRORS.some(re => re.test(text))) return;
+        report(text);
+    } catch (e) {}
 };
 
 process.on('unhandledRejection', reason => console.error('[proces] nieobsłużony błąd (promise):', reason));

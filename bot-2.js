@@ -129,7 +129,7 @@ async function updateServerStats() {
     } catch (err) { console.error('❌ Błąd aktualizacji statystyk:', err); }
 }
 
-client.once('ready', async () => {
+client.once('clientReady', async () => {
     console.log(`🤖 Bot Admina (Nr 2) gotowy! Zalogowano jako: ${client.user.tag}`);
 
     const commands = [
