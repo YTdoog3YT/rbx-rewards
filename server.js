@@ -89,7 +89,8 @@ const Earning = mongoose.model('Earning', EarningSchema);
 
 const PayoutSchema = new mongoose.Schema({ 
     username: String, payoutMethod: { type: String, default: 'Revolut' }, payoutAddress: String, paypalEmail: String, 
-    pointsWithdrawn: Number, usdAmount: Number, status: { type: String, default: 'Pending Manual' }, createdAt: { type: Date, default: Date.now } 
+    pointsWithdrawn: Number, usdAmount: Number, status: { type: String, default: 'Pending Manual' }, createdAt: { type: Date, default: Date.now },
+    resolvedAt: { type: Date, default: null } // kiedy wypłatę zatwierdzono / odrzucono (do raportu dziennego)
 });
 const Payout = mongoose.model('Payout', PayoutSchema);
 
@@ -1264,8 +1265,11 @@ app.post('/api/bundles/withdraw', async (req, res) => {
 });
 
 // =================== WEBSOCKETS (Zdarzenia) ===================
+const chatHistory = require('./chat-history');
 io.on('connection', (socket) => { 
     socket.on('user_joined', (username) => { if(username) onlineUsersMap.set(socket.id, username); });
+    // ostatnie 50 wiadomości czatu dla nowo wchodzącego (chat-history.js)
+    chatHistory.lastChatMessages().then(list => socket.emit('chatHistory', list)).catch(e => console.error('[czat] historia:', e.message));
     // czat: nick i odznakę (CEO / ADMIN z chat-roles.js) ustala serwer na podstawie sesji, nie tego, co wyśle przeglądarka
     let lastChatAt = 0;
     socket.on('chatMessage', async (data) => {
@@ -1283,7 +1287,9 @@ io.on('connection', (socket) => {
                 lastChatAt = now;
                 text = text.slice(0, 300);
             }
-            io.emit('chatMessage', { username: u.username, text, role });
+            const msg = { username: u.username, text, role, createdAt: new Date() };
+            io.emit('chatMessage', msg);
+            chatHistory.saveChatMessage(msg);
         } catch (e) { console.error('[czat]', e.message); }
     });
     socket.on('disconnect', () => { onlineUsersMap.delete(socket.id); });
@@ -1321,6 +1327,7 @@ if (discordClient) {
         console.log(`🤖 Bot Discord połączony!`); 
         discordBot.init(discordClient, dbModels); 
         errorAlerts.attachDiscord(discordClient);
+        require('./daily-report').startDailyReport(discordClient, dbModels); // raport dzienny o północy (daily-report.js)
     });
     discordClient.login(DISCORD_BOT_TOKEN).catch(console.error);
 }

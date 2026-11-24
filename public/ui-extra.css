@@ -164,3 +164,4 @@ body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-even
 .chat-msg.chat-role-ceo .user { color: #ffd24a !important; }
 .chat-msg.chat-role-admin { border-left-color: #e5243b !important; background: linear-gradient(90deg, rgba(229, 36, 59, 0.12), #1e1e26 70%) !important; }
 .chat-msg.chat-role-admin .user { color: #ff6b7a !important; }
+.chat-time { font-size: 0.68rem; color: #7d8494; margin-top: 3px; }

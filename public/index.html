@@ -919,7 +919,7 @@
           </div>
       </div>
       <div class="chat-input-area">
-          <input type="text" id="chatInput" data-lang-placeholder="phChat" placeholder="Say something..." maxlength="100">
+          <input type="text" id="chatInput" data-lang-placeholder="phChat" placeholder="Say something..." maxlength="300">
           <button onclick="sendChatMessage()" data-lang="btnSend">Send</button>
       </div>
   </div>
@@ -1543,14 +1543,23 @@ function updateReferredBy(name) {
     document.getElementById('chatInput').addEventListener('keypress', function (e) { if (e.key === 'Enter') sendChatMessage(); });
 
     if (socket) {
-        socket.on('chatMessage', (data) => {
+        // data i godzina wysłania, np. 24.11.2026 20:51 (czas gracza)
+        const chatTime = d => { const t = new Date(d || Date.now()); if (isNaN(t)) return ''; const p = n => String(n).padStart(2, '0'); return `${p(t.getDate())}.${p(t.getMonth() + 1)}.${t.getFullYear()} ${p(t.getHours())}:${p(t.getMinutes())}`; };
+        const renderChatMessage = (data) => {
             const chatBody = document.getElementById('chatMessages'); const msgDiv = document.createElement('div');
             const role = data.role === 'ceo' || data.role === 'admin' ? data.role : '';
-            msgDiv.className = 'chat-msg' + (role ? ' chat-role-' + role : '');
+            msgDiv.className = 'chat-msg chat-user-msg' + (role ? ' chat-role-' + role : '');
             const safeText = document.createTextNode(data.text);
             const badge = role === 'ceo' ? '<span class="chat-badge ceo">👑 CEO</span>' : role === 'admin' ? '<span class="chat-badge admin">🛡️ ADMIN</span>' : '';
             msgDiv.innerHTML = `${badge}<span class="user" data-player="${escHtml(data.username)}">${escHtml(data.username)}:</span> `; msgDiv.appendChild(safeText);
+            const time = document.createElement('div'); time.className = 'chat-time'; time.textContent = chatTime(data.createdAt); msgDiv.appendChild(time);
             chatBody.appendChild(msgDiv); chatBody.scrollTop = chatBody.scrollHeight; 
+        };
+        socket.on('chatMessage', renderChatMessage);
+        // historia: przy każdym (ponownym) połączeniu podmieniamy wiadomości graczy na ostatnie 50 z serwera
+        socket.on('chatHistory', (list) => {
+            document.querySelectorAll('#chatMessages .chat-user-msg').forEach(el => el.remove());
+            (Array.isArray(list) ? list : []).forEach(renderChatMessage);
         });
     }
 

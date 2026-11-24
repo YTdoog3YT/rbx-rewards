@@ -6,6 +6,7 @@
     function enable() {
         if (on) return; on = true;
         document.body.classList.add('is-staff');
+        const ci = document.getElementById('chatInput'); if (ci) ci.removeAttribute('maxlength'); // CEO/ADMIN: bez limitu długości
         const st = document.createElement('style');
         st.textContent = 'body.is-staff [data-player]{cursor:pointer}body.is-staff [data-player]:hover{text-decoration:underline;text-underline-offset:3px}';
         document.head.appendChild(st);

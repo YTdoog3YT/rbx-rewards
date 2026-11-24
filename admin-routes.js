@@ -256,14 +256,14 @@ module.exports = function registerAdminRoutes(app, d) {
             // atomowo: wypłatę oczekującą może przetworzyć tylko jedno kliknięcie
             const payout = await Payout.findOneAndUpdate(
                 { _id: payoutId, status: 'Pending Manual' },
-                { $set: { status: action === 'complete' ? 'Completed' : 'Rejected' } },
+                { $set: { status: action === 'complete' ? 'Completed' : 'Rejected', resolvedAt: new Date() } },
                 { new: true }
             );
             if (!payout) return res.status(400).json({ error: 'Ta wypłata została już przetworzona albo nie istnieje.' });
             if (action === 'reject') {
                 const refunded = await User.findOneAndUpdate({ username: new RegExp(`^${escapeRegex(payout.username)}$`, 'i') }, { $inc: { points: payout.pointsWithdrawn } });
                 if (!refunded) {
-                    await Payout.updateOne({ _id: payout._id }, { $set: { status: 'Pending Manual' } }).catch(() => {});
+                    await Payout.updateOne({ _id: payout._id }, { $set: { status: 'Pending Manual', resolvedAt: null } }).catch(() => {});
                     return res.status(500).json({ error: 'Nie udało się zwrócić R$ graczowi, wypłata wróciła do oczekujących.' });
                 }
             }

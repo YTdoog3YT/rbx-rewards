@@ -458,7 +458,7 @@ module.exports = {
                 try {
                     payout = await dbModels.Payout.findOneAndUpdate(
                         { _id: payoutId, status: 'Pending Manual' },
-                        { $set: { status: action === 'approve' ? 'Completed' : 'Rejected' } },
+                        { $set: { status: action === 'approve' ? 'Completed' : 'Rejected', resolvedAt: new Date() } },
                         { new: true }
                     );
                 } catch (err) {
@@ -476,7 +476,7 @@ module.exports = {
                         if (!refunded) throw new Error('nie znaleziono gracza ' + payout.username);
                     } catch (err) {
                         console.error('[wypłaty] discord (zwrot):', err.message);
-                        await dbModels.Payout.updateOne({ _id: payoutId }, { $set: { status: 'Pending Manual' } }).catch(() => {});
+                        await dbModels.Payout.updateOne({ _id: payoutId }, { $set: { status: 'Pending Manual', resolvedAt: null } }).catch(() => {});
                         return interaction.reply({ content: "❌ Nie udało się zwrócić R$, więc wypłata wróciła do oczekujących. Spróbuj ponownie.", ephemeral: true }).catch(() => {});
                     }
                     try { await interaction.update({ embeds: [{ ...embed.data, title: "❌ ODRZUCONE ZLECENIE", color: 0xff3333 }], components: [] }); } catch (e) {}
