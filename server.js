@@ -879,7 +879,7 @@ app.get('/api/referral-stats/:username', async (req, res) => {
 // =================== TIMEWALL ===================
 const TIMEWALL_SECRET = process.env.TIMEWALL_SECRET || '';
 const TIMEWALL_MAX_REWARD = 3000;   // maks. nagroda za jedną transakcję (R$)
-const TIMEWALL_RS_PER_USD = 15;     // przelicznik z panelu TimeWall ($1.00 = 15 R$)
+const TIMEWALL_RS_PER_USD = 22;     // przelicznik z panelu TimeWall ($1.00 = 22 R$) - musi byc taki sam jak w panelu!
 
 function timewallHashOk(userid, revenue, given) {
     if (!TIMEWALL_SECRET) return false;
