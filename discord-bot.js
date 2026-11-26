@@ -296,6 +296,50 @@ module.exports = {
             }
         });
 
+        // ===================== KOMENDA ADMINA: NAZWY KANAŁÓW PO ANGIELSKU =====================
+        // jednorazowo: !przetlumaczkanaly zmienia na angielski nazwy kanałów publicznych (kanały moderacji zostają po polsku)
+        const CHANNEL_RENAMES = {
+            'testerzy-wymagania': 'tester-requirements',
+            'kody': 'promo-codes',
+            'potwierdzenia-wypłat': 'payout-proofs',
+            'ogloszenia': 'announcements',
+            'ogłoszenia': 'announcements',
+            'testerzy': 'testers',
+            'kanały tekstowe': 'Text Channels',
+            'ogólny': 'general',
+            'kanały głosowe': 'Voice Channels',
+            'ogólne': 'General',
+            'tickety': 'Tickets'
+        };
+
+        client.on('messageCreate', async message => {
+            if (message.author.bot || !message.guild) return;
+            if (message.content.trim().toLowerCase() !== '!przetlumaczkanaly') return;
+            if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ You don\'t have permission to use this command.');
+
+            const status = await message.reply('⏳ Zmieniam nazwy kanałów...');
+            const done = [], failed = [];
+            const channels = await message.guild.channels.fetch();
+            for (const ch of channels.values()) {
+                if (!ch) continue;
+                const current = ch.name;
+                let target = CHANNEL_RENAMES[current.trim().toLowerCase()];
+                // kanał pomysłów ma emoji w nazwie, podmieniamy tylko słowo
+                if (!target && /pomysły|pomysly/i.test(current)) target = current.replace(/pomysły|pomysly/i, 'ideas');
+                if (!target || target === current) continue;
+                try {
+                    await ch.setName(target, 'Serwer po angielsku');
+                    done.push(`${current} → ${target}`);
+                } catch (e) {
+                    failed.push(`${current} (${e.message})`);
+                }
+                await new Promise(r => setTimeout(r, 1200)); // spokojnie, żeby nie wpaść w limit Discorda
+            }
+            let txt = `✅ Zmieniono: **${done.length}**\n` + (done.length ? '```\n' + done.join('\n') + '\n```' : '');
+            if (failed.length) txt += `\n❌ Nie udało się (${failed.length}):\n` + '```\n' + failed.join('\n') + '\n```';
+            await status.edit(txt.slice(0, 1990)).catch(() => message.channel.send(txt.slice(0, 1990)));
+        });
+
         // ===================== KOMENDA ADMINA: PIN GRACZA =====================
         client.on('messageCreate', async message => {
             if (message.author.bot) return;
