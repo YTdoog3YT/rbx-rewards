@@ -57,7 +57,7 @@ module.exports = {
 
             // Tylko ty możesz odpalać te komendy
             if (['!kod', '!kody', '!usunkod', '!giveaway'].includes(cmd) && message.author.id !== ADMIN_DISCORD_ID) {
-                return message.reply('❌ Brak uprawnień, Szefie!');
+                return message.reply('❌ You don\'t have permission to use this command.');
             }
 
             // --- NOWOŚĆ: KOMENDA GIVEAWAY ---
@@ -73,14 +73,14 @@ module.exports = {
                 activeGiveaways.set(giveawayId, { reward: robuxReward, participants: [] });
 
                 const embed = {
-                    title: "🎉 NOWY GIVEAWAY! 🎉",
-                    description: `Do wygrania: **${robuxReward} R$** bezpośrednio na Twoje konto na stronie!\n\n⏳ **Czas:** ${minutes} minut\n👇 Kliknij przycisk poniżej, wpisz swój nick ze strony i dołącz do losowania!`,
+                    title: "🎉 NEW GIVEAWAY! 🎉",
+                    description: `Prize: **${robuxReward} R$** sent straight to your account on the website!\n\n⏳ **Time:** ${minutes} min\n👇 Click the button below, enter your website username and join the draw!`,
                     color: 0x00e676,
-                    footer: { text: "Losowanie automatyczne" }
+                    footer: { text: "Automatic draw" }
                 };
 
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId(`join_gw_${giveawayId}`).setLabel('🎟️ Dołącz do losowania').setStyle(ButtonStyle.Success)
+                    new ButtonBuilder().setCustomId(`join_gw_${giveawayId}`).setLabel('🎟️ Join the giveaway').setStyle(ButtonStyle.Success)
                 );
 
                 const gwMsg = await message.channel.send({ embeds: [embed], components: [row] });
@@ -89,7 +89,7 @@ module.exports = {
                 setTimeout(async () => {
                     const gwData = activeGiveaways.get(giveawayId);
                     if (!gwData || gwData.participants.length === 0) {
-                        gwMsg.edit({ embeds: [{ title: "❌ Giveaway zakończony", description: "Nikt nie wziął udziału :(", color: 0xff3333 }], components: [] });
+                        gwMsg.edit({ embeds: [{ title: "❌ Giveaway ended", description: "Nobody joined :(", color: 0xff3333 }], components: [] });
                         activeGiveaways.delete(giveawayId);
                         return;
                     }
@@ -107,7 +107,7 @@ module.exports = {
                         }
                     } catch(err) { console.log("Błąd dodawania R$ w giveaway:", err); }
 
-                    gwMsg.edit({ embeds: [{ title: "🎉 GIVEAWAY ZAKOŃCZONY!", description: `Wygrywa: **${winnerNick}**!\n💰 **${robuxReward} R$** zostało automatycznie dodane do Twojego konta na stronie!`, color: 0xffb703 }], components: [] });
+                    gwMsg.edit({ embeds: [{ title: "🎉 GIVEAWAY ENDED!", description: `Winner: **${winnerNick}**!\n💰 **${robuxReward} R$** has been added to their website account automatically!`, color: 0xffb703 }], components: [] });
                     activeGiveaways.delete(giveawayId);
                     
                 }, minutes * 60 * 1000);
@@ -183,12 +183,12 @@ module.exports = {
                 }
             }
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('idea_new').setLabel('💡 Podziel się pomysłem').setStyle(ButtonStyle.Success)
+                new ButtonBuilder().setCustomId('idea_new').setLabel('💡 Share an idea').setStyle(ButtonStyle.Success)
             );
             return channel.send({
                 embeds: [{
-                    title: "💡 Masz pomysł na RBX Rewards?",
-                    description: "Kliknij przycisk poniżej, a otworzę dla Ciebie **prywatny wątek** (widzisz go tylko Ty i administracja). Napisz tam swój pomysł, a pojawi się na tym kanale do głosowania ✅ / ❌.\n\nNa tym kanale nie można pisać, a pomysły dodajesz tylko przyciskiem.",
+                    title: "💡 Got an idea for RBX Rewards?",
+                    description: "Click the button below and I'll open a **private thread** for you (only you and the staff can see it). Write your idea there and it will be posted on this channel for voting ✅ / ❌.\n\nYou can't type in this channel. Ideas are added only with the button.",
                     color: 0x00e676
                 }],
                 components: [row]
@@ -200,7 +200,7 @@ module.exports = {
 
             // komenda admina: wysyła (lub odświeża) panel z przyciskiem
             if (message.content.trim().toLowerCase() === '!pomysly') {
-                if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ Brak uprawnień, Szefie!');
+                if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ You don\'t have permission to use this command.');
                 const sent = await refreshIdeaPanel();
                 return message.reply(sent ? '✅ Panel pomysłów wysłany na kanał pomysłów.' : '❌ Nie mam dostępu do kanału pomysłów (sprawdź uprawnienia bota).');
             }
@@ -213,8 +213,8 @@ module.exports = {
             if (ideaPublishing.has(ch.id)) return;
 
             const text = message.content.trim();
-            if (text.length < IDEA_MIN) return ch.send(`✏️ Pomysł jest za krótki (min. ${IDEA_MIN} znaków). Opisz go dokładniej i wyślij jeszcze raz.`);
-            if (text.length > IDEA_MAX) return ch.send(`✂️ Pomysł jest za długi (${text.length}/${IDEA_MAX} znaków). Skróć go i wyślij jeszcze raz.`);
+            if (text.length < IDEA_MIN) return ch.send(`✏️ Your idea is too short (min. ${IDEA_MIN} characters). Describe it in more detail and send it again.`);
+            if (text.length > IDEA_MAX) return ch.send(`✂️ Your idea is too long (${text.length}/${IDEA_MAX} characters). Shorten it and send it again.`);
 
             ideaPublishing.add(ch.id);
             try {
@@ -224,11 +224,11 @@ module.exports = {
                     .slice(0, 3).map(a => ({ attachment: a.url, name: a.name }));
                 const sent = await ideasChannel.send({
                     embeds: [{
-                        title: "💡 NOWY POMYSŁ",
+                        title: "💡 NEW IDEA",
                         description: `<@${message.author.id}>\n\n${text}`,
                         color: 0xffb703,
                         timestamp: new Date().toISOString(),
-                        footer: { text: "Zagłosuj reakcją: ✅ chcę to na stronie, ❌ nie chcę" }
+                        footer: { text: "Vote with a reaction: ✅ I want this on the site, ❌ I don't" }
                     }],
                     files,
                     allowedMentions: { parse: [] }
@@ -238,13 +238,13 @@ module.exports = {
 
                 ideaLastPublish.set(message.author.id, Date.now());
                 ideaThreads.delete(message.author.id);
-                await ch.send('🎉 Dziękujemy! Twój pomysł jest już na kanale do głosowania. Ten wątek za chwilę zniknie.');
+                await ch.send('🎉 Thank you! Your idea is now up for voting. This thread will disappear in a moment.');
                 setTimeout(() => { ch.delete().catch(() => ch.setArchived(true).catch(() => {})); }, 6000);
                 await refreshIdeaPanel();
             } catch (err) {
                 console.error('[pomysły] publikacja:', err.message);
                 ideaPublishing.delete(ch.id);
-                ch.send('❌ Nie udało się opublikować pomysłu. Spróbuj jeszcze raz, a jeśli nadal nie działa, napisz do administracji.').catch(() => {});
+                ch.send('❌ Couldn\'t publish your idea. Try again, and if it still doesn\'t work, contact the staff.').catch(() => {});
             }
         });
 
@@ -253,14 +253,14 @@ module.exports = {
             const userId = interaction.user.id;
 
             const wait = IDEA_COOLDOWN_MS - (Date.now() - (ideaLastPublish.get(userId) || 0));
-            if (wait > 0) return interaction.reply({ content: `⏳ Kolejny pomysł możesz dodać za ${Math.ceil(wait / 60000)} min.`, ephemeral: true });
+            if (wait > 0) return interaction.reply({ content: `⏳ You can add another idea in ${Math.ceil(wait / 60000)} min.`, ephemeral: true });
 
             const existingId = ideaThreads.get(userId);
             if (existingId) {
                 const t = await client.channels.fetch(existingId).catch(() => null);
                 if (t) {
                     if (t.archived) await t.setArchived(false).catch(() => {});
-                    return interaction.reply({ content: `📝 Masz już otwarty wątek na pomysł: <#${t.id}>`, ephemeral: true });
+                    return interaction.reply({ content: `📝 You already have an open idea thread: <#${t.id}>`, ephemeral: true });
                 }
                 ideaThreads.delete(userId);
             }
@@ -268,9 +268,9 @@ module.exports = {
             await interaction.deferReply({ ephemeral: true });
             try {
                 const parent = interaction.channel;
-                if (!parent || parent.id !== KANAL_POMYSLY_ID) return interaction.editReply('❌ Ten przycisk działa tylko na kanale pomysłów.');
+                if (!parent || parent.id !== KANAL_POMYSLY_ID) return interaction.editReply('❌ This button only works in the ideas channel.');
                 const rawName = (interaction.member && interaction.member.displayName) || interaction.user.username;
-                const safeName = rawName.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 40) || 'gracz';
+                const safeName = rawName.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 40) || 'player';
                 const thread = await parent.threads.create({
                     name: `💡 ${safeName} ${userId}`,
                     type: ChannelType.PrivateThread,
@@ -284,15 +284,15 @@ module.exports = {
                 await thread.send({
                     content: `<@${userId}>`,
                     embeds: [{
-                        title: "💡 Napisz swój pomysł",
-                        description: `Opisz go w **jednej wiadomości** (od ${IDEA_MIN} do ${IDEA_MAX} znaków). Możesz dołączyć do 3 zrzutów ekranu.\n\nPo wysłaniu pomysł pojawi się na kanale do głosowania, a ten wątek zniknie. Ten wątek widzisz tylko Ty i administracja.\n\n*Pomysły niezgodne z regulaminem (spam, wulgaryzmy) będą usuwane.*`,
+                        title: "💡 Write your idea",
+                        description: `Describe it in **one message** (${IDEA_MIN} to ${IDEA_MAX} characters). You can attach up to 3 screenshots.\n\nOnce you send it, your idea will be posted on the voting channel and this thread will disappear. Only you and the staff can see this thread.\n\n*Ideas that break the rules (spam, swearing) will be removed.*`,
                         color: 0xffb703
                     }]
                 });
-                return interaction.editReply(`✅ Otworzyłem prywatny wątek tylko dla Ciebie i administracji: <#${thread.id}>`);
+                return interaction.editReply(`✅ I've opened a private thread just for you and the staff: <#${thread.id}>`);
             } catch (err) {
                 console.error('[pomysły] tworzenie wątku:', err.message);
-                return interaction.editReply('❌ Nie udało się otworzyć wątku. Napisz do administracji.').catch(() => {});
+                return interaction.editReply('❌ Couldn\'t open a thread. Please contact the staff.').catch(() => {});
             }
         });
 
@@ -301,7 +301,7 @@ module.exports = {
             if (message.author.bot) return;
             const args = message.content.trim().split(/\s+/);
             if (args[0].toLowerCase() !== '!ustawpin') return;
-            if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ Brak uprawnień, Szefie!');
+            if (message.author.id !== ADMIN_DISCORD_ID) return message.reply('❌ You don\'t have permission to use this command.');
 
             const nick = args[1];
             let pin = args[2];
@@ -333,20 +333,20 @@ module.exports = {
             const cid = interaction.customId || '';
             const isKeep = cid.startsWith('blockkeep_'), isUnblock = cid.startsWith('blockunblock_');
             if (!isKeep && !isUnblock) return;
-            if (interaction.user.id !== ADMIN_DISCORD_ID) return interaction.reply({ content: '❌ O blokadzie decyduje tylko właściciel.', ephemeral: true }).catch(() => {});
+            if (interaction.user.id !== ADMIN_DISCORD_ID) return interaction.reply({ content: '❌ Only the owner can decide on the block.', ephemeral: true }).catch(() => {});
             try {
                 const ticketId = cid.slice(cid.indexOf('_') + 1);
                 const t = await dbModels.Ticket.findById(ticketId).lean();
                 if (!t) return interaction.reply({ content: '⚠️ Nie znaleziono ticketu.', ephemeral: true });
                 if (isUnblock) {
                     await dbModels.User.updateOne({ username: t.username }, { $set: { accountBlocked: false, blockedUntil: null } });
-                    await interaction.update({ content: `🔓 Konto **${t.username}** zostało odblokowane przez <@${interaction.user.id}>.`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
+                    await interaction.update({ content: `🔓 Account **${t.username}** has been unblocked by <@${interaction.user.id}>.`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
                 } else {
-                    await interaction.update({ content: `🔒 Blokada konta **${t.username}** zostaje (decyzja: <@${interaction.user.id}>).`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
+                    await interaction.update({ content: `🔒 The block on **${t.username}** stays (decision by <@${interaction.user.id}>).`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
                 }
             } catch (err) {
                 console.error('[blokada] przycisk:', err.message);
-                if (!interaction.replied && !interaction.deferred) interaction.reply({ content: '❌ Błąd. Spróbuj ponownie.', ephemeral: true }).catch(() => {});
+                if (!interaction.replied && !interaction.deferred) interaction.reply({ content: '❌ Something went wrong. Please try again.', ephemeral: true }).catch(() => {});
             }
         });
 
@@ -358,7 +358,7 @@ module.exports = {
             const isResolve = cid.startsWith('ticket_resolve_');
             const isRestore = cid.startsWith('ticket_restore_');
             if (!isResolve && !isRestore) return;
-            if (!canManageTickets(interaction)) return interaction.reply({ content: '❌ Tylko administracja może to kliknąć.', ephemeral: true }).catch(() => {});
+            if (!canManageTickets(interaction)) return interaction.reply({ content: '❌ Only the staff can click this.', ephemeral: true }).catch(() => {});
             const ticketId = cid.slice('ticket_resolve_'.length);
             try {
                 if (isResolve) {
@@ -371,10 +371,10 @@ module.exports = {
                     if (!t) return interaction.reply({ content: '⚠️ Ten ticket jest już rozwiązany.', ephemeral: true });
                     await interaction.update({ components: [] }).catch(() => {});
                     const row = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setCustomId(`ticket_restore_${t._id}`).setLabel('♻️ Przywróć').setStyle(ButtonStyle.Secondary)
+                        new ButtonBuilder().setCustomId(`ticket_restore_${t._id}`).setLabel('♻️ Reopen').setStyle(ButtonStyle.Secondary)
                     );
                     await interaction.channel.send({
-                        content: `✅ Ticket rozwiązany przez <@${interaction.user.id}>.\n🗑️ Kanał zostanie usunięty o **${plTime(deleteAt)}** (czasu polskiego).`,
+                        content: `✅ Ticket resolved by <@${interaction.user.id}>.\n🗑️ This channel will be deleted <t:${Math.floor(deleteAt.getTime() / 1000)}:R> (at <t:${Math.floor(deleteAt.getTime() / 1000)}:t>).`,
                         components: [row],
                         allowedMentions: { parse: [] }
                     });
@@ -385,16 +385,16 @@ module.exports = {
                         { new: true }
                     );
                     if (!t) return interaction.reply({ content: '⚠️ Tego ticketu nie da się już przywrócić.', ephemeral: true });
-                    await interaction.update({ content: `${interaction.message.content}\n♻️ Przywrócony przez <@${interaction.user.id}>.`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
+                    await interaction.update({ content: `${interaction.message.content}\n♻️ Reopened by <@${interaction.user.id}>.`, components: [], allowedMentions: { parse: [] } }).catch(() => {});
                     await interaction.channel.send({
-                        content: `♻️ Ticket przywrócony. Kanał nie zostanie usunięty.`,
+                        content: `♻️ Ticket reopened. This channel won't be deleted.`,
                         components: [ticketResolveRow(t._id)],
                         allowedMentions: { parse: [] }
                     });
                 }
             } catch (err) {
                 console.error('[tickety] przycisk:', err.message);
-                if (!interaction.replied && !interaction.deferred) interaction.reply({ content: '❌ Błąd. Spróbuj ponownie.', ephemeral: true }).catch(() => {});
+                if (!interaction.replied && !interaction.deferred) interaction.reply({ content: '❌ Something went wrong. Please try again.', ephemeral: true }).catch(() => {});
             }
         });
 
@@ -428,13 +428,13 @@ module.exports = {
             if (interaction.isButton() && interaction.customId.startsWith('join_gw_')) {
                 const giveawayId = interaction.customId.replace('join_gw_', '');
                 if (!activeGiveaways.has(giveawayId)) {
-                    return interaction.reply({ content: "❌ Ten giveaway już się zakończył.", ephemeral: true });
+                    return interaction.reply({ content: "❌ This giveaway has already ended.", ephemeral: true });
                 }
 
-                const modal = new ModalBuilder().setCustomId(`modal_gw_${giveawayId}`).setTitle('Dołącz do Giveaway');
+                const modal = new ModalBuilder().setCustomId(`modal_gw_${giveawayId}`).setTitle('Join the giveaway');
                 const input = new TextInputBuilder()
                     .setCustomId('gw_nick')
-                    .setLabel("Twój nick ze strony RBX Rewards")
+                    .setLabel("Your RBX Rewards username")
                     .setStyle(TextInputStyle.Short)
                     .setRequired(true);
                 modal.addComponents(new ActionRowBuilder().addComponents(input));
@@ -490,8 +490,8 @@ module.exports = {
                     if (publicChannel) {
                         publicChannel.send({
                             embeds: [{
-                                title: "💸 WYPŁATA ZREALIZOWANA!",
-                                description: `👤 Gracz: **${payout.username}** właśnie otrzymał przelew za **${payout.pointsWithdrawn} R$**!`,
+                                title: "💸 PAYOUT SENT!",
+                                description: `👤 **${payout.username}** just got paid for **${payout.pointsWithdrawn} R$**!`,
                                 color: 0x00FFAA,
                                 thumbnail: { url: "https://rbx-rewards.pl/logo.png" }
                             }]
@@ -556,8 +556,8 @@ module.exports = {
                     if (publicChannel) {
                         publicChannel.send({
                             embeds: [{
-                                title: "📦 PAKIET ZREALIZOWANY!",
-                                description: `👤 **${bundle.username}** kupił pakiet **${label}**!`,
+                                title: "📦 BUNDLE DELIVERED!",
+                                description: `👤 **${bundle.username}** just got the **${label}** bundle!`,
                                 color: 0x00FFAA,
                                 thumbnail: { url: "https://rbx-rewards.onrender.com/logo.png" }
                             }]
@@ -579,12 +579,12 @@ module.exports = {
                     const gwData = activeGiveaways.get(giveawayId);
                     if (gwData) {
                         if (gwData.participants.includes(nick)) {
-                            return interaction.reply({ content: "⚠️ Twój nick jest już w losowaniu!", ephemeral: true });
+                            return interaction.reply({ content: "⚠️ Your username is already in the draw!", ephemeral: true });
                         }
                         gwData.participants.push(nick);
-                        return interaction.reply({ content: "✅ Pomyślnie dołączono do losowania! Trzymaj kciuki.", ephemeral: true });
+                        return interaction.reply({ content: "✅ You've joined the draw! Fingers crossed.", ephemeral: true });
                     } else {
-                        return interaction.reply({ content: "❌ Ten giveaway już się zakończył.", ephemeral: true });
+                        return interaction.reply({ content: "❌ This giveaway has already ended.", ephemeral: true });
                     }
                 }
 
@@ -663,14 +663,14 @@ module.exports = {
     createTicketChannel: async (ticket) => {
         if (!client || !client.isReady || !client.isReady()) throw new Error('bot niegotowy');
         const guild = client.guilds.cache.get(GUILD_ID) || await client.guilds.fetch(GUILD_ID);
-        const nick = String(ticket.username || '').toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'gracz';
+        const nick = String(ticket.username || '').toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'player';
         const name = `ticket${String(ticket.number).padStart(4, '0')}-${nick}`.slice(0, 100);
         const P = PermissionFlagsBits;
         const channel = await guild.channels.create({
             name,
             type: ChannelType.GuildText,
             parent: TICKET_CATEGORY_ID,
-            topic: `Ticket ze strony RBX Rewards • gracz: ${ticket.username}`,
+            topic: `RBX Rewards website ticket • player: ${ticket.username}`,
             reason: 'Nowy ticket ze strony',
             permissionOverwrites: [
                 { id: guild.id, type: OverwriteType.Role, deny: [P.ViewChannel] },
@@ -681,7 +681,7 @@ module.exports = {
         });
         try {
             await channel.send({
-                content: `**Użytkownik** <@${ticket.discordId}> / **${ticket.username}**\n**Treść:** ${ticket.message}`,
+                content: `**User** <@${ticket.discordId}> / **${ticket.username}**\n**Message:** ${ticket.message}`,
                 components: [ticketResolveRow(ticket._id)],
                 allowedMentions: { users: [String(ticket.discordId)] }
             });
@@ -693,10 +693,10 @@ module.exports = {
         if (ticket.blockAppeal) {
             try {
                 const u = await dbModels.User.findOne({ username: ticket.username }).select('blockedUntil').lean();
-                const until = u && u.blockedUntil ? `do **${plDateTime(u.blockedUntil)}** (czasu polskiego)` : '**na zawsze**';
+                const until = u && u.blockedUntil ? `until <t:${Math.floor(new Date(u.blockedUntil).getTime() / 1000)}:f>` : '**permanently**';
                 await channel.send({
-                    content: `🔒 Ten gracz ma **zablokowane konto** ${until}.
-Decyzję podejmuje właściciel:`,
+                    content: `🔒 This player's **account is blocked** ${until}.
+The owner will decide:`,
                     components: [blockDecisionRow(ticket._id)],
                     allowedMentions: { parse: [] }
                 });
@@ -708,8 +708,8 @@ Decyzję podejmuje właściciel:`,
 
 function blockDecisionRow(ticketId) {
     return new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`blockkeep_${ticketId}`).setLabel('🔒 Zostaw blokadę').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(`blockunblock_${ticketId}`).setLabel('🔓 Odblokuj').setStyle(ButtonStyle.Success)
+        new ButtonBuilder().setCustomId(`blockkeep_${ticketId}`).setLabel('🔒 Keep block').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(`blockunblock_${ticketId}`).setLabel('🔓 Unblock').setStyle(ButtonStyle.Success)
     );
 }
 
@@ -719,7 +719,7 @@ function plDateTime(date) {
 
 function ticketResolveRow(ticketId) {
     return new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`ticket_resolve_${ticketId}`).setLabel('✅ Rozwiązano').setStyle(ButtonStyle.Success)
+        new ButtonBuilder().setCustomId(`ticket_resolve_${ticketId}`).setLabel('✅ Resolved').setStyle(ButtonStyle.Success)
     );
 }
 

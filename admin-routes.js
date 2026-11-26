@@ -280,7 +280,7 @@ module.exports = function registerAdminRoutes(app, d) {
             const client = getDiscordClient();
             if (client && ADMIN_PROMO_CHANNEL_ID) {
                 const channel = client.channels.cache.get(ADMIN_PROMO_CHANNEL_ID);
-                if (channel) channel.send(`🎉 **Nowy Kod Promocyjny!** 🎉\n\n🎟️ Kod: \`${String(code).toUpperCase()}\`\n💰 Wartość: **${reward} R$**\n👥 Limit użyć: **${maxUses}**\n\nSzybko wbijajcie na stronę i odbierajcie!`);
+                if (channel) channel.send(`🎉 **New Promo Code!** 🎉\n\n🎟️ Code: \`${String(code).toUpperCase()}\`\n💰 Value: **${reward} R$**\n👥 Uses: **${maxUses}**\n\nHurry to the website and claim it!`);
             }
             res.json({ success: true });
         } catch (error) { res.status(500).json({ error: 'Błąd dodawania kodu. Kod już istnieje?' }); }
